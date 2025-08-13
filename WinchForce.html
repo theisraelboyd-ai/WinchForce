@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Winch Force Simulator</title>
+<style>
+  :root{
+    --bg:#0f1417; --panel:#121b20; --panel-2:#0e171c;
+    --text:#e6eef0; --muted:#b6c6cb;
+    --teal:#10b5c4; --teal-2:#0aa1b0; --accent:#78f0ff; --grid: rgba(16,181,196,.11);
+    --danger:#ff4d4d; --ok:#86ff8f; --ok-deep:#0ea85c;
+    --board:#0f2a22; --chalk:#eaf2e4; --chalk-dim:#cbd8cc;
+    /* === FIX LOCK NODES BUTTON HEIGHT === */
+#btnLock.btn.small {
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 0 12px !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+}
+  }
+
+  html,body{height:100%}
+  body{
+    background: radial-gradient(1200px 800px at 10% -10%, #12232a 0%, var(--bg) 38%) no-repeat fixed;
+    color:var(--text);
+    font: 14.5px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    margin:0; padding:18px;
+    display:flex; flex-direction:column; gap:14px;
+  }
+  .title{
+    text-align:center; text-transform:uppercase; letter-spacing:.08em;
+    font-weight:800; font-size: clamp(20px, 3.2vw, 28px);
+    background: linear-gradient(90deg, var(--accent), var(--teal));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+
+  .wrap{display:flex; gap:14px; min-height:0; flex:1}
+  @media (max-width: 960px){ .wrap{flex-direction:column} }
+
+  .panel{
+    background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+    border: 1px solid rgba(120,240,255,.18);
+    border-radius:14px; padding:12px; box-shadow: 0 6px 30px rgba(0,0,0,.35) inset, 0 4px 16px rgba(0,0,0,.25);
+  }
+
+  /* Canvas */
+  #canvas{
+    position:relative; flex:1 1 auto; min-height:380px; overflow:hidden;
+    outline:1px solid rgba(120,240,255,.18);
+    border-radius:14px;
+    background: linear-gradient(180deg,#0a1216 0%, #0c151a 100%);
+    touch-action:none; user-select:none;
+  }
+  .grid{position:absolute; inset:0;
+    background-image:
+      linear-gradient(0deg, var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size:20px 20px; pointer-events:none;
+  }
+  .draggable{
+    position:absolute; width:32px; height:32px; line-height:32px; text-align:center;
+    color:#e8f7fa; border:1px solid rgba(120,240,255,.35);
+    background: linear-gradient(180deg,#1b2a31,#112229);
+    border-radius:8px; box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 6px 18px rgba(0,0,0,.4);
+    cursor:grab; touch-action:none; user-select:none; font-weight:700;
+  }
+  .locked .draggable{ cursor:not-allowed }
+  .draggable:active{cursor:grabbing}
+  .winch{background:linear-gradient(180deg,#1b2a31,#0f2630)}
+  .end{background:linear-gradient(180deg,#26434c,#11323a)}
+  .bollard{border-radius:50%; background:linear-gradient(180deg,#244147,#17343a)}
+  .bollard.low-load{background:linear-gradient(180deg,#1fea74,#138f40); color:#111}
+  .bollard.high-load{background:linear-gradient(180deg,#ff6868,#a61212); color:#fff}
+
+  .force-line{position:absolute; height:0; border-top:1px dashed var(--teal); transform-origin:0 0; pointer-events:none; opacity:.9}
+  .line-label{
+    position:absolute; font-size:12px; padding:2px 6px; border-radius:999px;
+    background:rgba(6,35,43,.85); border:1px solid rgba(120,240,255,.25); color:var(--accent);
+    pointer-events:none; transform:translate(-50%,-50%); backdrop-filter: blur(2px);
+  }
+
+  .angle-ray{position:absolute; height:0; border-top:1px solid rgba(120,240,255,.45); transform-origin:0 0; pointer-events:none}
+  .angle-text{
+    position:absolute; font-size:12px; padding:1px 6px; border-radius:6px;
+    background:rgba(11,31,38,.92); border:1px solid rgba(120,240,255,.25); color:var(--accent); pointer-events:none
+  }
+
+  /* Sidebar + Math */
+  .sidebar, .math { width: 440px; max-width: 46vw }
+  @media (max-width: 960px){ .sidebar, .math { width:100%; max-width:none } }
+
+  h2{margin:0 0 10px; font-size:15px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color: var(--accent)}
+  .row{display:flex; gap:14px; flex-wrap:wrap}
+  label{display:flex; justify-content:space-between; align-items:center; gap:14px; width:100%; color:var(--muted)}
+  input[type="number"]
+  {
+    background:#0b1a20; border:1px solid rgba(120,240,255,.25); color:var(--text);
+    border-radius:8px; padding:7px 10px; width:150px; box-shadow: 0 0 0 2px transparent inset;
+    transition: box-shadow .15s ease;
+  }
+  input[type="number"]:focus{ outline:none; box-shadow: 0 0 0 2px rgba(120,240,255,.25) inset }
+
+  .btn{
+    background: linear-gradient(180deg, var(--teal) 0%, var(--teal-2) 100%); color:#04262b;
+    border:10px solid rgba(120,240,255,.35); border-radius:10px; padding:6px 10px; font-weight:800;
+    letter-spacing:.03em; cursor:pointer; transition: transform .05s ease, filter .2s ease; box-shadow: 0 4px 14px rgba(16,181,196,.25);
+    min-height:36px
+  }
+  .btn:hover{ filter:brightness(1.1) }
+  .btn:active{ transform:translateY(1px) }
+  .btn.small{ padding:4px 8px; min-height:30px }
+  .btn.secondary{ background: linear-gradient(180deg,#15252c,#0f1d23); color: var(--text) }
+  .btn.danger{ background: linear-gradient(180deg,#ff7575,#e13a3a); color:#240808 }
+
+  .badge{
+    display:inline-block; padding:6px 10px; border-radius:999px; font-weight:800; letter-spacing:.02em;
+    background: linear-gradient(180deg,#072d37,#06262f); border:1px solid rgba(120,240,255,.35); color:var(--accent)
+  }
+  .muted{color:var(--muted)}
+
+  #results, #math-results, #calcCards{
+    background: linear-gradient(180deg,#0b161b,#0a1317); border:1px solid rgba(120,240,255,.18);
+    border-radius:12px; padding:10px; box-shadow: 0 8px 26px rgba(0,0,0,.22) inset;
+  }
+  /* === BUTTON BAR NORMALIZE (drop-in) === */
+
+/* make all buttons same height, tighter padding, centered text */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+
+  /* size & rhythm */
+  height:38px;                 /* consistent height */
+  min-height:38px;
+  padding:0 12px;              /* tighter, no vertical swell */
+  line-height:1;               /* remove extra text ascent/descent */
+  font-size:14px;
+  font-weight:800;
+  letter-spacing:.02em;
+
+  /* visuals (keep your gradient + border) */
+  background: linear-gradient(180deg, var(--teal) 0%, var(--teal-2) 100%);
+  color:#04262b;
+  border:1px solid rgba(120,240,255,.35);
+  border-radius:10px;
+  box-shadow: 0 3px 10px rgba(16,181,196,.18);
+  cursor:pointer;
+  transition: filter .2s ease, transform .04s ease;
+}
+.btn:hover{ filter:brightness(1.08) }
+.btn:active{ transform:translateY(1px) }
+
+/* secondary + danger keep the same height */
+  <button class="btn secondary" id="btnLock">Lock nodes</button>
+.btn.secondary{
+  background: linear-gradient(180deg,#15252c,#0f1d23);
+  color: var(--text);
+}
+.btn.danger{
+  background: linear-gradient(180deg,#ff7575,#e13a3a);
+  color:#240808;
+}
+
+/* small buttons (e.g., Delete) */
+.btn.small{
+  height:32px;
+  min-height:32px;
+  padding:0 10px;
+  font-size:13px;
+}
+
+/* === BUTTON ROW LAYOUT === */
+/* use a responsive grid so buttons align perfectly and never collide */
+/* Force spacing between buttons */
+/* FORCE button container to behave as grid with spacing */
+/* --- BUTTON ROW LAYOUT: crisp, consistent --- */
+.sidebar .row,
+.math .row{
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important; /* always 2 columns */
+  gap: 12px !important;               /* breathing room between buttons */
+  margin: 10px 0 !important;          /* vertical spacing between rows */
+  padding: 0 !important;
+  align-items: stretch !important;     /* equal height cells */
+}
+
+/* Any row with a single button = span full width */
+.sidebar .row > .btn:only-child,
+.math  .row > .btn:only-child{
+  grid-column: 1 / -1 !important;     /* take both columns */
+}
+
+/* Buttons fill their cell and respect the gap */
+.sidebar .row .btn,
+.math  .row .btn{
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Normalize button sizing so there’s no “swollen” look */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  height: 38px; min-height:38px; padding: 0 12px;
+  line-height: 1; font-size:14px; font-weight:800; letter-spacing:.02em;
+  box-shadow: 0 2px 8px rgba(0,0,0,.22);
+}
+.btn.small{ height:32px; min-height:32px; padding:0 10px; font-size:13px; }
+
+/* Mobile: stack buttons in a single column */
+@media (max-width: 520px){
+  .sidebar .row, .math .row{
+    grid-template-columns: 1fr !important;
+  }
+}
+  /* Bollard cards */
+  #calcCards{ display:flex; flex-direction:column; gap:10px }
+  .card{
+    border:1px solid rgba(120,240,255,.2); border-radius:10px; padding:10px;
+    background:linear-gradient(180deg,#0c1a20,#0b1519);
+  }
+  .card-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px }
+  .card-title{ font-weight:800; letter-spacing:.03em; color:var(--accent) }
+  .pill{ padding:2px 8px; border-radius:999px; border:1px solid rgba(120,240,255,.25); color:var(--muted); font-size:12px }
+  .card-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:8px }
+  .card-grid .rowline{ display:flex; justify-content:space-between; gap:10px; align-items:center; padding:6px 8px; border:1px dashed rgba(120,240,255,.12); border-radius:8px; }
+  .card-grid .rowline input.mu-input{ width:90px; padding:6px 8px; border-radius:8px; background:#0b1a20; color:var(--text); border:1px solid rgba(120,240,255,.25) }
+  .status-ok{color:var(--ok)}
+  .status-high{color:#ffd1d1}
+  .card-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:6px }
+
+  /* Chalkboard engineer */
+  .collapsible{ overflow:hidden; transition:max-height .35s ease }
+  #engineerPanelInner{
+    background: radial-gradient(800px 400px at -10% -10%, #164233 0%, var(--board) 60%);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:12px; padding:12px; color:var(--chalk);
+    text-shadow: 0 1px 0 rgba(0,0,0,.4), 0 0 1px rgba(255,255,255,.05);
+    box-shadow: 0 8px 24px rgba(0,0,0,.35) inset;
+    font-family: "Courier New", Courier, ui-monospace, monospace;
+  }
+  #engineerBody{ white-space:pre-wrap; }
+  .chalk-dim{ color:var(--chalk-dim) }
+</style>
+</head>
+<body>
+  <div class="title">Winch Force Simulator</div>
+
+  <div class="wrap">
+    <!-- Canvas -->
+    <div id="canvas" class="panel" aria-label="layout-canvas">
+      <div class="grid"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar panel">
+      <h2>Controls</h2>
+      <label>Winch Force (t) <input type="number" id="initialForce" value="10" step="0.1" min="0"></label>
+      <label>End Load (t) <input type="number" id="endLoad" value="0" step="0.1" min="0"></label>
+      <label>Load threshold (t) <input type="number" id="loadThreshold" value="20" step="0.5" min="0"></label>
+      <label>Precision (dp)
+        <input type="number" id="precision" value="2" min="0" max="6" step="1">
+      </label>
+      <div class="row">
+        <button class="btn" id="btnAddWinch">Add Winch</button>
+        <button class="btn" id="btnAddBollard">Add Bollard</button>
+        <button class="btn" id="btnAddEnd">Add End</button>
+      </div>
+      <div class="row">
+        <button class="btn secondary" id="btnClear">Clear All</button>
+        <button class="btn" id="btnCalc">Calculate</button>
+        <button class="btn" id="btnCopy">Copy All</button>
+      </div>
+      <div class="row">
+        <button class="btn small secondary" id="btnLock">Lock nodes</button>
+      </div>
+
+      <div id="results" style="margin-top:8px"></div>
+      <div class="muted" style="margin-top:8px">
+        Bollards turn <b>red</b> when their resultant <b>R</b> ≥ the “Load threshold (t)”. Green otherwise.
+      </div>
+    </div>
+
+    <!-- Maths / Details -->
+    <div class="math panel">
+      <h2>Calculations</h2>
+      <div id="calcCards"></div>
+
+      <!-- Layman summary -->
+      <div id="math-results" style="margin-top:10px"></div>
+
+      <!-- Engineer button below summary -->
+      <div class="row" style="margin-top:10px">
+        <button class="btn secondary" id="btnEngineerToggle">Show engineer details</button>
+        <button class="btn secondary" id="btnCopyEngineer" style="display:none">Copy Engineer Calcs</button>
+      </div>
+
+      <!-- Slide-down engineer details -->
+      <div id="engineerPanel" class="collapsible" style="max-height:0">
+        <div id="engineerPanelInner">
+          <div class="chalk-dim" style="margin-bottom:6px">Derivations & numeric checks</div>
+          <div id="engineerBody"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ========= State ========= */
+let elements = [];      // nodes in path order
+let lines = [];         // DOM lines
+let lineLabels = [];    // DOM per-segment tension labels
+let angleEls = [];      // DOM angle rays + labels
+let mode = 'forward';   // 'forward' or 'reverse'
+let engineerOpen = false;
+let nodesLocked = false;
+const canvas = document.getElementById('canvas');
+
+/* ========= Helpers ========= */
+const GRID = 20;
+const SAFE_MARGIN = 24;   // keeps nodes away from canvas edges
+const END_RIGHT_MARGIN = 34; // extra room on right for 'E' on phones
+
+const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
+const snap  = v=>Math.round(v/GRID)*GRID;
+const getThreshold = ()=> parseFloat(document.getElementById('loadThreshold').value)||0;
+const dp = ()=> clamp(parseInt(document.getElementById('precision').value||2,10),0,6);
+const fmt = (x)=> Number(x).toFixed(dp());
+
+const getCenter = el => ({
+  x: (parseInt(el.style.left||0,10) + el.offsetWidth/2),
+  y: (parseInt(el.style.top ||0,10) + el.offsetHeight/2)
+});
+const unitVector = (a,b) => {
+  const A=getCenter(a), B=getCenter(b);
+  const dx=B.x-A.x, dy=B.y-A.y, m=Math.hypot(dx,dy)||1;
+  return {x:dx/m, y:dy/m};
+};
+const angleBetween = (p,c,n) => {
+  const P=getCenter(p), C=getCenter(c), N=getCenter(n);
+  const v1={x:P.x-C.x, y:P.y-C.y}, v2={x:N.x-C.x, y:N.y-C.y};
+  const m1=Math.hypot(v1.x,v1.y)||1, m2=Math.hypot(v2.x,v2.y)||1;
+  const dot=(v1.x*v2.x+v1.y*v2.y)/(m1*m2);
+  return Math.acos(Math.max(-1,Math.min(1,dot))); // radians
+};
+
+/* ========= Dragging ========= */
+function makeDraggable(el){
+  let shiftX=0, shiftY=0;
+  function onMove(e){
+    if(nodesLocked) return;
+    const rect=canvas.getBoundingClientRect();
+    let x = e.clientX - rect.left - shiftX;
+    let y = e.clientY - rect.top  - shiftY;
+    x=snap(x); y=snap(y);
+
+    const minX = SAFE_MARGIN;
+    const minY = SAFE_MARGIN;
+    const maxX = canvas.clientWidth  - el.offsetWidth - SAFE_MARGIN - (el.dataset.type==='end' ? END_RIGHT_MARGIN:0);
+    const maxY = canvas.clientHeight - el.offsetHeight - SAFE_MARGIN;
+
+    el.style.left = clamp(x,minX,maxX)+'px';
+    el.style.top  = clamp(y,minY,maxY)+'px';
+    drawLines(); updateAngles();
+  }
+  function onUp(){
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+    // live refresh after drag end
+    calculateForces();
+  }
+  el.addEventListener('pointerdown', e=>{
+    if(nodesLocked) return;
+    const rect=canvas.getBoundingClientRect();
+    shiftX = e.clientX - rect.left - parseInt(el.style.left||0,10);
+    shiftY = e.clientY - rect.top  - parseInt(el.style.top ||0,10);
+    el.setPointerCapture && el.setPointerCapture(e.pointerId);
+    document.addEventListener('pointermove', onMove, {passive:false});
+    document.addEventListener('pointerup', onUp, {passive:false});
+  });
+}
+
+/* ========= Adders ========= */
+function spawnWithin(el,left,top){
+  // ensure initial spawn respects margins (including End right margin)
+  const maxX = canvas.clientWidth  - el.offsetWidth - SAFE_MARGIN - (el.dataset.type==='end' ? END_RIGHT_MARGIN:0);
+  const maxY = canvas.clientHeight - el.offsetHeight - SAFE_MARGIN;
+  el.style.left = clamp(snap(left), SAFE_MARGIN, maxX)+'px';
+  el.style.top  = clamp(snap(top ), SAFE_MARGIN, maxY)+'px';
+}
+function addWinch(){
+  if(elements.some(e=>e.dataset.type==='winch')) return;
+  const el=document.createElement('div');
+  el.className='draggable winch'; el.textContent='W'; el.dataset.type='winch';
+  canvas.appendChild(el); spawnWithin(el, 40, 40); elements.push(el); makeDraggable(el);
+  drawLines(); updateAngles(); calculateForces();
+}
+function addBollard(){
+  const idx=elements.filter(e=>e.dataset.type==='bollard').length+1;
+  const el=document.createElement('div');
+  el.className='draggable bollard'; el.textContent='B'+idx; el.dataset.type='bollard';
+  el.dataset.mu = 0.20;
+  canvas.appendChild(el); spawnWithin(el, 120 + elements.length*40, 140);
+  elements.push(el); makeDraggable(el);
+  drawLines(); updateAngles(); calculateForces();
+}
+function addEnd(){
+  if(elements.some(e=>e.dataset.type==='end')) return;
+  const el=document.createElement('div');
+  el.className='draggable end'; el.textContent='E'; el.dataset.type='end';
+  canvas.appendChild(el); spawnWithin(el, 240 + elements.length*40, 40);
+  elements.push(el); makeDraggable(el);
+  drawLines(); updateAngles(); calculateForces();
+}
+
+/* ========= Clear / Delete / Lock ========= */
+function clearCanvas(){
+  elements.forEach(e=>e.remove());
+  lines.forEach(l=>l.remove()); angleEls.forEach(a=>a.remove());
+  lineLabels.forEach(lb=>lb.remove());
+  elements=[]; lines=[]; angleEls=[]; lineLabels=[];
+  document.getElementById('results').innerHTML='';
+  document.getElementById('calcCards').innerHTML='';
+  document.getElementById('math-results').innerHTML='';
+  document.getElementById('engineerBody').textContent='';
+  setEngineerOpen(false);
+}
+function deleteBollardByName(name){
+  const idx = elements.findIndex(e=>e.dataset.type==='bollard' && e.textContent===name);
+  if(idx> -1){ elements[idx].remove(); elements.splice(idx,1); drawLines(); updateAngles(); calculateForces(); }
+}
+function toggleLock(){
+  nodesLocked = !nodesLocked;
+  canvas.classList.toggle('locked', nodesLocked);
+  document.getElementById('btnLock').textContent = nodesLocked ? 'Unlock nodes' : 'Lock nodes';
+}
+
+/* ========= Drawing ========= */
+function drawLines(){
+  lines.forEach(l=>l.remove()); lines=[];
+  lineLabels.forEach(lb=>lb.remove()); lineLabels=[];
+  for(let i=0;i<elements.length-1;i++){
+    const a=getCenter(elements[i]), b=getCenter(elements[i+1]);
+    const dx=b.x-a.x, dy=b.y-a.y;
+    const line=document.createElement('div');
+    line.className='force-line';
+    line.style.left=a.x+'px'; line.style.top=a.y+'px';
+    line.style.width=Math.hypot(dx,dy)+'px';
+    line.style.transform=`rotate(${Math.atan2(dy,dx)*180/Math.PI}deg)`;
+    canvas.appendChild(line); lines.push(line);
+
+    const label=document.createElement('div');
+    label.className='line-label';
+    label.textContent='';
+    label.style.left=(a.x + dx/2)+'px';
+    label.style.top =(a.y + dy/2)+'px';
+    canvas.appendChild(label); lineLabels.push(label);
+  }
+}
+function updateAngles(){
+  angleEls.forEach(e=>e.remove()); angleEls=[];
+  for(let i=0;i<elements.length-2;i++){
+    const mid=elements[i+1];
+    if(mid.dataset.type!=='bollard') continue;
+    const θ=angleBetween(elements[i],mid,elements[i+2]);
+    const deg=(θ*180/Math.PI).toFixed(1);
+    const C=getCenter(mid), P=getCenter(elements[i]), N=getCenter(elements[i+2]);
+    const ray=26;
+    const a1=Math.atan2(P.y-C.y,P.x-C.x)*180/Math.PI;
+    const a2=Math.atan2(N.y-C.y,N.x-C.x)*180/Math.PI;
+
+    const r1=document.createElement('div'); r1.className='angle-ray';
+    r1.style.left=C.x+'px'; r1.style.top=C.y+'px';
+    r1.style.width=ray+'px'; r1.style.transform=`rotate(${a1}deg)`;
+    const r2=document.createElement('div'); r2.className='angle-ray';
+    r2.style.left=C.x+'px'; r2.style.top=C.y+'px';
+    r2.style.width=ray+'px'; r2.style.transform=`rotate(${a2}deg)`;
+    const lbl=document.createElement('div'); lbl.className='angle-text';
+    const midDeg=(a1+(((a2-a1+540)%360)-180)/2)*Math.PI/180;
+    lbl.style.left=(C.x+(ray+12)*Math.cos(midDeg))+'px';
+    lbl.style.top =(C.y+(ray+12)*Math.sin(midDeg))+'px';
+    lbl.textContent=`${deg}°`;
+    [r1,r2,lbl].forEach(el=>{canvas.appendChild(el); angleEls.push(el);});
+  }
+}
+
+/* ========= Physics + Cards + Prose ========= */
+function calculateForces(){
+  const resEl=document.getElementById('results');
+  const cardsWrap=document.getElementById('calcCards');
+  const layEl=document.getElementById('math-results');
+  const engEl=document.getElementById('engineerBody');
+
+  resEl.innerHTML=''; cardsWrap.innerHTML=''; layEl.innerHTML=''; engEl.textContent='';
+
+  if(elements.length<2){
+    resEl.innerHTML = `<span class="badge">Add a Winch and an End (with any Bollards between), then Calculate.</span>`;
+    return;
+  }
+
+  // ensure geometry is current
+  drawLines(); updateAngles();
+
+  const path = elements.slice();
+  const THRESH = getThreshold();
+
+  // angles (radians) at bollards
+  const angles = path.map((_,i)=>
+    i>0 && i<path.length-1 && path[i].dataset.type==='bollard'
+      ? angleBetween(path[i-1],path[i],path[i+1]) : 0
+  );
+
+  // propagate tensions per segment i -> i+1
+  let tensions = new Array(path.length-1).fill(0);
+  if(mode==='forward'){
+    let T = parseFloat(document.getElementById('initialForce').value)||0;
+    for(let i=0;i<path.length-1;i++){
+      if(i>0 && path[i].dataset.type==='bollard'){
+        const μ = parseFloat(path[i].dataset.mu || 0), θ=angles[i];
+        T = T * Math.exp(-μ*θ);
+      }
+      tensions[i]=T;
+    }
+    resEl.innerHTML = `<span class="badge">Mode: Winch → Load</span> &nbsp; <span class="badge">End residual ≈ ${fmt(tensions.at(-1))} t</span>
+    <div class="row" style="margin-top:8px"><button class="btn secondary" id="btnMode">Switch to Load → Winch</button></div>`;
+  } else {
+    let T = parseFloat(document.getElementById('endLoad').value)||0;
+    for(let i=path.length-2;i>=0;i--){
+      if(i<path.length-2 && path[i+1].dataset.type==='bollard'){
+        const μ = parseFloat(path[i+1].dataset.mu || 0), θ=angles[i+1];
+        T = T * Math.exp( μ*θ);
+      }
+      tensions[i]=T;
+    }
+    resEl.innerHTML = `<span class="badge">Mode: Load → Winch</span> &nbsp; <span class="badge">Required winch ≈ ${fmt(tensions[0])} t</span>
+    <div class="row" style="margin-top:8px"><button class="btn secondary" id="btnMode">Switch to Winch → Load</button></div>`;
+  }
+  document.getElementById('btnMode').onclick = ()=>{ mode = (mode==='forward'?'reverse':'forward'); calculateForces(); };
+
+  // update line labels
+  for(let i=0;i<lineLabels.length;i++){
+    if(lineLabels[i]) lineLabels[i].textContent = `${fmt(tensions[i]||0)} t`;
+  }
+
+  // Build bollard cards + prose
+  const layLines = [];
+  const engLines = [];
+
+  for(let i=1;i<path.length-1;i++){
+    if(path[i].dataset.type!=='bollard') continue;
+    const name = path[i].textContent;
+    const θ = angles[i]; const θdeg=(θ*180/Math.PI).toFixed(1);
+    const μ = parseFloat(path[i].dataset.mu || 0);
+    const Tin=tensions[i-1]||0, Tout=tensions[i]||0;
+
+    const uPrev=unitVector(path[i],path[i-1]);
+    const uNext=unitVector(path[i],path[i+1]);
+    const Rx = Tin*uPrev.x + Tout*uNext.x;
+    const Ry = Tin*uPrev.y + Tout*uNext.y;
+    const R  = Math.hypot(Rx,Ry);
+
+    // color bollard + tiny haptic on change (best effort)
+    const wasHigh = path[i].classList.contains('high-load');
+    if(R>=THRESH){ path[i].classList.add('high-load'); path[i].classList.remove('low-load'); }
+    else { path[i].classList.add('low-load'); path[i].classList.remove('high-load'); }
+    const isHigh = R>=THRESH;
+    if(wasHigh!==isHigh && navigator.vibrate){ try{ navigator.vibrate(8);}catch{} }
+
+    // Layman line
+    layLines.push(`• <b>${name}</b>: Line enters at ${fmt(Tin)} t, bends ${θdeg}°, leaves at ${fmt(Tout)} t with friction μ=${μ}. The bend pushes on the bollard with a combined load of <b>${fmt(R)} t</b> (${isHigh?'over':'under'} the ${THRESH} t threshold).`);
+
+    // Engineer line
+    engLines.push(`${name}: θ=${θdeg}° (${θ.toFixed(3)} rad), μ=${μ}.  T_out = T_in·e^(−μθ) → ${fmt(Tout)} t;  R = √(T₁²+T₂²−2·T₁·T₂·cosθ) → ${fmt(R)} t.`);
+
+    // Card
+    const card=document.createElement('div'); card.className='card';
+    card.innerHTML=`
+      <div class="card-head">
+        <div class="card-title">${name}</div>
+        <div class="pill">θ ${θdeg}°</div>
+      </div>
+      <div class="card-grid">
+        <div class="rowline"><span>Friction μ</span><input class="mu-input" type="number" step="0.01" value="${μ}"></div>
+        <div class="rowline"><span>Incoming Tin</span><b>${fmt(Tin)} t</b></div>
+        <div class="rowline"><span>Outgoing Tout</span><b>${fmt(Tout)} t</b></div>
+        <div class="rowline"><span>Resultant R</span><b>${fmt(R)} t</b></div>
+        <div class="rowline"><span>Status</span><b class="${isHigh?'status-high':'status-ok'}">${isHigh?'🔴 High':'🟢 Low'}</b></div>
+      </div>
+      <div class="card-actions">
+        <button class="btn small danger" data-del="${name}">Delete</button>
+      </div>
+    `;
+    const muInput=card.querySelector('.mu-input');
+    muInput.addEventListener('input', ()=>{
+      const v=parseFloat(muInput.value);
+      if(!isNaN(v)){ path[i].dataset.mu = v; const open=engineerOpen; calculateForces(); setEngineerOpen(open); }
+    });
+    card.querySelector('[data-del]').addEventListener('click', ()=> deleteBollardByName(name));
+    cardsWrap.appendChild(card);
+  }
+
+  // Layman summary
+  const noB = (cardsWrap.children.length===0);
+  document.getElementById('math-results').innerHTML =
+    `<div><b>Summary</b></div>${noB?'<span class="muted">No bollards yet.</span>':layLines.join('<br>')}`;
+
+  // Engineer body
+  document.getElementById('engineerBody').textContent = engLines.join('\n');
+
+  // keep engineer panel state
+  setEngineerOpen(engineerOpen);
+}
+
+/* ========= Engineer panel / copy ========= */
+function setEngineerOpen(open){
+  engineerOpen = open;
+  const panel = document.getElementById('engineerPanel');
+  const btn = document.getElementById('btnEngineerToggle');
+  const copyBtn = document.getElementById('btnCopyEngineer');
+
+  if(open){
+    panel.style.maxHeight = panel.scrollHeight + 'px';
+    btn.textContent = 'Hide engineer details';
+    copyBtn.style.display = '';
+  }else{
+    panel.style.maxHeight = '0';
+    btn.textContent = 'Show engineer details';
+    copyBtn.style.display = 'none';
+  }
+}
+function toggleEngineer(){ setEngineerOpen(!engineerOpen); }
+function copyEngineer(){
+  const THRESH = getThreshold();
+  const lines = [];
+  lines.push('Engineer Calculations');
+  lines.push(`Threshold: R ≥ ${THRESH} t triggers red`);
+  lines.push('');
+  lines.push(document.getElementById('engineerBody').textContent || '(none)');
+  navigator.clipboard.writeText(lines.join('\n'));
+}
+
+/* ========= Copy All ========= */
+function copyAll(){
+  const THRESH = getThreshold();
+  const header = document.getElementById('results').innerText.split('\n')[0] || '';
+  const segs = lineLabels.map((lb,i)=>`Segment ${i+1}: ${lb.textContent}`);
+  const cards = Array.from(document.querySelectorAll('#calcCards .card'));
+  const rows = cards.map(card=>{
+    const name = card.querySelector('.card-title').textContent.trim();
+    const angle = card.querySelector('.pill').textContent.replace('θ ','').trim();
+    const mu = card.querySelector('.mu-input').value;
+    const vals = card.querySelectorAll('.card-grid b');
+    return {
+      name, angle, mu,
+      Tin: vals[0].textContent, Tout: vals[1].textContent, R: vals[2].textContent,
+      status: card.querySelector('.rowline b:last-child').textContent
+    };
+  });
+
+  const out = [];
+  out.push('Winch Simulator Summary'); out.push(header); out.push('');
+  out.push('Line tensions:'); segs.forEach(s=>out.push(`- ${s}`)); out.push('');
+  out.push('Bollards:');
+  rows.forEach(r=> out.push(`- ${r.name}: θ=${r.angle}, μ=${r.mu}, Tin=${r.Tin}, Tout=${r.Tout}, R=${r.R} (${r.status})`) );
+  out.push(''); out.push(`Red rule: bollard turns red when R ≥ ${THRESH} t.`);
+  navigator.clipboard.writeText(out.join('\n'));
+}
+
+/* ========= Wire up ========= */
+document.getElementById('btnAddWinch').onclick = addWinch;
+document.getElementById('btnAddBollard').onclick = addBollard;
+document.getElementById('btnAddEnd').onclick   = addEnd;
+document.getElementById('btnClear').onclick    = ()=>{ clearCanvas(); drawLines(); updateAngles(); };
+document.getElementById('btnCalc').onclick     = ()=>{ calculateForces(); };
+document.getElementById('btnCopy').onclick     = copyAll;
+document.getElementById('btnEngineerToggle').onclick = toggleEngineer;
+document.getElementById('btnCopyEngineer').onclick   = copyEngineer;
+document.getElementById('btnLock').onclick = toggleLock;
+document.getElementById('loadThreshold').addEventListener('change', ()=>{ const o=engineerOpen; calculateForces(); setEngineerOpen(o); });
+document.getElementById('precision').addEventListener('change', ()=>{ const o=engineerOpen; calculateForces(); setEngineerOpen(o); });
+
+new ResizeObserver(()=>{ drawLines(); updateAngles(); }).observe(canvas);
+
+/* ========= Boot ========= */
+addWinch(); addBollard(); addEnd();
+drawLines(); updateAngles(); calculateForces();
+</script>
+</body>
+</html>

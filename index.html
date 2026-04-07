@@ -124,94 +124,62 @@
     background: linear-gradient(180deg,#0b161b,#0a1317); border:1px solid rgba(120,240,255,.18);
     border-radius:12px; padding:10px; box-shadow: 0 8px 26px rgba(0,0,0,.22) inset;
   }
-  /* === BUTTON BAR NORMALIZE (drop-in) === */
-
-/* make all buttons same height, tighter padding, centered text */
-.btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-
-  /* size & rhythm */
-  height:38px;                 /* consistent height */
-  min-height:38px;
-  padding:0 12px;              /* tighter, no vertical swell */
-  line-height:1;               /* remove extra text ascent/descent */
-  font-size:14px;
-  font-weight:800;
-  letter-spacing:.02em;
-
-  /* visuals (keep your gradient + border) */
+  /* === BUTTON BAR NORMALIZE === */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 12px;
+  line-height: 1;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: .02em;
   background: linear-gradient(180deg, var(--teal) 0%, var(--teal-2) 100%);
-  color:#04262b;
-  border:1px solid rgba(120,240,255,.35);
-  border-radius:10px;
-  box-shadow: 0 3px 10px rgba(16,181,196,.18);
-  cursor:pointer;
+  color: #04262b;
+  border: 1px solid rgba(120,240,255,.35);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.22);
+  cursor: pointer;
   transition: filter .2s ease, transform .04s ease;
 }
-.btn:hover{ filter:brightness(1.08) }
-.btn:active{ transform:translateY(1px) }
 
-/* secondary + danger keep the same height */
-.btn.secondary{
+.btn.secondary {
   background: linear-gradient(180deg,#15252c,#0f1d23);
   color: var(--text);
 }
-.btn.danger{
+
+.btn.danger {
   background: linear-gradient(180deg,#ff7575,#e13a3a);
-  color:#240808;
+  color: #240808;
 }
 
-/* small buttons (e.g., Delete) */
-.btn.small{
-  height:32px;
-  min-height:32px;
-  padding:0 10px;
-  font-size:13px;
+.btn.small {
+  height: 32px;
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 13px;
 }
 
-/* === BUTTON ROW LAYOUT === */
-/* use a responsive grid so buttons align perfectly and never collide */
-/* Force spacing between buttons */
-/* FORCE button container to behave as grid with spacing */
-/* --- BUTTON ROW LAYOUT: crisp, consistent --- */
+/* --- BUTTON ROW LAYOUT --- */
 .sidebar .row,
-.math .row{
+.math .row {
   display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important; /* always 2 columns */
-  gap: 12px !important;               /* breathing room between buttons */
-  margin: 10px 0 !important;          /* vertical spacing between rows */
-  padding: 0 !important;
-  align-items: stretch !important;     /* equal height cells */
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin: 10px 0 !important;
 }
 
-/* Any row with a single button = span full width */
 .sidebar .row > .btn:only-child,
-.math  .row > .btn:only-child{
-  grid-column: 1 / -1 !important;     /* take both columns */
+.math .row > .btn:only-child {
+  grid-column: 1 / -1 !important;
 }
-
-/* Buttons fill their cell and respect the gap */
-.sidebar .row .btn,
-.math  .row .btn{
-  width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* Normalize button sizing so there’s no “swollen” look */
-.btn{
-  display:inline-flex; align-items:center; justify-content:center; gap:8px;
-  height: 38px; min-height:38px; padding: 0 12px;
-  line-height: 1; font-size:14px; font-weight:800; letter-spacing:.02em;
-  box-shadow: 0 2px 8px rgba(0,0,0,.22);
-}
-.btn.small{ height:32px; min-height:32px; padding:0 10px; font-size:13px; }
 
 /* Mobile: stack buttons in a single column */
-@media (max-width: 520px){
-  .sidebar .row, .math .row{
+@media (max-width: 600px) {
+  .sidebar .row, .math .row {
     grid-template-columns: 1fr !important;
   }
 }

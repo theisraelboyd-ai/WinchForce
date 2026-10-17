@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Deck Line Force Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#09100f;
+  --surface:#0d1a18;
+  --surface2:#111f1d;
+  --border:rgba(0,220,180,.13);
+  --border-bright:rgba(0,220,180,.32);
+  --teal:#00dcb4;
+  --teal-dim:#00a888;
+  --amber:#ffb830;
+  --red:#ff4545;
+  --green:#1fdc7a;
+  --text:#d9ede8;
+  --muted:#7da099;
+  --chalk:#d5ebe2;
+  --board:#071a12;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+html,body{height:100%;overflow:hidden}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Barlow',sans-serif;
+  font-size:14px;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  height:100dvh;
+}
+
+/* ── HEADER ── */
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 16px;
+  background:linear-gradient(90deg,#061210,#0a1a17);
+  border-bottom:1px solid var(--border-bright);
+  flex-shrink:0;
+  gap:12px;
+}
+.logo{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;
+  font-size:clamp(15px,3vw,20px);
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--teal);
+  white-space:nowrap;
+}
+.logo span{color:var(--muted);font-weight:400}
+.mode-badge{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;
+  font-size:13px;
+  letter-spacing:.07em;
+  padding:5px 12px;
+  border-radius:4px;
+  border:1px solid;
+  cursor:pointer;
+  transition:all .15s;
+  white-space:nowrap;
+}
+.mode-badge.forward{background:rgba(0,220,180,.12);border-color:var(--teal);color:var(--teal)}
+.mode-badge.reverse{background:rgba(255,184,48,.12);border-color:var(--amber);color:var(--amber)}
+.mode-badge:hover{filter:brightness(1.2)}
+
+/* ── MAIN LAYOUT ── */
+.main{
+  flex:1;
+  display:flex;
+  min-height:0;
+  overflow:hidden;
+}
+
+/* ── CANVAS ── */
+#canvas{
+  flex:1;
+  position:relative;
+  overflow:hidden;
+  background:
+    linear-gradient(rgba(0,220,180,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,220,180,.04) 1px,transparent 1px),
+    radial-gradient(ellipse at 30% 20%,#0d2420 0%,var(--bg) 60%);
+  background-size:28px 28px, 28px 28px, 100% 100%;
+  touch-action:none;
+  user-select:none;
+  cursor:crosshair;
+}
+#canvas.locked{cursor:default}
+
+/* Nodes */
+.node{
+  position:absolute;
+  width:36px;height:36px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:13px;letter-spacing:.06em;
+  border-radius:6px;
+  touch-action:none;
+  user-select:none;
+  cursor:grab;
+  transition:box-shadow .1s;
+  z-index:10;
+}
+.node:active{cursor:grabbing;z-index:20}
+.locked .node{cursor:not-allowed}
+
+.node-winch{
+  background:linear-gradient(160deg,#0e2d28,#071a16);
+  border:2px solid var(--teal);
+  color:var(--teal);
+  box-shadow:0 0 10px rgba(0,220,180,.3),inset 0 1px 0 rgba(0,220,180,.15);
+}
+.node-end{
+  background:linear-gradient(160deg,#1a1a0a,#0d0d07);
+  border:2px solid var(--amber);
+  color:var(--amber);
+  box-shadow:0 0 10px rgba(255,184,48,.3),inset 0 1px 0 rgba(255,184,48,.15);
+}
+.node-bollard{
+  border-radius:50%;
+  background:linear-gradient(160deg,#1a2e2a,#0f1f1c);
+  border:2px solid var(--border-bright);
+  color:var(--text);
+  box-shadow:0 0 8px rgba(0,0,0,.5);
+}
+.node-bollard.ok{
+  background:linear-gradient(160deg,#0c2e1a,#071a0f);
+  border-color:var(--green);
+  color:var(--green);
+  box-shadow:0 0 12px rgba(31,220,122,.35);
+}
+.node-bollard.hi{
+  background:linear-gradient(160deg,#2e0c0c,#1a0707);
+  border-color:var(--red);
+  color:#fff;
+  box-shadow:0 0 14px rgba(255,69,69,.45);
+  animation:pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 14px rgba(255,69,69,.45)}
+  50%{box-shadow:0 0 22px rgba(255,69,69,.75)}
+}
+
+/* SVG overlay */
+#svg-overlay{
+  position:absolute;inset:0;
+  pointer-events:none;
+  overflow:visible;
+}
+
+/* ── RIGHT PANEL ── */
+.panel{
+  width:300px;
+  flex-shrink:0;
+  background:var(--surface);
+  border-left:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  transition:width .25s ease;
+  position:relative;
+}
+.panel.collapsed{ width:44px; }
+.panel.collapsed .panel-tabs,
+.panel.collapsed .tab-body{ display:none; }
+
+/* Always-visible collapse bar — sits at top, never hidden */
+.panel-bar{
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  height:40px;
+  padding:0 6px;
+  border-bottom:1px solid var(--border);
+  gap:4px;
+  background:var(--surface);
+  z-index:10;
+}
+.panel-bar-toggle{
+  width:32px; height:32px;
+  display:flex; align-items:center; justify-content:center;
+  background:none; border:1px solid var(--border-bright);
+  border-radius:6px; cursor:pointer; color:var(--muted);
+  font-size:15px; flex-shrink:0;
+  transition:color .15s, border-color .15s;
+}
+.panel-bar-toggle:hover{ color:var(--teal); border-color:var(--teal); }
+body[data-mode="reverse"] .panel-bar-toggle:hover{ color:var(--amber); border-color:var(--amber); }
+.panel:not(.collapsed) .panel-bar-toggle{ content:'‹' }
+
+/* Quick-add buttons in the bar — shown when collapsed, hidden when expanded */
+.panel-bar-quick{
+  display:none;
+  align-items:center;
+  gap:4px;
+  flex:1;
+}
+.panel.collapsed .panel-bar-quick{ display:flex; }
+.qbtn{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800; font-size:12px; letter-spacing:.05em;
+  padding:5px 7px; border-radius:5px; border:1px solid;
+  cursor:pointer; flex:1; text-align:center;
+  transition:all .12s;
+}
+.qbtn-b{ background:rgba(255,255,255,.04); border-color:var(--border-bright); color:var(--text); }
+.qbtn-b:hover{ background:rgba(255,255,255,.1); }
+.qbtn-e{ background:rgba(255,184,48,.1); border-color:rgba(255,184,48,.35); color:var(--amber); }
+.qbtn-e:hover{ background:rgba(255,184,48,.2); }
+.qbtn-w{ background:rgba(0,220,180,.1); border-color:rgba(0,220,180,.35); color:var(--teal); }
+.qbtn-w:hover{ background:rgba(0,220,180,.2); }
+
+/* Panel bar label (shown when expanded) */
+.panel-bar-label{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:11px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--muted);
+  flex:1; text-align:right; padding-right:2px;
+  white-space:nowrap;
+}
+.panel.collapsed .panel-bar-label{ display:none; }
+
+@media(max-width:700px){
+  .main{flex-direction:column; height:100%}
+  #canvas{flex:none;height:52vh;min-height:240px;transition:height .25s ease}
+  #canvas.panel-hidden{height:calc(100dvh - 52px - 40px)}
+  .panel{
+    width:100%; min-width:unset;
+    border-left:none; border-top:1px solid var(--border-bright);
+    flex:1; min-height:0;
+    display:flex; flex-direction:column;
+    transition:none;
+    overflow:hidden;
+  }
+  .panel.collapsed{
+    flex:none;
+    width:100%;
+    min-width:100%;
+  }
+  .panel-bar{
+    width:100%;
+    flex-direction:row;
+    border-top:none;
+    border-bottom:1px solid var(--border);
+    /* on mobile: toggle on right, quick buttons fill left */
+    justify-content:space-between;
+  }
+  /* On mobile expanded: label left, toggle right */
+  .panel:not(.collapsed) .panel-bar-label{
+    text-align:left;
+    padding-left:4px;
+    flex:1;
+  }
+  .panel:not(.collapsed) .panel-bar-toggle{
+    order:2;
+  }
+  /* On mobile collapsed: quick buttons left, toggle right */
+  .panel.collapsed .panel-bar-quick{
+    order:1;
+    flex:1;
+  }
+  .panel.collapsed .panel-bar-toggle{
+    order:2;
+  }
+  .panel.collapsed .panel-tabs,
+  .panel.collapsed .tab-body{ display:none; }
+  .panel:not(.collapsed) .tab-body.active{
+    flex:1;
+    overflow-y:auto;
+    max-height:none;
+    padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.panel-tabs{
+  display:flex;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.tab{
+  flex:1;
+  padding:10px 6px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;
+  font-size:12px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+  background:none;
+  border:none;
+  cursor:pointer;
+  transition:all .15s;
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal);background:rgba(0,220,180,.04)}
+
+.tab-body{display:none;flex:1;overflow-y:auto;padding:12px;flex-direction:column;gap:10px}
+.tab-body.active{display:flex}
+
+/* scrollbar */
+.tab-body::-webkit-scrollbar{width:4px}
+.tab-body::-webkit-scrollbar-track{background:transparent}
+.tab-body::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:2px}
+
+/* ── CONTROLS ── */
+.section-label{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);
+  padding:4px 0 2px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:2px;
+}
+.field{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0}
+.field label{color:var(--muted);font-size:13px}
+.field input[type="number"]{
+  background:#0a1714;
+  border:1px solid var(--border-bright);
+  color:var(--text);
+  font-family:'Share Tech Mono',monospace;
+  font-size:13px;
+  border-radius:5px;
+  padding:5px 8px;
+  width:100px;
+  text-align:right;
+  transition:border-color .15s;
+}
+.field input[type="number"]:focus{outline:none;border-color:var(--teal)}
+
+.btn-group{display:flex;gap:6px;flex-wrap:wrap}
+.btn{
+  flex:1;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;
+  font-size:13px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  padding:8px 10px;
+  border-radius:5px;
+  border:1px solid;
+  cursor:pointer;
+  transition:all .12s;
+  white-space:nowrap;
+}
+.btn-primary{background:rgba(0,220,180,.12);border-color:var(--teal);color:var(--teal)}
+.btn-primary:hover{background:rgba(0,220,180,.22);box-shadow:0 0 12px rgba(0,220,180,.2)}
+.btn-secondary{background:rgba(255,255,255,.04);border-color:var(--border-bright);color:var(--text)}
+.btn-secondary:hover{background:rgba(255,255,255,.08)}
+.btn-danger{background:rgba(255,69,69,.1);border-color:rgba(255,69,69,.4);color:var(--red)}
+.btn-danger:hover{background:rgba(255,69,69,.18)}
+.btn-amber{background:rgba(255,184,48,.1);border-color:rgba(255,184,48,.35);color:var(--amber)}
+.btn-amber:hover{background:rgba(255,184,48,.18)}
+.btn:active{transform:translateY(1px)}
+
+/* result badge */
+.result-strip{
+  background:linear-gradient(90deg,#071a12,#0a1d17);
+  border:1px solid var(--border-bright);
+  border-radius:6px;
+  padding:8px 10px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:12px;
+  color:var(--teal);
+  line-height:1.6;
+}
+.result-strip .label{color:var(--muted)}
+
+/* ── CALC CARDS ── */
+.bollard-card{
+  background:linear-gradient(160deg,#0c1e1a,#091613);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px;
+}
+.bollard-card.ok{border-color:rgba(31,220,122,.3)}
+.bollard-card.hi{border-color:rgba(255,69,69,.4)}
+
+.card-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:15px;letter-spacing:.06em;
+  color:var(--text);margin-bottom:6px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.status-pill{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:11px;letter-spacing:.06em;
+  padding:2px 8px;border-radius:999px;
+}
+.pill-ok{background:rgba(31,220,122,.15);color:var(--green);border:1px solid rgba(31,220,122,.3)}
+.pill-hi{background:rgba(255,69,69,.15);color:var(--red);border:1px solid rgba(255,69,69,.3)}
+
+.card-rows{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:6px}
+.card-row{
+  background:rgba(0,0,0,.25);
+  border-radius:4px;padding:5px 7px;
+  display:flex;flex-direction:column;gap:1px;
+}
+.cr-label{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.cr-val{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text)}
+.cr-val.hi{color:var(--red)}
+.cr-val.ok{color:var(--green)}
+
+.mu-row{display:flex;align-items:center;gap:8px;margin-top:2px}
+.mu-row label{color:var(--muted);font-size:12px;white-space:nowrap}
+.mu-row input{
+  flex:1;
+  background:#0a1714;
+  border:1px solid var(--border-bright);
+  color:var(--text);
+  font-family:'Share Tech Mono',monospace;
+  font-size:12px;
+  border-radius:4px;
+  padding:4px 6px;
+}
+.mu-row input:focus{outline:none;border-color:var(--teal)}
+
+/* ── ENGINEER PANEL ── */
+.eng-box{
+  background:var(--board);
+  border:1px solid rgba(31,220,122,.12);
+  border-radius:8px;
+  padding:12px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:11.5px;
+  color:#a8d4be;
+  white-space:pre-wrap;
+  line-height:1.7;
+  flex:1;
+  overflow-y:auto;
+  min-height:80px;
+}
+.eng-box::-webkit-scrollbar{width:3px}
+.eng-box::-webkit-scrollbar-thumb{background:rgba(31,220,122,.2)}
+
+/* ── CANVAS LABELS ── */
+.seg-label{
+  position:absolute;
+  font-family:'Share Tech Mono',monospace;
+  font-size:11px;
+  background:rgba(9,16,15,.88);
+  border:1px solid var(--border-bright);
+  color:var(--teal);
+  padding:2px 7px;
+  border-radius:999px;
+  pointer-events:none;
+  transform:translate(-50%,-50%);
+  white-space:nowrap;
+  backdrop-filter:blur(3px);
+  z-index:5;
+}
+
+.empty-hint{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  pointer-events:none;
+  opacity:.45;
+}
+.empty-hint .big{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:18px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);
+}
+.empty-hint .small{font-size:12px;color:var(--muted)}
+
+/* summary prose */
+.prose{
+  background:linear-gradient(160deg,#091611,#071310);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:10px;
+  font-size:13px;
+  line-height:1.6;
+  color:var(--text);
+}
+.prose b{color:var(--teal)}
+.prose .warn{color:var(--red)}
+
+/* angle arc label on canvas */
+.ang-label{
+  position:absolute;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:11px;
+  background:rgba(0,0,0,.7);
+  color:rgba(0,220,180,.7);
+  border:1px solid rgba(0,220,180,.2);
+  padding:1px 5px;
+  border-radius:4px;
+  pointer-events:none;
+  transform:translate(-50%,-50%);
+  z-index:5;
+}
+/* ── INPUT FIELDS ── */
+.field{display:flex;align-items:center;gap:8px;padding:5px 0}
+.field label{color:var(--muted);font-size:13px;flex:1;line-height:1.3}
+.field input[type="number"]{
+  background:#0b1a17;
+  border:1px solid rgba(255,255,255,.12);
+  color:var(--text);
+  font-family:'Share Tech Mono',monospace;
+  font-size:16px;
+  border-radius:6px;
+  padding:9px 11px;
+  width:88px;
+  text-align:right;
+  transition:border-color .15s, background .15s;
+  -moz-appearance:textfield;
+}
+.field input[type="number"]::-webkit-inner-spin-button,
+.field input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none}
+.field input[type="number"]:focus{
+  outline:none;
+  border-color:var(--teal);
+  background:#0f2420;
+  color:var(--teal);
+}
+body[data-mode="reverse"] .field input[type="number"]:focus{
+  border-color:var(--amber);
+  background:#1f1608;
+  color:var(--amber);
+}
+/* OK button - hidden until field focused */
+.field-ok{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:13px;letter-spacing:.04em;
+  padding:9px 12px;border-radius:6px;
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.06);
+  color:var(--muted);
+  cursor:pointer;
+  display:none;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.field.editing .field-ok{display:block;border-color:var(--teal);background:rgba(0,220,180,.12);color:var(--teal)}
+body[data-mode="reverse"] .field.editing .field-ok{border-color:var(--amber);background:rgba(255,184,48,.12);color:var(--amber)}
+
+/* ── AMBER MODE (reverse) ── */
+body[data-mode="reverse"] .tab.active{color:var(--amber);border-bottom-color:var(--amber);background:rgba(255,184,48,.04)}
+body[data-mode="reverse"] .seg-label{color:var(--amber);border-color:rgba(255,184,48,.35);background:rgba(9,10,5,.88)}
+body[data-mode="reverse"] .result-strip{color:var(--amber);border-color:rgba(255,184,48,.35)}
+body[data-mode="reverse"] .node-winch{border-color:var(--amber);color:var(--amber);box-shadow:0 0 10px rgba(255,184,48,.3),inset 0 1px 0 rgba(255,184,48,.15)}
+body[data-mode="reverse"] .ang-label{color:rgba(255,184,48,.7);border-color:rgba(255,184,48,.2)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Deck Line<span> // </span>Force Sim</div>
+  <button class="mode-badge forward" id="modeBtn">▶ Winch → Load</button>
+</div>
+
+<div class="main">
+  <div id="canvas">
+    <svg id="svg-overlay" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="empty-hint" id="emptyHint">
+      <div class="big">Add nodes to begin</div>
+      <div class="small">Winch → Bollards → End</div>
+    </div>
+  </div>
+
+  <div class="panel" id="sidePanel">
+    <!-- Always-visible bar: toggle + quick-add buttons when collapsed -->
+    <div class="panel-bar">
+      <button class="panel-bar-toggle" id="panelToggle" title="Expand/collapse panel">‹</button>
+      <div class="panel-bar-quick">
+        <button class="qbtn qbtn-w" id="qbtnWinch">W</button>
+        <button class="qbtn qbtn-b" id="qbtnBollard">B</button>
+        <button class="qbtn qbtn-e" id="qbtnEnd">E</button>
+      </div>
+      <span class="panel-bar-label">Controls</span>
+    </div>
+    <div class="panel-tabs">
+      <button class="tab active" data-tab="setup">Setup</button>
+      <button class="tab" data-tab="calc">Results</button>
+      <button class="tab" data-tab="eng">Engineer</button>
+    </div>
+
+    <!-- SETUP TAB -->
+    <div class="tab-body active" id="tab-setup">
+      <div class="section-label">Forces</div>
+      <div class="field">
+        <label>Winch Force (t)</label>
+        <input type="number" id="winchForce" value="10" step="0.5" min="0" inputmode="decimal">
+        <button class="field-ok" id="okWinch" tabindex="-1">OK ↵</button>
+      </div>
+      <div class="field">
+        <label>End Load (t)</label>
+        <input type="number" id="endLoad" value="0" step="0.5" min="0" inputmode="decimal">
+        <button class="field-ok" id="okEnd" tabindex="-1">OK ↵</button>
+      </div>
+      <div class="field">
+        <label>Red threshold (t)</label>
+        <input type="number" id="threshold" value="20" step="0.5" min="0" inputmode="decimal">
+        <button class="field-ok" id="okThreshold" tabindex="-1">OK ↵</button>
+      </div>
+      <div class="field">
+        <label>Decimal places</label>
+        <input type="number" id="precision" value="2" min="0" max="6" step="1" inputmode="numeric">
+        <button class="field-ok" id="okPrecision" tabindex="-1">OK ↵</button>
+      </div>
+
+      <div class="section-label">Nodes</div>
+      <div class="btn-group" id="nodeButtonGroup">
+        <button class="btn btn-primary" id="btnWinch">+ Winch</button>
+        <button class="btn btn-secondary" id="btnBollard">+ Bollard</button>
+        <button class="btn btn-amber" id="btnEnd">+ End</button>
+      </div>
+
+      <div class="section-label">Actions</div>
+      <div class="btn-group">
+        <button class="btn btn-primary" id="btnCalc">Calculate</button>
+        <button class="btn btn-secondary" id="btnLock">Lock Nodes</button>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-secondary" id="btnCopy">Copy Report</button>
+        <button class="btn btn-danger" id="btnClear">Clear All</button>
+      </div>
+
+      <div id="resultStrip" style="display:none" class="result-strip"></div>
+
+      <div class="muted" style="font-size:12px;margin-top:4px;line-height:1.6">
+        Bollards glow <span style="color:var(--red)">red</span> when resultant R ≥ threshold.
+        Drag nodes to update. Bollard μ (friction) editable in Results tab.
+      </div>
+    </div>
+
+    <!-- CALC TAB -->
+    <div class="tab-body" id="tab-calc">
+      <div id="calcCards" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div id="prose" class="prose" style="display:none"></div>
+    </div>
+
+    <!-- ENGINEER TAB -->
+    <div class="tab-body" id="tab-eng">
+      <div class="section-label" style="display:flex;justify-content:space-between;align-items:center">
+        Derivations
+        <button class="btn btn-secondary" style="flex:none;padding:3px 8px;font-size:11px" id="btnCopyEng">Copy</button>
+      </div>
+      <div class="eng-box" id="engBox">Run Calculate to see derivations.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══ STATE ═══ */
+let nodes = [];       // {el, type, mu?}  – in path order
+let locked = false;
+let mode = 'forward'; // 'forward' | 'reverse'
+let segLabels = [];
+let angLabels = [];
+
+const canvas  = document.getElementById('canvas');
+const svg     = document.getElementById('svg-overlay');
+const hint    = document.getElementById('emptyHint');
+
+const GRID = 28;
+const MARGIN = 22;
+
+/* ═══ HELPERS ═══ */
+const clamp = (v,lo,hi) => Math.max(lo,Math.min(hi,v));
+const snap  = v => Math.round(v/GRID)*GRID;
+const dp    = () => clamp(parseInt(document.getElementById('precision').value||2),0,6);
+const fmt   = x  => Number(x).toFixed(dp());
+const threshold = () => parseFloat(document.getElementById('threshold').value)||0;
+
+function cx(el){ return (parseFloat(el.style.left)||0) + el.offsetWidth/2; }
+function cy(el){ return (parseFloat(el.style.top) ||0) + el.offsetHeight/2; }
+
+function unitVec(ax,ay,bx,by){
+  const dx=bx-ax, dy=by-ay, m=Math.hypot(dx,dy)||1;
+  return {x:dx/m, y:dy/m};
+}
+function angleBetween(px,py,cx2,cy2,nx,ny){
+  const v1={x:px-cx2,y:py-cy2}, v2={x:nx-cx2,y:ny-cy2};
+  const m1=Math.hypot(v1.x,v1.y)||1, m2=Math.hypot(v2.x,v2.y)||1;
+  const dot=clamp((v1.x*v2.x+v1.y*v2.y)/(m1*m2),-1,1);
+  return Math.acos(dot);
+}
+
+/* ═══ DRAG ═══ */
+function makeDraggable(el){
+  let ox=0,oy=0;
+  el.addEventListener('pointerdown',e=>{
+    if(locked) return;
+    const r=canvas.getBoundingClientRect();
+    ox = e.clientX - r.left - (parseFloat(el.style.left)||0);
+    oy = e.clientY - r.top  - (parseFloat(el.style.top) ||0);
+    el.setPointerCapture(e.pointerId);
+    e.stopPropagation();
+  });
+  el.addEventListener('pointermove',e=>{
+    if(!el.hasPointerCapture(e.pointerId)||locked) return;
+    const r=canvas.getBoundingClientRect();
+    let x=snap(e.clientX-r.left-ox);
+    let y=snap(e.clientY-r.top -oy);
+    const maxX=canvas.clientWidth -el.offsetWidth -MARGIN;
+    const maxY=canvas.clientHeight-el.offsetHeight-MARGIN;
+    el.style.left=clamp(x,MARGIN,maxX)+'px';
+    el.style.top =clamp(y,MARGIN,maxY)+'px';
+    calculate(); // redraws lines + updates tensions live
+  });
+  el.addEventListener('pointerup',e=>{
+    if(!el.hasPointerCapture(e.pointerId)) return;
+    el.releasePointerCapture(e.pointerId);
+    calculate();
+  });
+}
+
+/* ═══ SPAWN ═══ */
+function spawn(type){
+  const el=document.createElement('div');
+  el.className='node node-'+type;
+  el.dataset.type=type;
+  let label='';
+  if(type==='winch') label='W';
+  else if(type==='end') label='E';
+  else {
+    const n=nodes.filter(nd=>nd.type==='bollard').length+1;
+    label='B'+n;
+  }
+  el.textContent=label;
+  if(type==='bollard') el.dataset.mu='0.20';
+
+  // position: stagger along canvas
+  const offset=nodes.length;
+  const cx2=clamp(snap(50+offset*70),MARGIN,canvas.clientWidth-50);
+  const cy2=clamp(snap(type==='bollard'?120:70),MARGIN,canvas.clientHeight-50);
+  el.style.left=cx2+'px';
+  el.style.top =cy2+'px';
+
+  canvas.appendChild(el);
+  makeDraggable(el);
+  nodes.push({el,type,label});
+  hint.style.display='none';
+  calculate(); // single call handles draw + tensions
+  return el;
+}
+
+/* ═══ SVG LINES ═══ */
+function drawLines(){
+  // clear svg lines
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  segLabels.forEach(l=>l.remove()); segLabels=[];
+  if(nodes.length<2) return;
+
+  for(let i=0;i<nodes.length-1;i++){
+    const a=nodes[i].el, b=nodes[i+1].el;
+    const ax=cx(a),ay=cy(a),bx=cx(b),by=cy(b);
+
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',ax); line.setAttribute('y1',ay);
+    line.setAttribute('x2',bx); line.setAttribute('y2',by);
+    line.setAttribute('stroke', mode==='reverse' ? 'rgba(255,184,48,0.55)' : 'rgba(0,220,180,0.55)');
+    line.setAttribute('stroke-width','2');
+    line.setAttribute('stroke-dasharray','6 4');
+    line.classList.add('seg-line');
+    svg.appendChild(line);
+
+    // segment label
+    const lbl=document.createElement('div');
+    lbl.className='seg-label';
+    lbl.textContent='…';
+    lbl.style.left=((ax+bx)/2)+'px';
+    lbl.style.top =((ay+by)/2)+'px';
+    canvas.appendChild(lbl);
+    segLabels.push(lbl);
+  }
+}
+
+/* ═══ ANGLE MARKS ═══ */
+function drawAngles(){
+  angLabels.forEach(l=>l.remove()); angLabels=[];
+  if(nodes.length<3) return;
+
+  for(let i=1;i<nodes.length-1;i++){
+    if(nodes[i].type!=='bollard') continue;
+    const p=nodes[i-1].el, c=nodes[i].el, n=nodes[i+1].el;
+    const px=cx(p),py=cy(p), cx2=cx(c),cy2=cy(c), nx=cx(n),ny=cy(n);
+
+    // draw two short rays on SVG
+    const ray=24;
+    const a1=Math.atan2(py-cy2,px-cx2);
+    const a2=Math.atan2(ny-cy2,nx-cx2);
+
+    const rayCol = mode==='reverse' ? 'rgba(255,184,48,0.3)' : 'rgba(0,220,180,0.3)';
+    [a1,a2].forEach(a=>{
+      const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',cx2); line.setAttribute('y1',cy2);
+      line.setAttribute('x2',cx2+Math.cos(a)*ray); line.setAttribute('y2',cy2+Math.sin(a)*ray);
+      line.setAttribute('stroke', rayCol);
+      line.setAttribute('stroke-width','1');
+      svg.appendChild(line);
+    });
+
+    // angle label at bisector
+    const bisect=Math.atan2(
+      Math.sin(a1)+Math.sin(a2),
+      Math.cos(a1)+Math.cos(a2)
+    );
+    const theta=angleBetween(px,py,cx2,cy2,nx,ny);
+    const deg=(theta*180/Math.PI).toFixed(1);
+
+    const lbl=document.createElement('div');
+    lbl.className='ang-label';
+    lbl.textContent=deg+'°';
+    lbl.style.left=(cx2+Math.cos(bisect)*40)+'px';
+    lbl.style.top =(cy2+Math.sin(bisect)*40)+'px';
+    canvas.appendChild(lbl);
+    angLabels.push(lbl);
+  }
+}
+
+/* ═══ CALCULATE — single entry point for all updates ═══ */
+function calculate(){
+  // Always redraw geometry first so labels exist with correct positions
+  drawLines();
+  drawAngles();
+
+  const path=nodes;
+  if(path.length<2){
+    setResult('','');
+    clearCards();
+    document.getElementById('engBox').textContent='Add nodes and calculate.';
+    return;
+  }
+
+  // collect angles at bollards
+  const angles=path.map((_,i)=>{
+    if(i>0&&i<path.length-1&&path[i].type==='bollard'){
+      const p=path[i-1].el, c=path[i].el, n=path[i+1].el;
+      return angleBetween(cx(p),cy(p), cx(c),cy(c), cx(n),cy(n));
+    }
+    return 0;
+  });
+
+  // tensions per segment
+  let tensions=new Array(path.length-1).fill(0);
+  const THRESH=threshold();
+
+  if(mode==='forward'){
+    let T=parseFloat(document.getElementById('winchForce').value)||0;
+    for(let i=0;i<path.length-1;i++){
+      // friction reduction at bollard i (the node at index i, if bollard, reduces tension from segment i-1 to i)
+      if(i>0 && path[i].type==='bollard'){
+        const μ=parseFloat(path[i].el.dataset.mu)||0;
+        const θ=angles[i];
+        T=T*Math.exp(-μ*θ);
+      }
+      tensions[i]=T;
+    }
+    const residual=tensions[tensions.length-1];
+    setResult('Winch → Load',`End tension ≈ ${fmt(residual)} t`);
+  } else {
+    let T=parseFloat(document.getElementById('endLoad').value)||0;
+    for(let i=path.length-2;i>=0;i--){
+      // friction at bollard i+1 increases tension required upstream
+      if(path[i+1] && path[i+1].type==='bollard'){
+        const μ=parseFloat(path[i+1].el.dataset.mu)||0;
+        const θ=angles[i+1];
+        T=T*Math.exp(μ*θ);
+      }
+      tensions[i]=T;
+    }
+    const required=tensions[0];
+    setResult('Load → Winch',`Required winch ≈ ${fmt(required)} t`);
+  }
+
+  // update segment labels
+  for(let i=0;i<segLabels.length;i++){
+    segLabels[i].textContent=`${fmt(tensions[i]||0)} t`;
+  }
+
+  // bollard results
+  const cardData=[];
+  const engLines=[];
+
+  for(let i=1;i<path.length-1;i++){
+    if(path[i].type!=='bollard') continue;
+    const name=path[i].el.textContent;
+    const θ=angles[i], θdeg=(θ*180/Math.PI).toFixed(1);
+    const μ=parseFloat(path[i].el.dataset.mu)||0;
+    const Tin=tensions[i-1]||0, Tout=tensions[i]||0;
+
+    // resultant force on bollard
+    const p=path[i-1].el, c=path[i].el, n=path[i+1].el;
+    const uIn =unitVec(cx(c),cy(c), cx(p),cy(p));
+    const uOut=unitVec(cx(c),cy(c), cx(n),cy(n));
+    const Rx=Tin*uIn.x + Tout*uOut.x;
+    const Ry=Tin*uIn.y + Tout*uOut.y;
+    const R =Math.hypot(Rx,Ry);
+
+    const isHigh=R>=THRESH;
+    const wasHigh=path[i].el.classList.contains('hi');
+    path[i].el.classList.toggle('hi',isHigh);
+    path[i].el.classList.toggle('ok',!isHigh);
+    if(wasHigh!==isHigh && navigator.vibrate){ try{navigator.vibrate(10)}catch{} }
+
+    cardData.push({name,θdeg,θ,μ,Tin,Tout,R,isHigh,idx:i});
+    engLines.push(
+`${name}  [θ=${θdeg}°  μ=${μ}]
+  Capstan: T_out = T_in · e^(-μθ)
+         = ${fmt(Tin)} · e^(-${μ}×${θ.toFixed(4)})
+         = ${fmt(Tout)} t
+  Resultant: R = √(Tx²+Ty²)
+           = √(${Rx.toFixed(4)}² + ${Ry.toFixed(4)}²)
+           = ${fmt(R)} t  ${isHigh?'⚠ EXCEEDS THRESHOLD':'✓ Below threshold'}
+`);
+  }
+
+  buildCards(cardData, tensions, path);
+  buildProse(cardData, tensions);
+  document.getElementById('engBox').textContent=engLines.length
+    ? engLines.join('\n')
+    : '(No bollards in path)';
+}
+
+/* ═══ CARDS ═══ */
+function buildCards(cardData, tensions, path){
+  const wrap=document.getElementById('calcCards');
+  wrap.innerHTML='';
+
+  if(!cardData.length){
+    wrap.innerHTML='<div class="muted" style="font-size:13px;padding:8px 0">No bollards — add some to see breakdown.</div>';
+    return;
+  }
+
+  cardData.forEach(cd=>{
+    const card=document.createElement('div');
+    card.className='bollard-card '+(cd.isHigh?'hi':'ok');
+    card.innerHTML=`
+      <div class="card-name">
+        ${cd.name}
+        <span class="status-pill ${cd.isHigh?'pill-hi':'pill-ok'}">${cd.isHigh?'⚠ HIGH':'✓ OK'}</span>
+      </div>
+      <div class="card-rows">
+        <div class="card-row">
+          <div class="cr-label">Angle</div>
+          <div class="cr-val">${cd.θdeg}°</div>
+        </div>
+        <div class="card-row">
+          <div class="cr-label">Friction μ</div>
+          <div class="mu-row">
+            <input type="number" class="mu-inp" step="0.01" min="0" max="2" value="${cd.μ}">
+          </div>
+        </div>
+        <div class="card-row">
+          <div class="cr-label">T_in</div>
+          <div class="cr-val">${fmt(cd.Tin)} t</div>
+        </div>
+        <div class="card-row">
+          <div class="cr-label">T_out</div>
+          <div class="cr-val">${fmt(cd.Tout)} t</div>
+        </div>
+        <div class="card-row" style="grid-column:1/-1">
+          <div class="cr-label">Resultant R</div>
+          <div class="cr-val ${cd.isHigh?'hi':'ok'}" style="font-size:16px">${fmt(cd.R)} t</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn btn-danger" style="flex:none;padding:4px 10px;font-size:11px" data-del="${cd.name}">Remove</button>
+      </div>
+    `;
+    // mu live edit
+    const muInp=card.querySelector('.mu-inp');
+    muInp.addEventListener('input',()=>{
+      const v=parseFloat(muInp.value);
+      if(!isNaN(v)){
+        // find node
+        const nd=nodes.find(n=>n.el.textContent===cd.name);
+        if(nd) nd.el.dataset.mu=v;
+        calculate();
+      }
+    });
+    card.querySelector('[data-del]').addEventListener('click',()=>{
+      const idx=nodes.findIndex(n=>n.el.textContent===cd.name && n.type==='bollard');
+      if(idx>-1){ nodes[idx].el.remove(); nodes.splice(idx,1); drawLines(); drawAngles(); calculate(); }
+    });
+    wrap.appendChild(card);
+  });
+}
+
+function buildProse(cardData, tensions){
+  const el=document.getElementById('prose');
+  if(!cardData.length){ el.style.display='none'; return; }
+  el.style.display='block';
+  const lines=cardData.map(cd=>{
+    const verb=cd.isHigh?'<span class="warn">⚠ EXCEEDS</span>':'stays below';
+    return `<b>${cd.name}</b> — Line bends ${cd.θdeg}° with μ=${cd.μ}. Incoming <b>${fmt(cd.Tin)} t</b>, outgoing <b>${fmt(cd.Tout)} t</b>. Bollard load <b>${fmt(cd.R)} t</b> — ${verb} the ${fmt(threshold())} t threshold.`;
+  });
+  el.innerHTML=lines.join('<br><br>');
+}
+
+function clearCards(){
+  document.getElementById('calcCards').innerHTML='';
+  document.getElementById('prose').style.display='none';
+}
+
+/* ═══ RESULT STRIP ═══ */
+function setResult(modeLabel, summary){
+  const el=document.getElementById('resultStrip');
+  if(!modeLabel){ el.style.display='none'; return; }
+  el.style.display='block';
+  el.innerHTML=`<span class="label">Mode: </span>${modeLabel}<br><span class="label">Result: </span>${summary}`;
+}
+
+/* ═══ COPY ═══ */
+function copyReport(){
+  const THRESH=threshold();
+  const lines=['Deck Line Force Simulator — Report',''];
+  lines.push(`Mode: ${mode==='forward'?'Winch → Load':'Load → Winch'}`);
+  lines.push(`Threshold: ${THRESH} t`);
+  lines.push('');
+  lines.push('Segments:');
+  segLabels.forEach((l,i)=>lines.push(`  Seg ${i+1}: ${l.textContent}`));
+  lines.push('');
+  lines.push('Bollards:');
+  document.querySelectorAll('.bollard-card').forEach(card=>{
+    const name=card.querySelector('.card-name').childNodes[0].textContent.trim();
+    const vals=card.querySelectorAll('.cr-val');
+    lines.push(`  ${name}: angle=${vals[0].textContent}, Tin=${vals[1]?.textContent}, Tout=${vals[2]?.textContent}, R=${vals[3]?.textContent}`);
+  });
+  lines.push('');
+  lines.push(document.getElementById('engBox').textContent);
+  navigator.clipboard.writeText(lines.join('\n')).catch(()=>{});
+}
+
+/* ═══ MODE THEME + BUTTON ORDER ═══ */
+function applyModeTheme(){
+  const root=document.documentElement;
+  if(mode==='reverse'){
+    root.style.setProperty('--mode-accent','var(--amber)');
+    root.style.setProperty('--mode-accent-rgb','255,184,48');
+    document.body.setAttribute('data-mode','reverse');
+  } else {
+    root.style.setProperty('--mode-accent','var(--teal)');
+    root.style.setProperty('--mode-accent-rgb','0,220,180');
+    document.body.removeAttribute('data-mode');
+  }
+}
+
+function updateNodeButtonOrder(){
+  const grp=document.getElementById('nodeButtonGroup');
+  if(!grp) return;
+  grp.innerHTML='';
+  if(mode==='forward'){
+    grp.innerHTML=`
+      <button class="btn btn-primary" id="btnWinch">+ Winch</button>
+      <button class="btn btn-secondary" id="btnBollard">+ Bollard</button>
+      <button class="btn btn-amber" id="btnEnd">+ End</button>`;
+  } else {
+    grp.innerHTML=`
+      <button class="btn btn-amber" id="btnEnd">+ End / Load</button>
+      <button class="btn btn-secondary" id="btnBollard">+ Bollard</button>
+      <button class="btn btn-primary" id="btnWinch">+ Winch</button>`;
+  }
+  rewireNodeButtons();
+}
+
+function rewireNodeButtons(){
+  const bw=document.getElementById('btnWinch');
+  const be=document.getElementById('btnEnd');
+  const bb=document.getElementById('btnBollard');
+  if(bw) bw.onclick=()=>{ if(nodes.some(n=>n.type==='winch')) return; spawn('winch'); };
+  if(be) be.onclick=()=>{ if(nodes.some(n=>n.type==='end'))   return; spawn('end');   };
+  if(bb) bb.onclick=()=>spawn('bollard');
+}
+
+/* ═══ WIRE UP ═══ */
+rewireNodeButtons();
+document.getElementById('btnCalc').onclick=()=>calculate();
+document.getElementById('btnClear').onclick=()=>{
+  nodes.forEach(n=>n.el.remove());
+  segLabels.forEach(l=>l.remove());
+  angLabels.forEach(l=>l.remove());
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  nodes=[]; segLabels=[]; angLabels=[];
+  hint.style.display='flex';
+  clearCards();
+  setResult('','');
+  document.getElementById('engBox').textContent='Run Calculate to see derivations.';
+};
+document.getElementById('btnLock').onclick=()=>{
+  locked=!locked;
+  canvas.classList.toggle('locked',locked);
+  document.getElementById('btnLock').textContent=locked?'Unlock Nodes':'Lock Nodes';
+  document.getElementById('btnLock').className='btn '+(locked?'btn-amber':'btn-secondary');
+};
+document.getElementById('btnCopy').onclick=copyReport;
+document.getElementById('btnCopyEng').onclick=()=>{
+  navigator.clipboard.writeText(document.getElementById('engBox').textContent).catch(()=>{});
+};
+document.getElementById('modeBtn').onclick=()=>{
+  if(mode==='forward'){
+    // seed End Load from last segment's tension value on canvas
+    const lastSeg=segLabels[segLabels.length-1];
+    if(lastSeg){
+      const val=parseFloat(lastSeg.textContent);
+      if(!isNaN(val) && val>0){
+        document.getElementById('endLoad').value=val.toFixed(dp());
+      }
+    }
+  } else {
+    // seed Winch Force from first segment's tension
+    const firstSeg=segLabels[0];
+    if(firstSeg){
+      const val=parseFloat(firstSeg.textContent);
+      if(!isNaN(val) && val>0){
+        document.getElementById('winchForce').value=val.toFixed(dp());
+      }
+    }
+  }
+  mode=mode==='forward'?'reverse':'forward';
+  const btn=document.getElementById('modeBtn');
+  btn.textContent=mode==='forward'?'▶ Winch → Load':'◀ Load → Winch';
+  btn.className='mode-badge '+(mode==='forward'?'forward':'reverse');
+  applyModeTheme();
+  updateNodeButtonOrder();
+  calculate();
+};
+
+// tabs
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-body').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-'+tab.dataset.tab).classList.add('active');
+  };
+});
+
+// Field wire-up: OK button appears only while field is actively focused
+const forceFields=[
+  {inp:'winchForce', ok:'okWinch'},
+  {inp:'endLoad',    ok:'okEnd'},
+  {inp:'threshold',  ok:'okThreshold'},
+  {inp:'precision',  ok:'okPrecision'},
+];
+forceFields.forEach(({inp,ok})=>{
+  const input=document.getElementById(inp);
+  const okBtn=document.getElementById(ok);
+  const field=input.closest('.field');
+
+  input.addEventListener('focus',()=>{
+    field.classList.add('editing');
+    input.select();
+  });
+  input.addEventListener('blur',()=>{
+    // Small delay so OK button click registers before blur hides it
+    setTimeout(()=>field.classList.remove('editing'), 200);
+  });
+  input.addEventListener('input', calculate);
+  input.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ e.preventDefault(); input.blur(); calculate(); }
+  });
+  if(okBtn){
+    okBtn.addEventListener('click',()=>{ input.blur(); calculate(); });
+  }
+});
+
+
+// Panel collapse toggle
+const sidePanel = document.getElementById('sidePanel');
+const panelToggleBtn = document.getElementById('panelToggle');
+
+function setPanelCollapsed(collapsed){
+  sidePanel.classList.toggle('collapsed', collapsed);
+  // mobile: give canvas the extra height
+  document.getElementById('canvas').classList.toggle('panel-hidden', collapsed);
+  panelToggleBtn.textContent = collapsed ? '›' : '‹';
+  setTimeout(calculate, 260);
+}
+
+panelToggleBtn.addEventListener('click',()=>{
+  setPanelCollapsed(!sidePanel.classList.contains('collapsed'));
+});
+
+// Quick-add buttons in collapsed bar — same logic as main buttons
+document.getElementById('qbtnWinch').addEventListener('click',()=>{
+  if(nodes.some(n=>n.type==='winch')) return; spawn('winch');
+});
+document.getElementById('qbtnBollard').addEventListener('click',()=>spawn('bollard'));
+document.getElementById('qbtnEnd').addEventListener('click',()=>{
+  if(nodes.some(n=>n.type==='end')) return; spawn('end');
+});
+
+new ResizeObserver(()=>calculate()).observe(canvas);
+
+/* ═══ BOOT ═══ */
+requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  spawn('winch');
+  spawn('bollard');
+  spawn('end');
+  const w=canvas.clientWidth, h=canvas.clientHeight;
+  nodes[0].el.style.left=snap(w*0.1) +'px'; nodes[0].el.style.top=snap(h*0.45)+'px';
+  nodes[1].el.style.left=snap(w*0.5) +'px'; nodes[1].el.style.top=snap(h*0.28)+'px';
+  nodes[2].el.style.left=snap(w*0.85)+'px'; nodes[2].el.style.top=snap(h*0.45)+'px';
+  calculate();
+})));
+</script>
+</body>
+</html>

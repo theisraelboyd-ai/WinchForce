@@ -65,8 +65,36 @@ svg.i{width:22px;height:22px;flex:none}
 /* answer chip (top) */
 .hud{position:absolute;left:10px;right:78px;top:10px;display:flex;align-items:flex-start;gap:8px;z-index:6;pointer-events:none}
 .hud>*{pointer-events:auto}
-.ans{display:none;align-items:center;gap:10px;padding:9px 14px 9px 12px;border-radius:18px;background:var(--glass);border:1.5px solid var(--line2);box-shadow:0 6px 20px rgba(0,0,0,.28);backdrop-filter:blur(8px);cursor:pointer;max-width:calc(100% - 52px)}
-.ans.show{display:inline-flex;animation:pop .35s cubic-bezier(.2,1.4,.4,1)}
+.ans{display:none;flex-direction:column;gap:6px;padding:8px;border-radius:18px;width:100%;max-width:520px;cursor:default;background:var(--glass);border:1.5px solid var(--line2);box-shadow:0 6px 20px rgba(0,0,0,.28);backdrop-filter:blur(8px)}
+.ans.show{display:flex;animation:up .25s ease}
+.tiles{display:flex;gap:6px}
+.tile{flex:1;min-width:0;position:relative;display:flex;flex-direction:column;padding:6px 10px 6px;border-radius:12px;background:var(--well);border:1.5px solid var(--line2)}
+.tile .tl{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--ink2);white-space:nowrap;overflow:hidden}
+.tile .tl svg{width:16px;height:16px;color:var(--known)}
+.tile .tl .pen{width:13px;height:13px;color:var(--ink3);margin-left:auto}
+.tile input,.tile b{width:100%;height:38px;border:0;border-bottom:2px dashed var(--line2);background:transparent;font-size:24px;font-weight:750;color:var(--ink);padding:0 30px 0 0;-moz-appearance:textfield;line-height:38px}
+.tile input::-webkit-inner-spin-button,.tile input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.tile b{border-bottom-color:transparent}
+.tile input:focus{outline:none;border-bottom-color:var(--cursor)}
+.tile .tu{position:absolute;right:10px;top:30px;font-size:13px;font-weight:650;color:var(--ink3)}
+.tile .tag{font-size:11px;font-weight:650;color:var(--ink3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile.ed{cursor:text}
+.tiles:has(.tile:nth-child(3)) .tile{padding:6px 7px}
+.tiles:has(.tile:nth-child(3)) .tile input,.tiles:has(.tile:nth-child(3)) .tile b{font-size:19px;padding-right:14px}
+.tiles:has(.tile:nth-child(3)) .tile .tu{right:7px}
+.tiles:has(.tile:nth-child(3)) .tile .tl .pen,.tiles:has(.tile:nth-child(3)) .tile .tl .lt{display:none}
+.tile .tl span{overflow:hidden;text-overflow:ellipsis}
+@media (max-height:480px){.tile .tag{display:none}.tile input,.tile b{height:30px;line-height:30px;font-size:20px}.tile .tu{top:26px}.ans{max-width:400px;gap:4px;padding:6px}.chipb{height:28px}}
+.tile.set{border-color:var(--known)} .tile.set input{color:var(--known)} .tile.set .tag{color:var(--known)}
+.tile.want{border-color:var(--cursor);animation:glowa 1.5s ease-in-out infinite}
+.tile.ro{background:none;border-style:dashed}
+.vfoot{display:flex;align-items:center;gap:6px;padding:0 2px}
+.vfoot .fill{flex:1;min-width:0;font-size:12.5px;font-weight:650;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vfoot .pcs{font-size:13px;font-weight:800}
+.chipb{height:32px;display:inline-flex;align-items:center;gap:5px;padding:0 10px;border-radius:999px;border:1px solid var(--line2);background:var(--panel2);font-size:12.5px;font-weight:700;color:var(--ink);white-space:nowrap}
+.chipb svg{width:16px;height:16px}
+.chipb.on{border-color:var(--known);color:var(--known);background:var(--known-soft)}
+.chipb.done{background:var(--cursor);border-color:var(--cursor);color:#1b1205}
 .ans .al{font-size:15px;line-height:1.3;font-weight:600}
 .ans .al b{font-weight:800;white-space:nowrap}.ans .al .kw{color:var(--known)}.ans .al .ke{color:var(--cursor)}
 .ans .al small{display:block;font-size:12.5px;color:var(--ink2);font-weight:600;margin-top:2px}
@@ -77,7 +105,7 @@ svg.i{width:22px;height:22px;flex:none}
 .ans .pc{font-size:13px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
 .ans.ok{border-color:var(--ok)} .ans.ok .pc{background:var(--ok-soft);color:var(--ok)}
 .ans.warn{border-color:var(--warn)} .ans.warn .pc{background:var(--warn-soft);color:var(--warn)}
-.ans.bad{border-color:var(--bad);animation:pop .35s cubic-bezier(.2,1.4,.4,1),badglow 1.6s ease-in-out infinite} .ans.bad .pc{background:var(--bad-soft);color:var(--bad)}
+.ans.bad{border-color:var(--bad)} .ans.bad .pc{background:var(--bad-soft);color:var(--bad)}
 .code{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:22px;padding:0 5px;border-radius:6px;font-weight:750;font-size:12px;border:1.5px solid var(--line2);background:var(--well)}
 .code.winch{border-color:var(--known);color:var(--known)}.code.end{border-color:var(--cursor);color:var(--cursor)}
 
@@ -582,7 +610,7 @@ const coarse = () => matchMedia('(pointer:coarse)').matches;
 function phase(){
   if(S.points.length<2) return 'place';
   if(!S.laidOut || override==='lay') return 'lay';
-  if(RES.pending || RES.err || override==='know') return 'know';
+  if(RES.pending || RES.err) return 'know';
   return 'check';
 }
 const pickMode = () => phase()==='know' && (S.known.kind==='point'||S.known.kind==='leg');
@@ -606,50 +634,110 @@ function stepPop(){ if(wasPending && !RES.pending && !RES.err) popT=performance.
 function render(){
   RES=solve(); stepPop();
   const ph=phase();
-  if(ph==='know' && (!sheet || sheet==='point' && !S.sel)) sheet='known';
-  if(ph!=='know' && sheet==='known') sheet=null;
+  if(sheet==='known') sheet=null;
   renderAns(); renderRail(); renderSheet(); renderHint(); enterKeys(); draw(); keepClear(); kick(); save();
 }
-function soft(){ RES=solve(); stepPop(); renderAns(); liveRail(); liveSheet(); draw(); kick(); save(); }
+function soft(){ RES=solve(); stepPop(); if(barFocused()) liveAns(); else renderAns(); liveRail(); liveSheet(); draw(); kick(); save(); }
 const C = () => RES.codes||codes();
 
 /* ---------------------------------------------------------------- answer chip + hint */
+/* ---------------------------------------------------------------- the value bar (top): every number you set is edited here */
+const barFocused = () => $('ans').contains(document.activeElement) && document.activeElement.tagName==='INPUT';
+const vfmt = t => t==null||!Number.isFinite(t) ? '' : +UNITS[S.unit].to(t).toFixed(UNITS[S.unit].dp+1);
 function renderAns(){
-  const a=$('ans');
-  if(RES.err || RES.pending || phase()==='place'){ a.classList.remove('show','ok','warn','bad'); a.innerHTML=''; return; }
-  const P=S.points, K=S.known, end=P[P.length-1], heave=S.op==='heave', eC=C()[end.id];
-  const n = end.type==='purchase' ? Math.max(1,Math.round(end.parts||1)) : 1;
-  const ideal = RES.winch*n, fr = heave ? ideal-RES.end : RES.end-ideal;     // what friction took (heaving) or gave (paying out)
-  const w=RES.worst, c=w?cls(w.use):'';
-  const W=`<b class="kw">W ${fT(RES.winch)}</b>`, E=`<b class="ke">${eC} ${fT(RES.end)}</b>`;
-  const where = end.type==='purchase' ? ' at the hook' : end.type==='padeye' ? ' on the anchor' : '';
-  let line;
-  if(K.kind==='end') line = heave ? `For ${E}${where}, the winch must pull ${W}` : `To hold back ${E}${where}, the winch needs ${W}`;
-  else if(K.kind==='winch'){
-    if(end.type==='purchase') line = heave ? `Winch pulls ${W}, the ${n}-part purchase gives ${E} at the hook` : `Winch holding ${W}, the ${n}-part purchase holds ${E} at the hook`;
-    else if(end.type==='padeye') line = `Winch pulls ${W}, the anchor takes ${E}`;
-    else line = heave ? `Winch pulls ${W}, ${E} reaches the end` : `Winch holding ${W} holds back ${E}`;
+  const a=$('ans'), ph=phase();
+  if(ph==='place' || ph==='lay' || (RES.err && S.points.length<2)){ a.classList.remove('show','ok','warn','bad'); a.innerHTML=''; return; }
+  if(barFocused()){ liveAns(); return; }          // never rebuild a box you're typing in
+  const u=uLab(), P=S.points, show=!RES.err&&!RES.pending;
+  const k=P.findIndex(p=>p.id===S.sel);
+  const pen = `<svg class="pen"><use href="#i-edit"/></svg>`;
+  if(k>=0){                                        // a point is tapped: its load and its SWL
+    const p=P[k], role=roleOf(p), r=show?RES.pts[k]:null, lim=limitOf(p);
+    const first=p.stack.length?cat(p.stack[0]):null, catSwl=first&&+first.swl>0?+first.swl:null;
+    const swlVal = catSwl!=null ? '' : vfmt(p.swl);
+    const loadLab = role==='start' ? 'Line pull' : 'Load on it';
+    a.className='ans show pt '+(r&&Number.isFinite(r.use)?cls(r.use):'');
+    a.innerHTML = `<div class="tiles">
+        <div class="tile ro"><span class="tl"><span class="code ${role==='start'?'winch':role==='end'?'end':''}">${C()[p.id]}</span>${loadLab}</span><b id="bLoad">${r?fT(r.load,false):'–'}</b><span class="tu">${u}</span><span class="tag">${esc(p.name||PT[p.type].name)}</span></div>
+        <label class="tile ed ${lim.swl>0?'':'want'}" for="bSwl"><span class="tl">${role==='start'?'Max pull':'SWL'}${pen}</span><input id="bSwl" type="number" inputmode="decimal" step="any" placeholder="${catSwl!=null?vfmt(catSwl):'?'}" value="${swlVal}" aria-label="${role==='start'?'Winch maximum pull':'Safe working load'}"><span class="tu">${u}</span><span class="tag" id="bUse">${r&&Number.isFinite(r.use)?`<span class="u-${cls(r.use)}">${pct(r.use)} used</span>`:'type the limit'}</span></label>
+      </div>
+      <div class="vfoot"><button class="chipb" data-bar="more">More</button><span class="fill"></span><button class="chipb done" data-bar="done">Done</button></div>`;
+    enterKeysIn(a); return;
   }
-  else line = `Load cell ${fT(K.value)}: winch ${W}, end ${E}`;
-  const bits=[];
-  if(n>1) bits.push(`×${(RES.end/RES.winch).toFixed(2)} from the purchase`);
-  if(Math.abs(fr)>0.0005) bits.push(`${fT(Math.abs(fr))} ${heave?'lost to':'helped by'} friction`);
-  if(w) bits.push(`highest use ${pct(w.use)}`);
-  const was=a.classList.contains('show');
-  a.className='ans show '+c; a.style.animation = was ? (c==='bad'?'badglow 1.6s ease-in-out infinite':'none') : '';
-  a.innerHTML = `<div class="al">${line}${bits.length?`<small>${bits.join(' · ')}</small>`:''}</div>${icon('edit')}`;
+  const K=S.known, end=P[P.length-1], kk=(K.kind==='point'||K.kind==='leg')?'cell':K.kind;
+  const eLab = end.type==='purchase' ? 'Hook' : end.type==='padeye' ? 'Anchor' : 'Load';
+  const w=RES.worst, c=w&&show?cls(w.use):'';
+  const tile=(id,kind,code,codeCls,lab,val)=>`<label class="tile ed ${kk===kind?'set':''} ${RES.pending&&kind==='winch'&&kk!=='end'&&kk!=='cell'?'want':''}" for="${id}">
+      <span class="tl"><span class="code ${codeCls}">${code}</span><span class="lt">${lab}</span>${pen}</span>
+      <input id="${id}" type="number" inputmode="decimal" step="any" placeholder="?" value="${val}" aria-label="${lab} in ${u}"><span class="tu">${u}</span>
+      <span class="tag" id="${id}tag">${kk===kind?'set':show?'auto':''}</span></label>`;
+  const n = end.type==='purchase' ? Math.max(1,Math.round(end.parts||1)) : 1, heave=S.op==='heave';
+  const fr = show ? (heave ? RES.winch*n-RES.end : RES.end-RES.winch*n) : 0;
+  a.className='ans show '+c;
+  a.innerHTML = `<div class="tiles">
+      ${tile('kW','winch','W','winch','Winch', kk==='winch'?vfmt(K.value):show?vfmt(RES.winch):'')}
+      ${tile('kE','end',C()[end.id]||'E','end',eLab, kk==='end'?vfmt(K.value):show?vfmt(RES.end):'')}
+      ${kk==='cell'?`<label class="tile ed set" for="kC"><span class="tl">${icon('cell')}${K.ref?esc(knownLabel().replace('Load cell ','')):'Tap grid'}${pen}</span><input id="kC" type="number" inputmode="decimal" step="any" placeholder="?" value="${vfmt(K.value)}" ${K.ref?'':'disabled'} aria-label="Load cell reading"><span class="tu">${u}</span><span class="tag">set</span></label>`:''}
+    </div>
+    <div class="vfoot">
+      <button class="chipb" data-bar="op">${icon(heave?'heave':'payout')}${heave?'Heaving':'Paying out'}</button>
+      <span class="fill" id="bFr" title="Tension lost to friction on the way round">${show&&Math.abs(fr)>0.0005?`${heave?'−':'+'}${fT(Math.abs(fr))} lost${n>1?` · ×${(RES.end/RES.winch).toFixed(2)}`:''}`:''}</span>
+      ${show&&w?`<span class="pcs u-${c}" id="bPc">${pct(w.use)}</span>`:'<span id="bPc"></span>'}
+      <button class="chipb ${kk==='cell'?'on':''}" data-bar="cell">${icon('cell')}${kk==='cell'?'Cell':'Load cell'}</button>
+    </div>`;
+  enterKeysIn(a);
 }
+function liveAns(){
+  const a=$('ans'), show=!RES.err&&!RES.pending, P=S.points, k=P.findIndex(p=>p.id===S.sel);
+  if(k>=0){ const r=show?RES.pts[k]:null; const L=$('bLoad'); if(L) L.textContent=r?fT(r.load,false):'–';
+    const U=$('bUse'); if(U) U.innerHTML = r&&Number.isFinite(r.use)?`<span class="u-${cls(r.use)}">${pct(r.use)} used</span>`:'type the limit';
+    a.className='ans show pt '+(r&&Number.isFinite(r.use)?cls(r.use):''); return; }
+  const kk=(S.known.kind==='point'||S.known.kind==='leg')?'cell':S.known.kind;
+  [['kW','winch',RES.winch],['kE','end',RES.end]].forEach(([id,kind,val])=>{ const el=$(id); if(!el) return;
+    el.closest('.tile').classList.toggle('set',kk===kind); el.closest('.tile').classList.remove('want');
+    if(document.activeElement!==el) el.value = kk===kind ? vfmt(S.known.value) : show ? vfmt(val) : '';
+    const t=$(id+'tag'); if(t) t.textContent = kk===kind?'set':show?'auto':''; });
+  const end=P[P.length-1], n=end.type==='purchase'?Math.max(1,Math.round(end.parts||1)):1, heave=S.op==='heave';
+  const fr = show ? (heave ? RES.winch*n-RES.end : RES.end-RES.winch*n) : 0, w=RES.worst;
+  const F=$('bFr'); if(F) F.textContent = show&&Math.abs(fr)>0.0005?`${heave?'−':'+'}${fT(Math.abs(fr))} lost${n>1?` · ×${(RES.end/RES.winch).toFixed(2)}`:''}`:'';
+  const pc=$('bPc'); if(pc){ pc.className = show&&w ? 'pcs u-'+cls(w.use) : ''; pc.textContent = show&&w ? pct(w.use) : ''; }
+  a.classList.remove('ok','warn','bad'); if(show&&w) a.classList.add(cls(w.use));
+}
+function enterKeysIn(root){ root.querySelectorAll('input').forEach(i=>{ i.enterKeyHint='done'; const sel=()=>{ try{ i.select(); }catch(e){} }; i.addEventListener('focus',()=>{ sel(); setTimeout(sel,0); }); }); }
+const bar=$('ans');
+bar.addEventListener('pointerdown', e=>e.stopPropagation());
+bar.addEventListener('input', e=>{
+  const el=e.target, v=parseFloat(el.value), val = Number.isFinite(v)&&v>=0 ? UNITS[S.unit].from(v) : null;
+  if(el.id==='kW'||el.id==='kE'){ S.known.kind = el.id==='kW'?'winch':'end'; S.known.ref=null; S.known.value=val; soft(); return; }
+  if(el.id==='kC'){ S.known.value=val; soft(); return; }
+  if(el.id==='bSwl'){ const p=S.points.find(q=>q.id===S.sel); if(!p) return; p.swl=val; if(val!=null && p.stack.length) p.stack=p.stack.slice(1); el.closest('.tile').classList.toggle('want', val==null); soft(); }
+});
+bar.addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target.tagName==='INPUT'){ e.preventDefault(); e.target.blur(); } });
+bar.addEventListener('focusout', e=>{          // leaving the bar: settle the step and redraw everything
+  if(e.relatedTarget && bar.contains(e.relatedTarget)) return;
+  setTimeout(()=>{ if(barFocused()) return; if(!RES.pending && override==='know') override=null; render(); }, 0);
+});
+bar.addEventListener('click', e=>{
+  const b=e.target.closest('[data-bar]'); if(!b) return; const a=b.dataset.bar;
+  if(a==='op'){ S.op = S.op==='heave'?'payout':'heave'; render(); }
+  else if(a==='cell'){ const isCell=S.known.kind==='point'||S.known.kind==='leg';
+    if(isCell){ S.known.kind='winch'; S.known.ref=null; S.known.value = Number.isFinite(RES.winch)?RES.winch:null; }
+    else { S.known.kind='point'; S.known.ref=null; S.known.value=null; override='know'; }
+    render(); }
+  else if(a==='more'){ sheet='point'; render(); }
+  else if(a==='done'){ S.sel=null; sheet=null; hunt=false; render(); }
+});
 function renderHint(){
   const h=$('hint'), ph=phase(), K=S.known; let t='';
   if(ph==='place') t = S.points.length ? '<b>2</b> Now tap where the <b>end</b> of the line is (what you are pulling).' : '<b>1</b> Tap where the <b>winch</b> is.';
   else if(ph==='lay') t = 'Drag <b>W</b> and <b>E</b> to where they are. Use <b>+</b> for each bollard or block the line goes round. Tap <b>✓</b> when it looks right.';
-  else if(ph==='know') t='';
-  else if(hunt) t='Tap a point marked <b>?</b> and type its SWL.';
+  else if(ph==='know') t = (K.kind==='point'||K.kind==='leg') && !K.ref ? 'Tap the <b>block</b> the load cell hangs from, or the <b>line</b> it is clamped on.' : '';
+  else if(hunt) t='Tap each <b>?</b> and type its SWL at the top.';
   else if(sheet==='heights') t='Drag points up or down, or type the heights.';
-  else if(!S.seenCheck) t='Tap any point to see its load. Add limits with the buttons on the right.';
-  if(!t || (sheet==='point' && isMobile())){ h.classList.remove('show'); return; }
+  else if(!S.seenCheck && !S.sel) t='Tap any point to see its load and set its SWL.';
+  if(!t || S.sel || (sheet==='point' && isMobile())){ h.classList.remove('show'); return; }
   h.innerHTML=`<span>${t}</span>`; h.classList.add('show');
-  h.style.top = $('ans').classList.contains('show') ? ($('ans').offsetHeight+18)+'px' : '10px';
+  h.style.top = $('ans').classList.contains('show') ? ($('ans').offsetTop+$('ans').offsetHeight+8)+'px' : '10px';
 }
 let flashT=null;
 function flash(t){ toast(esc(t),1400); }
@@ -665,14 +753,11 @@ function railItems(){
   if(ph==='check'){
     const wll=ropeWll(), maxLeg = show ? Math.max(...RES.legs.map(l=>l.use).filter(Number.isFinite), -1) : -1;
     const wl=limitOf(P[0]), wr=show?RES.pts[0]:null;
-    const missing = P.slice(1).filter(p=>!Number.isFinite(limitOf(p).swl)).length;
+    const missing = P.filter(p=>!Number.isFinite(limitOf(p).swl)).length;
     const ptUses = show ? RES.pts.slice(1).map(r=>r.use).filter(Number.isFinite) : [], maxPt = ptUses.length ? Math.max(...ptUses) : -1;
     out.push({sep:1});
-    out.push({id:'known', icon:S.known.kind==='end'?'end':S.known.kind==='winch'?'winch':'cell', label:`Reading: ${knownLabel()} ${fT(S.known.value)}`, val:fT(S.known.value,false), cls:'known'});
     out.push({id:'wire', icon:'wire', label:'Wire', val:Number.isFinite(wll)&&maxLeg>=0?pct(maxLeg):'', dot:!Number.isFinite(wll), cls:Number.isFinite(wll)&&maxLeg>=0?cls(maxLeg):''});
-    out.push({id:'winch', icon:'winch', label:'Winch maximum pull', val:Number.isFinite(wl.swl)&&wr?pct(wr.use):'', dot:!Number.isFinite(wl.swl), cls:Number.isFinite(wl.swl)&&wr?cls(wr.use):''});
     out.push({id:'limits', icon:'limit', label:'Safe working loads', val:missing?`${missing}?`:(maxPt>=0?pct(maxPt):''), dot:missing>0, cls:maxPt>=0?cls(maxPt):'', on:hunt});
-    out.push({id:'op', icon:S.op==='heave'?'heave':'payout', label:S.op==='heave'?'Heaving in (tap for paying out)':'Paying out (tap for heaving in)'});
     out.push({id:'heights', icon:'height', label:'Heights', on:sheet==='heights'});
   }
   out.push({sep:1, grow:1});
@@ -704,7 +789,7 @@ $('rail').addEventListener('click', e=>{
   if(id==='rot'){ S.flip=!S.flip; render(); return; }
   if(id==='fit'){ fitView(); return; }
   if(id==='view'){ S.view=S.view==='side'?'plan':'side'; if(S.view==='plan'&&sheet==='heights') sheet=null; render(); return; }
-  if(id==='laid'){ S.laidOut=true; override='know'; sheet='known'; render(); if(!coarse()) setTimeout(()=>$('kW')&&$('kW').focus(),40); return; }
+  if(id==='laid'){ S.laidOut=true; override='know'; sheet=null; render(); setTimeout(()=>{ const v=$('kW'); if(v) v.focus(); },40); return; }
   if(id==='clear'){ clearAll(); return; }
   if(id==='known'){ editReading(); return; }
   if(id==='op'){ S.op=S.op==='heave'?'payout':'heave'; render(); flash(S.op==='heave'?'Heaving in':'Paying out'); return; }
@@ -723,13 +808,12 @@ function clearAll(){
   render(); toast(`Cleared <button data-undo>Undo</button>`, 4000);
 }
 $('toast').addEventListener('click', e=>{ if(e.target.closest('[data-undo]') && undoBuf){ S=JSON.parse(undoBuf); undoBuf=null; $('toast').classList.remove('show'); render(); } });
-$('ans').addEventListener('click', editReading);
 function focusSoon(id){ if(coarse()) return; setTimeout(()=>{ const f=$(id); if(f) f.focus(); },40); }
 
 /* ---------------------------------------------------------------- sheets */
 function renderSheet(){
   const sh=$('sheet');
-  if(sheet==='point' || (S.sel && sheet!=='wire' && sheet!=='deck' && sheet!=='heights')){ if(S.sel){ sheet='point'; sh.innerHTML=pointSheet(); sh.classList.add('show'); placeSheet(); return; } }
+  if(sheet==='point' && S.sel){ sh.innerHTML=pointSheet(); sh.classList.add('show'); placeSheet(); return; }
   if(sheet==='known'){ sh.innerHTML=knownSheet(); sh.classList.add('show'); placeSheet(); return; }
   if(sheet==='wire'){ sh.innerHTML=wireSheet(); sh.classList.add('show'); placeSheet(); return; }
   if(sheet==='deck'){ sh.innerHTML=deckSheet(); sh.classList.add('show'); placeSheet(); return; }
@@ -843,7 +927,7 @@ sh.addEventListener('click', e=>{
   if(e.target.closest('[data-act="repick"]')){ e.preventDefault(); S.known.ref=null; render(); return; }
   const ob=e.target.closest('[data-op]'); if(ob){ S.op=ob.dataset.op; render(); return; }
   if(e.target.closest('[data-act="next"]') && !RES.pending){ override=null; sheet=null; render(); return; }
-  if(e.target.closest('[data-close]')){ if(sheet==='heights') S.view='plan'; sheet=null; S.sel=null; render(); return; }
+  if(e.target.closest('[data-close]')){ if(sheet==='heights') S.view='plan'; if(sheet!=='point') S.sel=null; sheet=null; render(); return; }
   const p=S.points.find(q=>q.id===S.sel);
   const tb=e.target.closest('[data-type]');
   if(tb&&p){ const d=PT[tb.dataset.type]; p.type=tb.dataset.type; if(d.model){ p.model=d.model; p.mu=d.mu??p.mu; p.eta=d.eta??p.eta; } render(); return; }
@@ -872,7 +956,7 @@ sh.addEventListener('keydown', e=>{
   render();
 });
 function enterKeys(){ document.querySelectorAll('#sheet input').forEach(i=>{ i.enterKeyHint='done'; if(!i._sel){ i._sel=1; const sel=()=>{ try{ i.select(); }catch(e){} }; i.addEventListener('focus',()=>{ sel(); setTimeout(sel,0); }); i.addEventListener('pointerup',e=>{ if(document.activeElement===i && i.selectionStart===i.selectionEnd) {} }); } }); }
-function editReading(){ override='know'; sheet='known'; hunt=false; S.sel=null; render(); setTimeout(()=>{ const kk=S.known.kind; const v=$(kk==='end'?'kE':kk==='winch'?'kW':'kC'); if(v){ v.focus(); v.select(); } },30); }
+function editReading(){ hunt=false; S.sel=null; if(sheet==='point') sheet=null; render(); setTimeout(()=>{ const kk=S.known.kind; const v=$(kk==='end'?'kE':kk==='winch'?'kW':'kC'); if(v){ v.focus(); v.select(); } },30); }
 sh.addEventListener('change', e=>{
   const el=e.target, p=S.points.find(q=>q.id===S.sel);
   if(el.dataset.w==='id'){ S.rope.id=el.value; render(); return; }
@@ -910,7 +994,7 @@ function draw(t){ const {ctx,w,h}=prep($('cv')); paint(ctx,w,h,PAL[S.theme]||PAL
 function paint(ctx,w,h,pal,live,t=0){
   const D=S.deck, font=FONT(), side=S.view==='side', anim=live && !RM.matches;
   // fixed margins: nothing that opens or closes on top of the grid changes its size
-  const pad = live ? {l:38, r:78, t:isMobile()?104:86, b:26} : {l:38,r:14,t:18,b:34};
+  const pad = live ? {l:38, r:78, t:innerHeight<=480?100:(isMobile()?138:130), b:26} : {l:38,r:14,t:18,b:34};
   const zs=S.points.map(p=>p.z);
   const aw=w-pad.l-pad.r, ah=h-pad.t-pad.b;
   const rot = live && !side && ((ah > aw) !== !!S.flip) && D.X >= D.Y;   // long side of the deck follows the long side of the screen; Rotate flips it
@@ -1065,7 +1149,7 @@ stage.addEventListener('pointerdown', e=>{
   if(pickMode()){
     if(h.p && roleOf(h.p)!=='start'){ S.known.kind='point'; S.known.ref=h.p.id; }
     else { const lg=hitLeg(h.x,h.y,30); if(!lg) return; S.known.kind='leg'; S.known.ref=S.points[lg.i].id; }
-    render(); setTimeout(()=>$('kC')&&$('kC').focus(),40); return;
+    render(); setTimeout(()=>{ const v=$('kC'); if(v) v.focus(); },40); return;
   }
   if(h.p){ drag={id:h.p.id, x:h.x, y:h.y, moved:false}; stage.setPointerCapture(e.pointerId); }
   else { pan={x:e.clientX, y:e.clientY, moved:false, leg: phase()==='check' && !!hitLeg(h.x,h.y,22)}; stage.setPointerCapture(e.pointerId); }
@@ -1091,8 +1175,8 @@ stage.addEventListener('pointermove', e=>{
   if(id!==hoverId){ hoverId=id; if(!raf) draw(); }
 });
 const endDrag=()=>{ if(!drag) return; const d=drag; drag=null;
-  if(!d.moved){ if(phase()==='check') S.seenCheck=true; if(S.sel===d.id){ S.sel=null; sheet=null; } else { S.sel=d.id; sheet='point'; } }
-  render(); if(!d.moved && S.sel && hunt) focusSoon('pe_swl'); };
+  if(!d.moved){ if(phase()==='check') S.seenCheck=true; if(S.sel===d.id){ S.sel=null; sheet=null; } else { S.sel=d.id; if(sheet==='point'||sheet==='known') sheet=null; } }
+  render(); if(!d.moved && S.sel && (hunt || !Number.isFinite(limitOf(S.points.find(p=>p.id===S.sel)).swl))) focusSoon('bSwl'); };
 stage.addEventListener('pointerup', e=>{
   ptrs.delete(e.pointerId);
   if(pinch){ if(ptrs.size<2) pinch=null; return; }

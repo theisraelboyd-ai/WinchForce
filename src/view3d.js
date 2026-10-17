@@ -31,10 +31,10 @@ const W = p => new Vector3(p.x, p.z, -p.y);             // app metres -> world
 const WV = v => new Vector3(v[0], v[2], -v[1]);         // app vector -> world
 
 // Screen position of a point or a leg midpoint (tests use this).
-function screenOf(kind, id) {
+function screenOf(kind, id, dy = 0) {
   if (!S.data) return null;
   let v;
-  if (kind === 'pt' || kind === 'zh') { const p = S.data.points.find(q => q.id === id); if (!p) return null; v = W(p); if (kind === 'zh') v.y += S.u * 2.4; }
+  if (kind === 'pt' || kind === 'zh') { const p = S.data.points.find(q => q.id === id); if (!p) return null; v = W(p); if (kind === 'zh') v.y += S.u * 2.4; v.y += dy; }
   else { const a = S.data.points[id], b = S.data.points[id + 1]; if (!a || !b) return null; v = W(a).lerp(W(b), 0.5); }
   placeCamera(); v.project(S.camera);
   const r = S.renderer.domElement.getBoundingClientRect();
@@ -120,8 +120,6 @@ function update(data) {
     const tube = new Mesh(new TubeGeometry(curve, 1, sel ? rl * 1.9 : rl, 10, false), glow(c, sel ? 0.6 : 0.22));
     S.root.add(tube);
     if (sel) { const halo = new Mesh(new TubeGeometry(curve, 1, rl * 4.5, 12, false), new MeshBasicMaterial({ color: T.sel, transparent: true, opacity: 0.22, depthWrite: false })); S.root.add(halo); }
-    const hit = new Mesh(new TubeGeometry(curve, 1, Math.max(rl * 6, span * 0.018), 6, false), new MeshBasicMaterial({ visible: false }));
-    hit.userData = { kind: 'leg', id: i }; S.root.add(hit); S.pickables.push(hit);
     // where the line passes through the deck
     if ((P[i].z > 0.02 && P[i + 1].z < -0.02) || (P[i].z < -0.02 && P[i + 1].z > 0.02)) {
       const k = P[i].z / (P[i].z - P[i + 1].z), x = a.clone().lerp(b, k);
@@ -183,6 +181,11 @@ function update(data) {
     S.root.add(g);
     const hit = new Mesh(new SphereGeometry(Math.max(u * 1.6, span * 0.025), 10, 8), new MeshBasicMaterial({ visible: false }));
     hit.position.copy(w); hit.userData = { kind: 'pt', id: p.id }; S.root.add(hit); S.pickables.push(hit);
+    // tall posts (bollards, fairleads, winch bases): the whole post is a target, not just the top
+    if (Math.abs(p.z) > 0.6 && ['bollard', 'fairlead', 'winch', 'padeye'].includes(p.type)) {
+      const post = new Mesh(new CylinderGeometry(u * 1.2, u * 1.2, Math.abs(p.z), 10), new MeshBasicMaterial({ visible: false }));
+      post.position.copy(w).add(new Vector3(0, -p.z / 2, 0)); post.userData = { kind: 'pt', id: p.id }; S.root.add(post); S.pickables.push(post);
+    }
 
     // load arrow: the pull the line puts on the point (bollards, blocks, fairleads and the end)
     if (show && p.role !== 'start' && p.R > 0 && p.Rv) {

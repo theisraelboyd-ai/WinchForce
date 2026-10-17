@@ -7,13 +7,21 @@ SWL of the rigging at that point.
 
 Open `index.html`. Single self-contained file, works offline.
 
-- Known reading can be the winch pull, the end load, a load cell under a block
-  (side load) or an inline load cell in one leg.
-- Bollards and chocks: capstan friction on the angle the line turns through,
-  plus extra full turns. Sheaves: fixed efficiency per sheave. Purchases: n-part.
-- Loads on points are 3D vector sums, so heights give uplift as well as side load.
-- Rigging catalogue: import CSV or paste rows from Excel; cert numbers and expiry.
-- Print rigging plan with plan and side views, checks and sign-off.
+Three steps, one at a time:
+
+1. **Lay out the line** on the grid: drag the winch and the end, add bollards,
+   blocks or fairleads with the buttons on the grid.
+2. **What do you know?** The winch pull, the load at the end, or a load cell
+   reading (tap where it is on the grid).
+3. **Is it safe?** Optional: wire, winch max pull, the limit on each point,
+   heaving or paying out, heights, deck size.
+
+Tap any point for its figures and limit. The catalogue, save/open, print and
+the full working are in the menu.
+
+Physics: capstan friction on the angle the line turns through (plus extra
+full turns), fixed efficiency per sheave, n-part purchases, loads on points as
+3D vector sums.
 
 `legacy/index-v1.html` is the previous version, kept for reference. Its
 friction used the angle between the two legs rather than the turn angle.

@@ -25,3 +25,15 @@ full turns), fixed efficiency per sheave, n-part purchases, loads on points as
 
 `legacy/index-v1.html` is the previous version, kept for reference. Its
 friction used the angle between the two legs rather than the turn angle.
+
+## 3D view
+
+The cube button on the right shows the line in 3D: deck, fittings at their
+heights, legs coloured by load, and an arrow on each point showing the
+direction and size of the pull on it. Tap a point or a line to see its values
+in the top bar; drag to turn, pinch to zoom, double-tap to reset.
+
+The 3D code lives in `src/view3d.js` and is bundled (with three.js) into
+`index.html` so the app stays a single offline file. After changing it:
+
+    npm install && npm run build:3d

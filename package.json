@@ -1,0 +1,12 @@
+{
+  "name": "winchforce",
+  "private": true,
+  "description": "Build step for the 3D view only. The app itself is the single index.html.",
+  "scripts": {
+    "build:3d": "node tools/build-3d.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.0",
+    "three": "0.169.0"
+  }
+}

@@ -40,3 +40,14 @@ The 3D code lives in `src/view3d.js` and is bundled (with three.js) into
 `index.html` so the app stays a single offline file. After changing it:
 
     npm install && npm run build:3d
+
+## Bollards: what the post carries
+
+A bollard's post takes the pull of the line where it works on it (its height)
+down to its foot. For each point the app splits the pull into the **side pull**
+and the **up/down pull**; for a bollard it also gives the **bending moment at
+the foot** = side pull × (line height − foot height). Set whether the line goes
+round a **bare post** (friction) or a **snatch block on top** (sheave), the foot
+height if it stands on another level, and an optional maximum bending moment.
+
+See ROADMAP.md for what's planned next.

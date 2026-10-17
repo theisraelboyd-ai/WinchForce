@@ -15,7 +15,7 @@
 import {
   Scene, PerspectiveCamera, WebGLRenderer, Color, HemisphereLight, DirectionalLight,
   Mesh, Group, MeshStandardMaterial, MeshBasicMaterial, PlaneGeometry, BoxGeometry, CylinderGeometry,
-  TorusGeometry, ConeGeometry, SphereGeometry, OctahedronGeometry, TubeGeometry, LineCurve3, Vector3, Vector2, Raycaster,
+  TorusGeometry, ConeGeometry, SphereGeometry, OctahedronGeometry, TubeGeometry, LineCurve3, Vector3, Vector2, Raycaster, Matrix4,
   BufferGeometry, Float32BufferAttribute, LineSegments, LineBasicMaterial, LineDashedMaterial, Quaternion,
   DoubleSide, SRGBColorSpace,
 } from 'three';
@@ -137,6 +137,7 @@ function update(data) {
   }
 
   // ---- points
+  const extraLabels = [];
   const maxR = Math.max(1e-9, ...P.filter(p => p.role !== 'start').map(p => p.R || 0));
   P.forEach(p => {
     const g = new Group(), w = W(p), c = p.role === 'start' ? T.known : p.role === 'end' ? T.sel : (show && p.cls ? T[p.cls] : T.ink2);
@@ -148,9 +149,45 @@ function update(data) {
       const drum = new Mesh(new CylinderGeometry(u * 0.7, u * 0.7, u * 1.8, 24), accent); drum.rotation.x = Math.PI / 2; g.add(drum);
       [-1, 1].forEach(s => { const f = new Mesh(new CylinderGeometry(u * 1.0, u * 1.0, u * 0.12, 24), body); f.rotation.x = Math.PI / 2; f.position.z = s * u * 0.95; g.add(f); });
     } else if (p.type === 'bollard') {
-      const post = new Mesh(new CylinderGeometry(u * 0.45, u * 0.5, Math.max(0.3, h + u * 0.3), 24), accent); post.position.y = (u * 0.3 - h) / 2; g.add(post);
-      const cap = new Mesh(new CylinderGeometry(u * 0.62, u * 0.62, u * 0.14, 24), body); cap.position.y = u * 0.3; g.add(cap);
-      const foot = new Mesh(new BoxGeometry(u * 1.4, 0.12, u * 1.4), body); foot.position.y = -h + 0.06; g.add(foot);
+      // post from its foot up to where the line works on it; the top is either bare or carries a snatch block
+      const foot = (p.base || 0) - p.z;                  // foot height relative to the point
+      const block = p.top === 'block';
+      const topY = block ? -u * 1.05 : u * 0.35;          // top of the post (block hangs above it on a shackle)
+      const len = Math.max(0.3, topY - foot), pr = u * 0.42;
+      const post = new Mesh(new CylinderGeometry(pr, pr * 1.12, len, 28), accent); post.position.y = foot + len / 2; g.add(post);
+      const cap = new Mesh(new CylinderGeometry(pr * 1.45, pr * 1.45, u * 0.14, 28), body); cap.position.y = topY; g.add(cap);
+      const base = new Mesh(new BoxGeometry(u * 1.5, 0.14, u * 1.5), body); base.position.y = foot + 0.07; g.add(base);
+      if (block) {
+        // shackle on the cap, then the block, its sheave in the plane of the line
+        const shk = new Mesh(new TorusGeometry(u * 0.28, u * 0.07, 8, 20, Math.PI * 1.4), body); shk.position.y = topY + u * 0.3; shk.rotation.z = Math.PI * 0.8; g.add(shk);
+        const sheave = new Mesh(new TorusGeometry(u * 0.5, u * 0.15, 12, 28), accent);
+        if (p.n) { const n = WV(p.n).normalize(); if (n.lengthSq() > 0.5) sheave.quaternion.copy(new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), n)); }
+        g.add(sheave);
+        const cheek = new Mesh(new CylinderGeometry(u * 0.42, u * 0.42, u * 0.12, 20), body); cheek.quaternion.copy(sheave.quaternion).multiply(new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), Math.PI / 2)); g.add(cheek);
+      } else {
+        // line bearing round the post at its working height
+        const wrap = new Mesh(new TorusGeometry(pr * 1.05, u * 0.09, 8, 28), glow(T.line, 0.25)); wrap.rotation.x = Math.PI / 2; g.add(wrap);
+      }
+      // bending at the foot: an arc turning the way the side pull bends the post
+      if (show && p.mtext && p.Rv) {
+        const hz = new Vector3(p.Rv[0], 0, -p.Rv[1]); if (hz.lengthSq() > 1e-9) {
+          hz.normalize();
+          const mc = p.mcls && T[p.mcls] ? T[p.mcls] : T.res, rr = u * 1.5;
+          const arc = new Mesh(new TorusGeometry(rr, u * 0.07, 8, 24, Math.PI * 0.55), glow(mc, 0.5));
+          // torus lies in its local XY plane: x -> side-pull direction, y -> up
+          const ax = new Vector3().crossVectors(hz, new Vector3(0, 1, 0)).normalize();
+          const m4 = new Matrix4().makeBasis(hz, new Vector3(0, 1, 0), ax.clone().negate());
+          arc.quaternion.setFromRotationMatrix(m4); arc.rotateZ(Math.PI * 0.25);
+          const side = ax.clone().multiplyScalar(pr * 2.2);          // beside the post so it isn't hidden inside it
+          arc.position.set(side.x, foot, side.z); g.add(arc);
+          // arrow head at the side-pull end, turning over toward the pull (the way the post bends)
+          const tip = new Vector3(rr, 0, 0).applyQuaternion(arc.quaternion);
+          const tan = new Vector3(0, -1, 0).applyQuaternion(arc.quaternion);
+          const cone = new Mesh(new ConeGeometry(u * 0.2, u * 0.45, 12), glow(mc, 0.5));
+          cone.position.copy(tip).add(new Vector3(side.x, foot, side.z)); cone.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), tan.normalize()); g.add(cone);
+          extraLabels.push({ p: w.clone().add(new Vector3(0, foot, 0)).addScaledVector(hz, -rr * 1.6), text: p.mtext, color: mc, pri: p.sel ? 4.5 : 2.5, cls: 'pt' });
+        }
+      }
     } else if (p.type === 'block' || p.type === 'purchase') {
       const sheave = new Mesh(new TorusGeometry(u * 0.55, u * 0.16, 12, 28), accent);
       // sheave plane contains the line in and out
@@ -182,9 +219,10 @@ function update(data) {
     const hit = new Mesh(new SphereGeometry(Math.max(u * 1.6, span * 0.025), 10, 8), new MeshBasicMaterial({ visible: false }));
     hit.position.copy(w); hit.userData = { kind: 'pt', id: p.id }; S.root.add(hit); S.pickables.push(hit);
     // tall posts (bollards, fairleads, winch bases): the whole post is a target, not just the top
-    if (Math.abs(p.z) > 0.6 && ['bollard', 'fairlead', 'winch', 'padeye'].includes(p.type)) {
-      const post = new Mesh(new CylinderGeometry(u * 1.2, u * 1.2, Math.abs(p.z), 10), new MeshBasicMaterial({ visible: false }));
-      post.position.copy(w).add(new Vector3(0, -p.z / 2, 0)); post.userData = { kind: 'pt', id: p.id }; S.root.add(post); S.pickables.push(post);
+    const fz = p.type === 'bollard' ? (p.base || 0) : 0;
+    if (Math.abs(p.z - fz) > 0.6 && ['bollard', 'fairlead', 'winch', 'padeye'].includes(p.type)) {
+      const post = new Mesh(new CylinderGeometry(u * 1.2, u * 1.2, Math.abs(p.z - fz), 10), new MeshBasicMaterial({ visible: false }));
+      post.position.copy(w).add(new Vector3(0, (fz - p.z) / 2, 0)); post.userData = { kind: 'pt', id: p.id }; S.root.add(post); S.pickables.push(post);
     }
 
     // load arrow: the pull the line puts on the point (bollards, blocks, fairleads and the end)
@@ -195,7 +233,7 @@ function update(data) {
   });
 
   // ---- labels (drawn as HTML on top)
-  S.labelDefs = [];
+  S.labelDefs = extraLabels;
   data.legs.forEach((L, i) => {
     if (!show) return;
     S.labelDefs.push({ p: W(P[i]).lerp(W(P[i + 1]), 0.5), text: L.text, color: colOf(L.cls), pri: data.selLeg === i ? 3 : 1, cls: data.selLeg === i ? 'on' : '' });
@@ -267,7 +305,26 @@ function fitCamera(name, animate) {
   // shift the target so the box sits in the middle of the free area
   const perPx = 2 * radius * t / Hd;
   const target = center.clone().addScaledVector(right, railW / 2 * perPx).addScaledVector(up, barH / 2 * perPx);
-  const to = { target, radius, theta: p.theta, phi: p.phi };
+  // refine with the real perspective: project the box corners and nudge until they sit in the free area
+  const corners = [];
+  for (const i of [-1, 1]) for (const j of [-1, 1]) for (const k of [-1, 1]) corners.push(new Vector3(center.x + half.x * i, center.y + half.y * j, center.z + half.z * k));
+  const cam = S.camera.clone(), fx0 = -1, fx1 = 1 - 2 * railW / Wd, fy0 = -1, fy1 = 1 - 2 * barH / Hd;   // free area in NDC
+  let R = radius; const T0 = target.clone();
+  for (let it = 0; it < 12; it++) {
+    const pos = new Vector3(T0.x + R * Math.sin(p.phi) * Math.sin(p.theta), T0.y + R * Math.cos(p.phi), T0.z + R * Math.sin(p.phi) * Math.cos(p.theta));
+    cam.position.copy(pos); cam.up.set(0, 1, 0); if (p.phi < 0.02) cam.up.set(-Math.sin(p.theta), 0, -Math.cos(p.theta));
+    cam.aspect = Wd / Hd; cam.updateProjectionMatrix(); cam.lookAt(T0); cam.updateMatrixWorld();
+    let x0 = 9, x1 = -9, y0 = 9, y1 = -9;
+    corners.forEach(c => { const v = c.clone().project(cam); x0 = Math.min(x0, v.x); x1 = Math.max(x1, v.x); y0 = Math.min(y0, v.y); y1 = Math.max(y1, v.y); });
+    const need = Math.max((x1 - x0) / ((fx1 - fx0) * 0.9), (y1 - y0) / ((fy1 - fy0) * 0.9));
+    // move the target so the box centre lands on the free-area centre
+    const dx = ((x0 + x1) / 2 - (fx0 + fx1) / 2), dy = ((y0 + y1) / 2 - (fy0 + fy1) / 2);
+    const per = 2 * R * Math.tan((cam.fov * Math.PI / 180) / 2) / 2;   // world units per NDC unit at the target
+    const rt = new Vector3().setFromMatrixColumn(cam.matrixWorld, 0), upv = new Vector3().setFromMatrixColumn(cam.matrixWorld, 1);
+    T0.addScaledVector(rt, dx * per * (Wd / Hd)).addScaledVector(upv, dy * per);
+    R *= Math.max(0.6, Math.min(1.6, need));
+  }
+  const to = { target: T0, radius: R, theta: p.theta, phi: p.phi };
   if (!animate || matchMedia('(prefers-reduced-motion: reduce)').matches) { Object.assign(S.cam, to); render(); return; }
   const from = { target: S.cam.target.clone(), radius: S.cam.radius, theta: S.cam.theta, phi: S.cam.phi };
   let dt = from.theta - to.theta; while (dt > Math.PI) { from.theta -= 2 * Math.PI; dt -= 2 * Math.PI; } while (dt < -Math.PI) { from.theta += 2 * Math.PI; dt += 2 * Math.PI; }

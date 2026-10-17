@@ -105,6 +105,20 @@ svg.i{width:22px;height:22px;flex:none}
 .kin input:focus{outline:none;box-shadow:0 0 0 4px var(--known-soft)}
 .kin input:placeholder-shown{animation:glowb 1.5s ease-in-out infinite}
 .kin span{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--ink3);font-weight:650}
+.kh{font-size:13.5px;color:var(--ink2);margin:0 2px 8px;line-height:1.35}.kh b{color:var(--ink)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bx{display:flex;flex-direction:column;gap:4px;padding:8px;border-radius:14px;border:1.5px solid var(--line2);background:var(--well);cursor:text}
+.bx.set{border-color:var(--known);box-shadow:0 0 0 3px var(--known-soft)}
+.bx .bl{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--ink2)}
+.bx .bl svg{width:18px;height:18px;color:var(--known)}
+.bx .kin input{height:48px;font-size:22px;border:0;background:transparent;padding:0 34px 0 4px;text-align:left;color:var(--ink)}
+.bx.set .kin input{color:var(--known)}
+.bx .kin input:focus{box-shadow:none}
+.bx .kin input:placeholder-shown{animation:none}
+.bx em{font-style:normal;font-size:11.5px;color:var(--ink3);font-weight:600;min-height:14px}
+.bx.set em{color:var(--known)}
+.cellbtn{flex:1;height:44px;border-radius:12px;border:1px dashed var(--line2);background:none;color:var(--ink2);font-weight:650;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px}
+.cellbtn svg{width:18px;height:18px}
 .tap{flex:1;height:56px;border-radius:14px;border:1.5px dashed var(--known);display:flex;align-items:center;justify-content:center;gap:8px;color:var(--known);font-weight:700}
 .tap svg{animation:tapme 1.2s ease-in-out infinite}
 .chip{flex:none;height:52px;min-width:64px;padding:0 12px;border-radius:14px;border:1px solid var(--line2);background:var(--panel2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:11.5px;font-weight:650;color:var(--ink2);position:relative}
@@ -176,6 +190,10 @@ details.more[open] summary{color:var(--ink2)}
 .link{border:0;background:none;color:var(--known);font-weight:650;font-size:13px;padding:0}
 .note{color:var(--ink3);font-size:12.5px}
 .segw{display:flex;width:100%;margin-bottom:10px}.segw button{flex:1;padding:8px 4px}
+.tool.et{height:66px;gap:1px}.tool.et span{font-size:13px;color:var(--ink)}.tool.et small{font-size:11px;color:var(--ink3);font-weight:500}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{width:46px;height:42px;border-radius:12px;border:1px solid var(--line2);background:var(--panel2);font-size:22px;font-weight:600}
+.stepper b{min-width:34px;text-align:center;font-size:20px}
 
 @keyframes pop{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
 @keyframes up{0%{transform:translateY(16px);opacity:0}100%{transform:none;opacity:1}}
@@ -249,6 +267,9 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
   <symbol id="i-side" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9"><path d="M2 17h20"/><path d="M5 17V8l5-3v12M14 17v-6h6v6"/></g></symbol>
   <symbol id="i-plan" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 15l5-6 5 4"/></g></symbol>
   <symbol id="i-hand" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V5a1.5 1.5 0 0 1 3 0v5M12 10V4a1.5 1.5 0 0 1 3 0v6M15 10V6a1.5 1.5 0 0 1 3 0v7c0 4-2.5 7-6.5 7-3 0-4.5-1.5-6-4l-2-3.3a1.5 1.5 0 0 1 2.4-1.7L9 13"/></g></symbol>
+  <symbol id="i-anchor" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 20h16"/><path d="M7 20v-5a5 5 0 0 1 10 0v5"/><circle cx="12" cy="14.5" r="2.2"/></g></symbol>
+  <symbol id="i-purchase" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="6" r="3.2"/><circle cx="12" cy="17" r="3.2"/><path d="M8.8 6v11M15.2 6v11M12 1.5v1.3M12 20.2v2.3"/></g></symbol>
+  <symbol id="i-fit" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></g></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
   <symbol id="i-rotate" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="9" width="10" height="12" rx="2"/><path d="M4 12A8 8 0 0 1 16.5 4.5"/><path d="M16.8 1.8l.2 3-3 .3"/></g></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></g></symbol>
@@ -266,6 +287,7 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
   <div class="menu" id="menu" role="menu">
     <div class="munits"><span>Units</span><button data-u="te">tonnes</button><button data-u="kg">kg</button><button data-u="kN">kN</button></div>
     <hr>
+    <button data-m="deck">Deck size</button>
     <button data-m="figures">All figures</button>
     <button data-m="print">Print rigging plan</button>
     <hr>
@@ -381,9 +403,9 @@ const PT = {
   bollard: {name:'Bollard / capstan head',  code:'B',  role:'mid', model:'friction', mu:0.20},
   block:   {name:'Snatch block / sheave',   code:'SB', role:'mid', model:'sheave',   eta:0.96},
   fairlead:{name:'Fairlead / chock / roller',code:'F', role:'mid', model:'friction', mu:0.15},
-  end:     {name:'Load / end',              code:'E',  role:'end'},
-  padeye:  {name:'Padeye / anchor point',   code:'PE', role:'end'},
-  purchase:{name:'Purchase (multi-part)',   code:'PU', role:'end', parts:2, eta:0.96},
+  end:     {name:'Load (moves)',            code:'E',  role:'end'},
+  padeye:  {name:'Anchor (fixed)',          code:'A',  role:'end'},
+  purchase:{name:'Purchase',                code:'PU', role:'end', parts:2, eta:0.96},
 };
 const CT = {winch:'Winch', bollard:'Bollard / capstan', block:'Block / sheave', fairlead:'Fairlead / roller', padeye:'Padeye',
             purchase:'Purchase', shackle:'Shackle', rope:'Line / wire / sling', other:'Other'};
@@ -550,6 +572,7 @@ const PAL = {
          edge:'rgba(20,45,60,.30)', ok:'#14895a', warn:'#a87400', bad:'#d23c3c', none:'#2c3e4c', sel:'#d07a00', known:'#1f6fd1', res:'#7a4fd6', panel:'#ffffff', line:'#2c3e4c'},
 };
 const RM = matchMedia('(prefers-reduced-motion: reduce)');
+const CAM = {z:1, tx:0, ty:0, auto:0};   // user pan/zoom on top of the fixed fit, plus a temporary lift when a card covers the point
 let RES=null, VIEW=null, hoverId=null, sheet=null, hunt=false, popT=0, wasPending=true, override=null, fly=false, undoBuf=null;
 const stage=$('stage');
 const roleOf = p => PT[p.type].role;
@@ -564,13 +587,28 @@ function phase(){
 }
 const pickMode = () => phase()==='know' && (S.known.kind==='point'||S.known.kind==='leg');
 
+let liftT=0;
+function keepClear(){
+  let want=0;
+  const sh=$('sheet');
+  if(isMobile() && sh.classList.contains('show') && VIEW){
+    const lim=sh.offsetTop-24, pts = sheet==='point' ? S.points.filter(p=>p.id===S.sel) : S.points;
+    const ys=pts.map(p=>VIEW.sy(VIEW.vy(p))-CAM.auto);
+    if(ys.length){ const lo=Math.max(...ys); if(lo>lim) want=-(lo-lim);
+      const hi=Math.min(...ys)+want; if(hi<110) want+= (110-hi); want=Math.min(0,want); }
+  }
+  const from=CAM.auto; if(Math.abs(want-from)<1) return;
+  const t0=performance.now(); cancelAnimationFrame(liftT);
+  const step=t=>{ const k=Math.min(1,(t-t0)/220), e=1-(1-k)**3; CAM.auto=from+(want-from)*e; draw(); if(k<1) liftT=requestAnimationFrame(step); };
+  if(RM.matches){ CAM.auto=want; draw(); } else liftT=requestAnimationFrame(step);
+}
 function stepPop(){ if(wasPending && !RES.pending && !RES.err) popT=performance.now(); wasPending = RES.pending || !!RES.err; }
 function render(){
   RES=solve(); stepPop();
   const ph=phase();
   if(ph==='know' && (!sheet || sheet==='point' && !S.sel)) sheet='known';
   if(ph!=='know' && sheet==='known') sheet=null;
-  renderAns(); renderRail(); renderSheet(); renderHint(); enterKeys(); draw(); kick(); save();
+  renderAns(); renderRail(); renderSheet(); renderHint(); enterKeys(); draw(); keepClear(); kick(); save();
 }
 function soft(){ RES=solve(); stepPop(); renderAns(); liveRail(); liveSheet(); draw(); kick(); save(); }
 const C = () => RES.codes||codes();
@@ -580,26 +618,32 @@ function renderAns(){
   const a=$('ans');
   if(RES.err || RES.pending || phase()==='place'){ a.classList.remove('show','ok','warn','bad'); a.innerHTML=''; return; }
   const P=S.points, K=S.known, end=P[P.length-1], heave=S.op==='heave', eC=C()[end.id];
+  const n = end.type==='purchase' ? Math.max(1,Math.round(end.parts||1)) : 1;
+  const ideal = RES.winch*n, fr = heave ? ideal-RES.end : RES.end-ideal;     // what friction took (heaving) or gave (paying out)
   const w=RES.worst, c=w?cls(w.use):'';
-  const loss=Math.abs(RES.winch-RES.end), W=`<b class="kw">W ${fT(RES.winch)}</b>`, E=`<b class="ke">${eC} ${fT(RES.end)}</b>`;
+  const W=`<b class="kw">W ${fT(RES.winch)}</b>`, E=`<b class="ke">${eC} ${fT(RES.end)}</b>`;
+  const where = end.type==='purchase' ? ' at the hook' : end.type==='padeye' ? ' on the anchor' : '';
   let line;
-  if(K.kind==='end') line = heave ? `To heave ${E} in, the winch must pull ${W}` : `To hold back ${E}, the winch only needs ${W}`;
-  else if(K.kind==='winch') line = heave ? `Winch pulls ${W}, ${E} reaches the end` : `Winch holding ${W} holds back ${E}`;
+  if(K.kind==='end') line = heave ? `For ${E}${where}, the winch must pull ${W}` : `To hold back ${E}${where}, the winch needs ${W}`;
+  else if(K.kind==='winch'){
+    if(end.type==='purchase') line = heave ? `Winch pulls ${W}, the ${n}-part purchase gives ${E} at the hook` : `Winch holding ${W}, the ${n}-part purchase holds ${E} at the hook`;
+    else if(end.type==='padeye') line = `Winch pulls ${W}, the anchor takes ${E}`;
+    else line = heave ? `Winch pulls ${W}, ${E} reaches the end` : `Winch holding ${W} holds back ${E}`;
+  }
   else line = `Load cell ${fT(K.value)}: winch ${W}, end ${E}`;
-  const sub = loss>0.0005 ? `${fT(loss)} ${heave?'lost to':'helped by'} friction${w?` · highest use ${pct(w.use)}`:''}` : (w?`highest use ${pct(w.use)}`:'');
+  const bits=[];
+  if(n>1) bits.push(`×${(RES.end/RES.winch).toFixed(2)} from the purchase`);
+  if(Math.abs(fr)>0.0005) bits.push(`${fT(Math.abs(fr))} ${heave?'lost to':'helped by'} friction`);
+  if(w) bits.push(`highest use ${pct(w.use)}`);
   const was=a.classList.contains('show');
   a.className='ans show '+c; a.style.animation = was ? (c==='bad'?'badglow 1.6s ease-in-out infinite':'none') : '';
-  a.innerHTML = `<div class="al">${line}${sub?`<small>${sub}</small>`:''}</div>${icon('edit')}`;
+  a.innerHTML = `<div class="al">${line}${bits.length?`<small>${bits.join(' · ')}</small>`:''}</div>${icon('edit')}`;
 }
 function renderHint(){
   const h=$('hint'), ph=phase(), K=S.known; let t='';
   if(ph==='place') t = S.points.length ? '<b>2</b> Now tap where the <b>end</b> of the line is (what you are pulling).' : '<b>1</b> Tap where the <b>winch</b> is.';
   else if(ph==='lay') t = 'Drag <b>W</b> and <b>E</b> to where they are. Use <b>+</b> for each bollard or block the line goes round. Tap <b>✓</b> when it looks right.';
-  else if(ph==='know'){
-    if(K.kind==='winch') t='Type what the <b>winch</b> is pulling, then <b>✓</b>.';
-    else if(K.kind==='end') t='Type the <b>load at the end</b>, then <b>✓</b>.';
-    else t = K.ref ? 'Type the <b>load cell</b> reading, then <b>✓</b>.' : 'Where is the load cell? Tap the <b>block</b> it hangs from, or the <b>line</b> it is clamped on.';
-  }
+  else if(ph==='know') t='';
   else if(hunt) t='Tap a point marked <b>?</b> and type its SWL.';
   else if(sheet==='heights') t='Drag points up or down, or type the heights.';
   else if(!S.seenCheck) t='Tap any point to see its load. Add limits with the buttons on the right.';
@@ -616,6 +660,7 @@ function railItems(){
   const ph=phase(), show=!RES.err&&!RES.pending, P=S.points, out=[];
   out.push({id:'add', icon:'plus', label:'Add a point', dis:ph==='place', on:fly});
   out.push({id:'rot', icon:'rotate', label:'Rotate the grid', dis:S.view==='side'});
+  out.push({id:'fit', icon:'fit', label:'Fit the deck to the screen', dis:ph==='place'&&!S.points.length&&CAM.z===1});
   out.push({id:'view', icon:S.view==='side'?'plan':'side', label:S.view==='side'?'View from above':'View from the side', on:S.view==='side'});
   if(ph==='check'){
     const wll=ropeWll(), maxLeg = show ? Math.max(...RES.legs.map(l=>l.use).filter(Number.isFinite), -1) : -1;
@@ -629,7 +674,6 @@ function railItems(){
     out.push({id:'limits', icon:'limit', label:'Safe working loads', val:missing?`${missing}?`:(maxPt>=0?pct(maxPt):''), dot:missing>0, cls:maxPt>=0?cls(maxPt):'', on:hunt});
     out.push({id:'op', icon:S.op==='heave'?'heave':'payout', label:S.op==='heave'?'Heaving in (tap for paying out)':'Paying out (tap for heaving in)'});
     out.push({id:'heights', icon:'height', label:'Heights', on:sheet==='heights'});
-    out.push({id:'deck', icon:'deck', label:`Deck ${S.deck.X} × ${S.deck.Y} m`, on:sheet==='deck'});
   }
   out.push({sep:1, grow:1});
   if(ph==='lay') out.push({id:'laid', icon:'check', label:'Line is set', go:1, glow:S.dragged});
@@ -658,8 +702,9 @@ $('rail').addEventListener('click', e=>{
   if(id!=='add') fly=false;
   if(id==='add'){ fly=!fly; renderRail(); return; }
   if(id==='rot'){ S.flip=!S.flip; render(); return; }
+  if(id==='fit'){ fitView(); return; }
   if(id==='view'){ S.view=S.view==='side'?'plan':'side'; if(S.view==='plan'&&sheet==='heights') sheet=null; render(); return; }
-  if(id==='laid'){ S.laidOut=true; override='know'; sheet='known'; render(); if(!coarse()) setTimeout(()=>$('kVal')&&$('kVal').focus(),40); return; }
+  if(id==='laid'){ S.laidOut=true; override='know'; sheet='known'; render(); if(!coarse()) setTimeout(()=>$('kW')&&$('kW').focus(),40); return; }
   if(id==='clear'){ clearAll(); return; }
   if(id==='known'){ editReading(); return; }
   if(id==='op'){ S.op=S.op==='heave'?'payout':'heave'; render(); flash(S.op==='heave'?'Heaving in':'Paying out'); return; }
@@ -693,21 +738,38 @@ function renderSheet(){
 }
 function placeSheet(){ requestAnimationFrame(()=>draw()); }
 function knownSheet(){
-  const K=S.known, u=uLab(), kk=(K.kind==='point'||K.kind==='leg')?'cell':K.kind;
-  const val = K.value!=null ? +UNITS[S.unit].to(K.value).toFixed(UNITS[S.unit].dp+1) : '';
-  const needTap = kk==='cell' && !K.ref;
-  return `<div class="row">
-      <button class="tool" data-kind="winch" aria-pressed="${kk==='winch'}">${icon('winch')}Winch</button>
-      <button class="tool" data-kind="end" aria-pressed="${kk==='end'}">${icon('end')}End</button>
-      <button class="tool" data-kind="cell" aria-pressed="${kk==='cell'}">${icon('cell')}Load cell</button></div>
-    <div class="seg segw" role="group" aria-label="Line movement" style="margin:8px 0 0"><button data-op="heave" aria-pressed="${S.op==='heave'}">Heaving in</button><button data-op="payout" aria-pressed="${S.op==='payout'}">Paying out</button></div>
-    <div class="row" style="margin-top:8px">${needTap ? `<div class="tap">${icon('tap')}Tap the grid</div>`
-      : `<div class="kin"><input id="kVal" type="number" inputmode="decimal" step="any" placeholder="?" value="${val}" aria-label="Reading in ${u}"><span>${u}</span></div>`}
-    <button class="go ${RES.pending?'':'glow'}" data-act="next" aria-label="Done" ${RES.pending?'disabled':''}>${icon('check')}</button></div>
+  const K=S.known, u=uLab(), P=S.points, end=P[P.length-1], show=!RES.err&&!RES.pending;
+  const kk=(K.kind==='point'||K.kind==='leg')?'cell':K.kind;
+  const eLab = end.type==='purchase' ? 'Hook load' : end.type==='padeye' ? 'Anchor load' : 'Load at end';
+  const v = t => t==null||!Number.isFinite(t) ? '' : +UNITS[S.unit].to(t).toFixed(UNITS[S.unit].dp+1);
+  const wv = kk==='winch' ? v(K.value) : show ? v(RES.winch) : '';
+  const ev = kk==='end' ? v(K.value) : show ? v(RES.end) : '';
+  const box=(id,kind,ic,lab,val,codeCls,code)=>`<label class="bx ${kk===kind?'set':''}" for="${id}">
+      <span class="bl"><span class="code ${codeCls}">${code}</span>${lab}</span>
+      <span class="kin"><input id="${id}" type="number" inputmode="decimal" step="any" placeholder="?" value="${val}" aria-label="${lab} in ${u}"><span>${u}</span></span>
+      <em id="${id}tag">${kk===kind?'you set this':show?'worked out':''}</em></label>`;
+  const cellOn = kk==='cell', needTap = cellOn && !K.ref;
+  return `<p class="kh">${cellOn ? (needTap ? 'Tap the <b>block</b> the load cell hangs from, or the <b>line</b> it is clamped on.' : 'Type the <b>load cell</b> reading.') : 'Type the <b>winch pull</b> or the <b>load at the end</b>. The other one works itself out.'}</p>
+    <div class="pair">${box('kW','winch','winch','Winch pull',wv,'winch','W')}${box('kE','end','end',eLab,ev,'end',C()[end.id]||'E')}</div>
+    <div class="row" style="margin-top:8px">
+      ${cellOn ? (needTap ? `<div class="tap">${icon('tap')}Tap the grid</div>` : `<label class="bx set" for="kC" style="flex:1"><span class="bl">${icon('cell')}Load cell ${esc(knownLabel().replace('Load cell ',''))} <button class="link" data-act="repick" type="button" style="margin-left:auto">move</button></span><span class="kin"><input id="kC" type="number" inputmode="decimal" step="any" placeholder="?" value="${v(K.value)}" aria-label="Load cell reading in ${u}"><span>${u}</span></span></label>`)
+        : `<button class="cellbtn" data-kind="cell">${icon('cell')}Use a load cell reading instead</button>`}
+    </div>
+    <div class="row" style="margin-top:8px">
+      <div class="seg segw" role="group" aria-label="Line movement" style="margin:0;flex:1"><button data-op="heave" aria-pressed="${S.op==='heave'}">Heaving in</button><button data-op="payout" aria-pressed="${S.op==='payout'}">Paying out</button></div>
+      <button class="go ${RES.pending?'':'glow'}" data-act="next" aria-label="Done" ${RES.pending?'disabled':''}>${icon('check')}</button></div>
     ${RES.err && !RES.pending && S.points.length>=2 ? `<div class="note u-bad" style="padding:6px 4px 0">${esc(RES.err)}</div>`:''}`;
 }
 function liveSheet(){
-  if(sheet==='known'){ const go=$('sheet').querySelector('[data-act="next"]'); if(go){ go.disabled=RES.pending; go.classList.toggle('glow',!RES.pending); } }
+  if(sheet==='known'){
+    const go=$('sheet').querySelector('[data-act="next"]'); if(go){ go.disabled=RES.pending; go.classList.toggle('glow',!RES.pending); }
+    const show=!RES.err&&!RES.pending, kk=(S.known.kind==='point'||S.known.kind==='leg')?'cell':S.known.kind;
+    const v = t => !Number.isFinite(t) ? '' : +UNITS[S.unit].to(t).toFixed(UNITS[S.unit].dp+1);
+    [['kW','winch',RES.winch],['kE','end',RES.end]].forEach(([id,kind,val])=>{ const el=$(id); if(!el) return;
+      const bx=el.closest('.bx'); bx.classList.toggle('set', kk===kind);
+      if(document.activeElement!==el) el.value = kk===kind ? v(S.known.value) : show ? v(val) : '';
+      const tag=$(id+'tag'); if(tag) tag.textContent = kk===kind ? 'you set this' : show ? 'worked out' : ''; });
+  }
   if(sheet==='point'){ const k=S.points.findIndex(p=>p.id===S.sel), el=$('shStats'); if(el&&k>=0) el.innerHTML=stats(S.points[k],k); }
   if(sheet==='wire'){ const el=$('wWll'), w=ropeWll(); if(el) el.textContent = Number.isFinite(w)?`WLL ${fT(w)}`:''; }
 }
@@ -729,7 +791,10 @@ function pointSheet(){
   const k=S.points.findIndex(p=>p.id===S.sel); if(k<0) return '';
   const p=S.points[k], role=roleOf(p), c=C()[p.id];
   const types = role==='mid' ? [['bollard','Bollard'],['block','Block'],['fairlead','Fairlead']] : role==='end' ? [['end','Load'],['padeye','Padeye'],['purchase','Purchase']] : null;
-  const typeRow = types ? `<div class="seg segw" role="group" aria-label="Type">${types.map(([t,l])=>`<button data-type="${t}" aria-pressed="${p.type===t}">${l}</button>`).join('')}</div>` : '';
+  const endTypes=[['end','end','Load','moves'],['padeye','anchor','Anchor','fixed'],['purchase','purchase','Purchase','n parts']];
+  const typeRow = role==='end' ? `<div class="row" style="margin-bottom:10px">${endTypes.map(([t,ic,l,sub])=>`<button class="tool et" data-type="${t}" aria-pressed="${p.type===t}">${icon(ic)}<span>${l}</span><small>${sub}</small></button>`).join('')}</div>`
+    : types ? `<div class="seg segw" role="group" aria-label="Type">${types.map(([t,l])=>`<button data-type="${t}" aria-pressed="${p.type===t}">${l}</button>`).join('')}</div>` : '';
+  const partsRow = p.type==='purchase' ? `<div class="lim" style="margin-bottom:10px"><label>Parts</label><div class="stepper"><button data-parts="-1" aria-label="Fewer parts">−</button><b>${p.parts}</b><button data-parts="1" aria-label="More parts">+</button></div></div>` : '';
   const first=p.stack.length?cat(p.stack[0]):null, catSwl = first&&+first.swl>0 ? +first.swl : null;
   const lim = catSwl!=null ? '' : (p.swl!=null ? +UNITS[S.unit].to(p.swl).toFixed(3) : '');
   const ctypes = role==='start' ? ['winch'] : p.type==='bollard' ? ['bollard','other'] : p.type==='block' ? ['block','other'] : p.type==='fairlead' ? ['fairlead','other'] : p.type==='purchase' ? ['purchase'] : ['padeye','shackle','other'];
@@ -743,6 +808,7 @@ function pointSheet(){
   if(p.type==='purchase') model = `<div class="grid2">${num('parts','Parts',p.parts,'',1)}${num('eta','Efficiency η',p.eta,'',0.01)}</div>`;
   return `<div class="sh-h"><span class="code ${role==='start'?'winch':role==='end'?'end':''}">${c}</span><b>${esc(p.name||PT[p.type].name)}</b>${close}</div>
     ${typeRow}
+    ${partsRow}
     <div class="stats" id="shStats">${stats(p,k)}</div>
     <div class="lim"><label for="pe_swl">${role==='start'?'Max':'SWL'}</label><div class="inp"><input id="pe_swl" data-k="swl" class="${want?'want':''}" type="number" step="any" inputmode="decimal" value="${lim}" placeholder="${catSwl!=null?UNITS[S.unit].to(catSwl).toFixed(UNITS[S.unit].dp):'?'}" aria-label="${role==='start'?'Winch maximum pull':'Safe working load'}"><span class="u">${uLab()}</span></div></div>
     ${pick}
@@ -772,24 +838,22 @@ function heightsSheet(){
 const sh=$('sheet');
 sh.addEventListener('pointerdown', e=>e.stopPropagation());
 sh.addEventListener('click', e=>{
-  const kb=e.target.closest('[data-kind]');
-  if(kb){ const k=kb.dataset.kind;
-    const was=(S.known.kind==='point'||S.known.kind==='leg')?'cell':S.known.kind;
-    if(k!==was) S.known.value=null;          // a new kind of reading starts empty, so nothing solves on an old number
-    if(k==='cell'){ if(was!=='cell'){ S.known.kind='point'; S.known.ref=null; } }
-    else { S.known.kind=k; S.known.ref=null; }
-    render(); if(k!=='cell') setTimeout(()=>{ const v=$('kVal'); if(v) v.focus(); },30); return; }
+  const kb=e.target.closest('[data-kind="cell"]');
+  if(kb){ S.known.kind='point'; S.known.ref=null; S.known.value=null; render(); return; }
+  if(e.target.closest('[data-act="repick"]')){ e.preventDefault(); S.known.ref=null; render(); return; }
   const ob=e.target.closest('[data-op]'); if(ob){ S.op=ob.dataset.op; render(); return; }
   if(e.target.closest('[data-act="next"]') && !RES.pending){ override=null; sheet=null; render(); return; }
   if(e.target.closest('[data-close]')){ if(sheet==='heights') S.view='plan'; sheet=null; S.sel=null; render(); return; }
   const p=S.points.find(q=>q.id===S.sel);
   const tb=e.target.closest('[data-type]');
   if(tb&&p){ const d=PT[tb.dataset.type]; p.type=tb.dataset.type; if(d.model){ p.model=d.model; p.mu=d.mu??p.mu; p.eta=d.eta??p.eta; } render(); return; }
+  const pb=e.target.closest('[data-parts]'); if(pb&&p){ p.parts=Math.max(1,Math.min(12,(p.parts||1)+(+pb.dataset.parts))); render(); return; }
   if(e.target.closest('[data-del]')&&p){ S.points=S.points.filter(q=>q!==p); S.sel=null; sheet=null; render(); }
 });
 sh.addEventListener('input', e=>{
   const el=e.target, v=parseFloat(el.value);
-  if(el.id==='kVal'){ S.known.value = Number.isFinite(v)&&v>=0 ? UNITS[S.unit].from(v) : null; soft(); return; }
+  if(el.id==='kW'||el.id==='kE'){ S.known.kind = el.id==='kW' ? 'winch' : 'end'; S.known.ref=null; S.known.value = Number.isFinite(v)&&v>=0 ? UNITS[S.unit].from(v) : null; soft(); return; }
+  if(el.id==='kC'){ S.known.value = Number.isFinite(v)&&v>=0 ? UNITS[S.unit].from(v) : null; soft(); return; }
   if(el.dataset.w){ if(el.dataset.w==='mbl') S.rope.mbl=Number.isFinite(v)?UNITS[S.unit].from(v):null; if(el.dataset.w==='sf'&&v>0) S.rope.sf=v; el.classList.remove('want'); soft(); return; }
   if(el.dataset.d){ if(!Number.isFinite(v)||v<0) return; const k=el.dataset.d; if(k!=='snap'&&v<1) return; S.deck[k]=v; S.points.forEach(p=>{ p.x=Math.min(p.x,S.deck.X); p.y=Math.min(p.y,S.deck.Y); }); soft(); return; }
   if(el.dataset.h){ const p=S.points.find(q=>q.id===el.dataset.h); if(p&&Number.isFinite(v)){ p.z=v; soft(); } return; }
@@ -804,11 +868,11 @@ sh.addEventListener('input', e=>{
 sh.addEventListener('keydown', e=>{
   if(e.key!=='Enter' || e.target.tagName!=='INPUT') return;
   e.preventDefault(); e.target.blur();
-  if(e.target.id==='kVal' && !RES.pending){ override=null; sheet=null; }
+  if((e.target.id==='kW'||e.target.id==='kE'||e.target.id==='kC') && !RES.pending){ override=null; sheet=null; }
   render();
 });
-function enterKeys(){ document.querySelectorAll('#sheet input').forEach(i=>{ i.enterKeyHint='done'; }); }
-function editReading(){ override='know'; sheet='known'; hunt=false; S.sel=null; render(); setTimeout(()=>{ const v=$('kVal'); if(v){ v.focus(); v.select(); } },30); }
+function enterKeys(){ document.querySelectorAll('#sheet input').forEach(i=>{ i.enterKeyHint='done'; if(!i._sel){ i._sel=1; const sel=()=>{ try{ i.select(); }catch(e){} }; i.addEventListener('focus',()=>{ sel(); setTimeout(sel,0); }); i.addEventListener('pointerup',e=>{ if(document.activeElement===i && i.selectionStart===i.selectionEnd) {} }); } }); }
+function editReading(){ override='know'; sheet='known'; hunt=false; S.sel=null; render(); setTimeout(()=>{ const kk=S.known.kind; const v=$(kk==='end'?'kE':kk==='winch'?'kW':'kC'); if(v){ v.focus(); v.select(); } },30); }
 sh.addEventListener('change', e=>{
   const el=e.target, p=S.points.find(q=>q.id===S.sel);
   if(el.dataset.w==='id'){ S.rope.id=el.value; render(); return; }
@@ -845,19 +909,19 @@ const easeBack = x => { const c1=1.70158,c3=c1+1; return 1+c3*Math.pow(x-1,3)+c1
 function draw(t){ const {ctx,w,h}=prep($('cv')); paint(ctx,w,h,PAL[S.theme]||PAL.night,true,t??performance.now()); }
 function paint(ctx,w,h,pal,live,t=0){
   const D=S.deck, font=FONT(), side=S.view==='side', anim=live && !RM.matches;
-  const shv = live && $('sheet').classList.contains('show') && isMobile() && (sheet==='known'||sheet==='heights'||sheet==='deck'||sheet==='wire');
-  const top = live ? Math.max(22, ($('hint').classList.contains('show') ? $('hint').offsetTop+$('hint').offsetHeight+10 : 0), ($('ans').classList.contains('show') ? $('ans').offsetHeight+22 : 0)) : 18;
-  const bot = live ? (shv ? $('sheet').offsetHeight + 30 : 30) : 34;
-  const pad={l:38,r:live?78:14,t:top,b:bot};
+  // fixed margins: nothing that opens or closes on top of the grid changes its size
+  const pad = live ? {l:38, r:78, t:isMobile()?104:86, b:26} : {l:38,r:14,t:18,b:34};
   const zs=S.points.map(p=>p.z);
   const aw=w-pad.l-pad.r, ah=h-pad.t-pad.b;
   const rot = live && !side && ((ah > aw) !== !!S.flip) && D.X >= D.Y;   // long side of the deck follows the long side of the screen; Rotate flips it
   const HW = rot ? D.Y : D.X;                                   // horizontal span (m)
   const B0 = side ? Math.floor(Math.min(0,...zs)-1) : 0, B1 = side ? Math.ceil(Math.max(D.Z||0,...zs)+1) : (rot ? D.X : D.Y);
-  const k=Math.max(1,Math.min(aw/HW, ah/(B1-B0)));
-  const ox=pad.l+(aw-HW*k)/2, oy=pad.t+Math.max(0,(ah-(B1-B0)*k)/2);
+  const k0=Math.max(1,Math.min(aw/HW, ah/(B1-B0)));
+  const ox0=pad.l+(aw-HW*k0)/2, oy0=pad.t+Math.max(0,(ah-(B1-B0)*k0)/2);
+  const z = live ? CAM.z : 1, k=k0*z, ox = live ? ox0*z+CAM.tx : ox0, oy = live ? oy0*z+CAM.ty+CAM.auto : oy0;
   const sx=x=>ox+x*k, sy=y=>oy+(B1-y)*k;
   const hu = p => rot ? p.y : p.x, vy = p => side ? p.z : rot ? p.x : p.y;   // point -> (across, up) in metres
+  if(live && CAM.rot!==rot){ CAM.rot=rot; CAM.z=1; CAM.tx=0; CAM.ty=0; }   // a new orientation starts fitted
   if(live) VIEW={k,ox,oy,sx,sy,hu,vy,side,rot,ix:px=>(px-ox)/k,iy:py=>B1-(py-oy)/k,
     put(p,px,py){ const a=(px-ox)/k, b=B1-(py-oy)/k;
       if(side){ p.x=a; p.z=b; } else if(rot){ p.y=a; p.x=b; } else { p.x=a; p.y=b; } }};
@@ -980,8 +1044,14 @@ function hitLeg(x,y,lim=16){
 const snapV = v => { const s=S.deck.snap>0?S.deck.snap:0; return s ? Math.round(v/s)*s : +v.toFixed(2); };
 let drag=null;
 const onUI = e => e.target.closest('.sheet,.rail,.fly,.hud,.toast');
+const ptrs=new Map(); let pan=null, pinch=null;
+function zoomAt(px,py,f){ const nz=Math.max(0.6,Math.min(8,CAM.z*f)); f=nz/CAM.z; CAM.tx=px-(px-CAM.tx)*f; CAM.ty=(py-CAM.auto)-((py-CAM.auto)-CAM.ty)*f; CAM.z=nz; }
+function fitView(){ CAM.z=1; CAM.tx=0; CAM.ty=0; draw(); }
 stage.addEventListener('pointerdown', e=>{
   if(onUI(e)) return;
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size===2){ drag=null; pan=null; const [a,b]=[...ptrs.values()], r=stage.getBoundingClientRect();
+    pinch={d:Math.hypot(a.x-b.x,a.y-b.y)||1, mx:(a.x+b.x)/2-r.left, my:(a.y+b.y)/2-r.top}; stage.setPointerCapture(e.pointerId); return; }
   const h=hit(e); if(!h) return;
   if(fly){ fly=false; renderRail(); }
   if(phase()==='place'){
@@ -995,13 +1065,18 @@ stage.addEventListener('pointerdown', e=>{
   if(pickMode()){
     if(h.p && roleOf(h.p)!=='start'){ S.known.kind='point'; S.known.ref=h.p.id; }
     else { const lg=hitLeg(h.x,h.y,30); if(!lg) return; S.known.kind='leg'; S.known.ref=S.points[lg.i].id; }
-    render(); if(!matchMedia('(pointer:coarse)').matches) setTimeout(()=>$('kVal')&&$('kVal').focus(),40); return;
+    render(); setTimeout(()=>$('kC')&&$('kC').focus(),40); return;
   }
   if(h.p){ drag={id:h.p.id, x:h.x, y:h.y, moved:false}; stage.setPointerCapture(e.pointerId); }
-  else if(phase()==='check' && hitLeg(h.x,h.y,22)){ S.seenCheck=true; editReading(); }
-  else if(S.sel||sheet){ S.sel=null; if(sheet==='point') sheet=null; render(); }
+  else { pan={x:e.clientX, y:e.clientY, moved:false, leg: phase()==='check' && !!hitLeg(h.x,h.y,22)}; stage.setPointerCapture(e.pointerId); }
 });
 stage.addEventListener('pointermove', e=>{
+  if(ptrs.has(e.pointerId)) ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pinch && ptrs.size===2){ const [a,b]=[...ptrs.values()], r=stage.getBoundingClientRect();
+    const d=Math.hypot(a.x-b.x,a.y-b.y)||1, mx=(a.x+b.x)/2-r.left, my=(a.y+b.y)/2-r.top;
+    CAM.tx+=mx-pinch.mx; CAM.ty+=my-pinch.my; zoomAt(mx,my,d/pinch.d); pinch={d,mx,my}; draw(); return; }
+  if(pan){ const dx=e.clientX-pan.x, dy=e.clientY-pan.y; if(!pan.moved && Math.hypot(dx,dy)<7) return;
+    pan.moved=true; CAM.tx+=dx; CAM.ty+=dy; pan.x=e.clientX; pan.y=e.clientY; stage.style.cursor='grabbing'; draw(); return; }
   if(!drag && onUI(e)) return;
   const h=hit(e); if(!h) return;
   if(drag){
@@ -1018,7 +1093,16 @@ stage.addEventListener('pointermove', e=>{
 const endDrag=()=>{ if(!drag) return; const d=drag; drag=null;
   if(!d.moved){ if(phase()==='check') S.seenCheck=true; if(S.sel===d.id){ S.sel=null; sheet=null; } else { S.sel=d.id; sheet='point'; } }
   render(); if(!d.moved && S.sel && hunt) focusSoon('pe_swl'); };
-stage.addEventListener('pointerup', endDrag); stage.addEventListener('pointercancel', ()=>{ drag=null; });
+stage.addEventListener('pointerup', e=>{
+  ptrs.delete(e.pointerId);
+  if(pinch){ if(ptrs.size<2) pinch=null; return; }
+  if(pan){ const p_=pan; pan=null; stage.style.cursor='default';
+    if(!p_.moved){ if(p_.leg){ S.seenCheck=true; editReading(); } else if(S.sel||sheet&&sheet!=='known'){ S.sel=null; if(sheet==='point') sheet=null; render(); } }
+    return; }
+  endDrag();
+});
+stage.addEventListener('pointercancel', e=>{ ptrs.delete(e.pointerId); drag=null; pan=null; pinch=null; });
+stage.addEventListener('wheel', e=>{ if(onUI(e)) return; e.preventDefault(); const r=stage.getBoundingClientRect(); zoomAt(e.clientX-r.left, e.clientY-r.top, Math.exp(-e.deltaY*0.0015)); draw(); }, {passive:false});
 stage.addEventListener('dblclick', e=>{ if(onUI(e)) return; const h=hit(e); if(!h||h.p) return; const lg=hitLeg(h.x,h.y); if(lg) addPoint(S.lastType||'block', lg); });
 
 function addPoint(type, at){
@@ -1042,6 +1126,7 @@ $('btnMenu').addEventListener('click', e=>{ e.stopPropagation(); const m=$('menu
 document.addEventListener('click', e=>{ if(!e.target.closest('#menu')) $('menu').classList.remove('open'); });
 $('menu').addEventListener('click', e=>{ const b=e.target.closest('[data-m]'); if(!b) return; $('menu').classList.remove('open'); menuAct(b.dataset.m); });
 function menuAct(a){
+  if(a==='deck'){ sheet='deck'; S.sel=null; hunt=false; render(); return; }
   if(a==='figures'){ renderTables(); $('figDlg').showModal(); }
   else if(a==='print') printPlan();
   else if(a==='catalogue'){ renderCat(); $('catDlg').showModal(); }

@@ -23,9 +23,9 @@ import {
 const S = {
   el: null, renderer: null, scene: null, camera: null, root: null, labels: null,
   cam: { target: new Vector3(), radius: 60, theta: -0.75, phi: 0.95 },  // theta: azimuth, phi: polar from +y
-  touched: false, data: null, pickables: [], raf: 0, span: 40, sig: '', box: null, labelDefs: [],
+  touched: false, drag: null, level: null, data: null, pickables: [], raf: 0, span: 40, sig: '', box: null, labelDefs: [],
 };
-const WF3D = { onPick: null, mount, update, view, resize, active: () => !!S.renderer, screenOf };
+const WF3D = { onPick: null, onMove: null, onMoveEnd: null, mount, update, view, resize, active: () => !!S.renderer, screenOf };
 
 const W = p => new Vector3(p.x, p.z, -p.y);             // app metres -> world
 const WV = v => new Vector3(v[0], v[2], -v[1]);         // app vector -> world
@@ -34,7 +34,7 @@ const WV = v => new Vector3(v[0], v[2], -v[1]);         // app vector -> world
 function screenOf(kind, id) {
   if (!S.data) return null;
   let v;
-  if (kind === 'pt') { const p = S.data.points.find(q => q.id === id); if (!p) return null; v = W(p); }
+  if (kind === 'pt' || kind === 'zh') { const p = S.data.points.find(q => q.id === id); if (!p) return null; v = W(p); if (kind === 'zh') v.y += S.u * 2.4; }
   else { const a = S.data.points[id], b = S.data.points[id + 1]; if (!a || !b) return null; v = W(a).lerp(W(b), 0.5); }
   placeCamera(); v.project(S.camera);
   const r = S.renderer.domElement.getBoundingClientRect();
@@ -91,17 +91,18 @@ const glow = (color, k = 0.35, o = {}) => mat(color, { emissive: new Color(color
 /* ------------------------------------------------------------------ */
 function update(data) {
   if (!S.renderer) return;
-  const sig = JSON.stringify(data);
+  const sig = JSON.stringify(data) + JSON.stringify(S.level);
   if (sig === S.sig) return;                 // nothing changed: keep the frame
   S.sig = sig; S.data = data;
   clearRoot();
   const T = data.theme, D = data.deck, P = data.points;
   const span = Math.max(D.X, D.Y, 8); S.span = span;
-  const u = Math.min(4, Math.max(0.6, span * 0.03));   // drawn size of fittings (not to scale on big decks)
+  const u = Math.min(4, Math.max(0.6, span * 0.03)); S.u = u;   // drawn size of fittings (not to scale on big decks)
   S.renderer.setClearColor(new Color(T.bg));
 
   // ---- deck
-  const deck = new Mesh(new BoxGeometry(D.X, 0.12, D.Y), mat(T.deck, { roughness: 0.9, metalness: 0 }));
+  const below = P.some(p => p.z < -0.05);     // something under the deck: let it show through
+  const deck = new Mesh(new BoxGeometry(D.X, 0.12, D.Y), mat(T.deck, { roughness: 0.9, metalness: 0, transparent: below, opacity: below ? 0.72 : 1, depthWrite: !below }));
   deck.position.set(D.X / 2, -0.06, -D.Y / 2); S.root.add(deck);
   const step = niceStep(span / 10);
   S.root.add(new LineSegments(gridGeom(D.X, D.Y, step / 5, 0.005), new LineBasicMaterial({ color: T.grid, transparent: true, opacity: 0.35 })));
@@ -121,7 +122,21 @@ function update(data) {
     if (sel) { const halo = new Mesh(new TubeGeometry(curve, 1, rl * 4.5, 12, false), new MeshBasicMaterial({ color: T.sel, transparent: true, opacity: 0.22, depthWrite: false })); S.root.add(halo); }
     const hit = new Mesh(new TubeGeometry(curve, 1, Math.max(rl * 6, span * 0.018), 6, false), new MeshBasicMaterial({ visible: false }));
     hit.userData = { kind: 'leg', id: i }; S.root.add(hit); S.pickables.push(hit);
+    // where the line passes through the deck
+    if ((P[i].z > 0.02 && P[i + 1].z < -0.02) || (P[i].z < -0.02 && P[i + 1].z > 0.02)) {
+      const k = P[i].z / (P[i].z - P[i + 1].z), x = a.clone().lerp(b, k);
+      const ring = new Mesh(new TorusGeometry(u * 0.55, u * 0.09, 8, 32), new MeshBasicMaterial({ color: T.sel }));
+      ring.rotation.x = Math.PI / 2; ring.position.copy(x); S.root.add(ring);
+      const hole = new Mesh(new CylinderGeometry(u * 0.5, u * 0.5, 0.14, 28), new MeshBasicMaterial({ color: T.bg }));
+      hole.position.copy(x); S.root.add(hole);
+    }
   });
+  // the level being dragged to
+  if (S.level) {
+    const lv = new Mesh(new PlaneGeometry(D.X, D.Y), new MeshBasicMaterial({ color: T.sel, transparent: true, opacity: 0.1, side: DoubleSide, depthWrite: false }));
+    lv.rotation.x = -Math.PI / 2; lv.position.set(D.X / 2, S.level.y, -D.Y / 2); S.root.add(lv);
+    S.root.add(new LineSegments(edgeGeom(D.X, D.Y, S.level.y), new LineBasicMaterial({ color: T.sel, transparent: true, opacity: 0.6 })));
+  }
 
   // ---- points
   const maxR = Math.max(1e-9, ...P.filter(p => p.role !== 'start').map(p => p.R || 0));
@@ -144,7 +159,7 @@ function update(data) {
       if (p.n) { const n = WV(p.n).normalize(); if (n.lengthSq() > 0.5) sheave.quaternion.copy(new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), n)); }
       g.add(sheave);
       const hub = new Mesh(new SphereGeometry(u * 0.2, 12, 8), body); g.add(hub);
-      if (h > 0.2) addDrop(g, h, T, u);
+      if (Math.abs(p.z) > 0.2) addDrop(g, p.z, T, u);
     } else if (p.type === 'fairlead') {
       const box = new Mesh(new BoxGeometry(u * 1.2, Math.max(0.3, h + u * 0.4), u * 0.5), accent); box.position.y = (u * 0.4 - h) / 2; g.add(box);
       const roll = new Mesh(new CylinderGeometry(u * 0.22, u * 0.22, u * 1.3, 16), body); roll.rotation.z = Math.PI / 2; roll.position.y = u * 0.25; g.add(roll);
@@ -153,9 +168,18 @@ function update(data) {
       const plate = new Mesh(new BoxGeometry(u * 1.1, Math.max(0.12, h), u * 0.25), body); plate.position.y = -h / 2 - u * 0.2; g.add(plate);
     } else {                                   // the load
       const load = new Mesh(new OctahedronGeometry(u * 0.85, 0), accent); g.add(load);
-      if (h > 0.2) addDrop(g, h, T, u);
+      if (Math.abs(p.z) > 0.2) addDrop(g, p.z, T, u);
     }
-    if (p.sel) { const ring = new Mesh(new TorusGeometry(u * 1.5, u * 0.07, 8, 40), new MeshBasicMaterial({ color: T.sel })); ring.rotation.x = Math.PI / 2; ring.position.y = -h + 0.05; g.add(ring); }
+    if (p.sel) {
+      const ring = new Mesh(new TorusGeometry(u * 1.5, u * 0.07, 8, 40), new MeshBasicMaterial({ color: T.sel })); ring.rotation.x = Math.PI / 2; ring.position.y = -p.z + 0.05; g.add(ring);
+      // up/down handle: drag it to raise or lower the point
+      const hm = new MeshBasicMaterial({ color: T.sel }), hy = u * 2.4;
+      const stem = new Mesh(new CylinderGeometry(u * 0.06, u * 0.06, hy - u * 0.9, 8), hm); stem.position.y = u * 0.9 + (hy - u * 0.9) / 2 - u * 0.45; g.add(stem);
+      const upC = new Mesh(new ConeGeometry(u * 0.32, u * 0.6, 16), hm); upC.position.y = hy + u * 0.3; g.add(upC);
+      const dnC = new Mesh(new ConeGeometry(u * 0.32, u * 0.6, 16), hm); dnC.rotation.x = Math.PI; dnC.position.y = hy - u * 0.45; g.add(dnC);
+      const zh = new Mesh(new SphereGeometry(u * 1.1, 10, 8), new MeshBasicMaterial({ visible: false }));
+      zh.position.copy(w).add(new Vector3(0, hy, 0)); zh.userData = { kind: 'zh', id: p.id }; S.root.add(zh); S.pickables.push(zh);
+    }
     S.root.add(g);
     const hit = new Mesh(new SphereGeometry(Math.max(u * 1.6, span * 0.025), 10, 8), new MeshBasicMaterial({ visible: false }));
     hit.position.copy(w); hit.userData = { kind: 'pt', id: p.id }; S.root.add(hit); S.pickables.push(hit);
@@ -174,7 +198,8 @@ function update(data) {
     S.labelDefs.push({ p: W(P[i]).lerp(W(P[i + 1]), 0.5), text: L.text, color: colOf(L.cls), pri: data.selLeg === i ? 3 : 1, cls: data.selLeg === i ? 'on' : '' });
   });
   P.forEach(p => {
-    const lift = new Vector3(0, u * 1.9, 0);
+    const lift = new Vector3(0, p.sel ? u * 4 : u * 1.9, 0);
+    if (p.sel && S.level) S.labelDefs.push({ p: W(p).add(new Vector3(0, u * 2.4, 0)), text: (p.z >= 0 ? '+' : '') + p.z.toFixed(1) + ' m', color: T.sel, pri: 5, cls: 'on', side: 1 });
     S.labelDefs.push({ p: W(p).add(lift), text: p.code + (show && p.text ? ' · ' + p.text : ''), color: p.role === 'start' ? T.known : p.role === 'end' ? T.sel : (show && p.cls ? T[p.cls] : T.ink), pri: p.sel ? 4 : 2, cls: 'pt' + (p.sel ? ' on' : '') });
   });
   S.labelDefs.sort((a, b) => b.pri - a.pri);
@@ -309,16 +334,47 @@ function bindControls(cv) {
     ndc.set((e.clientX - rect.left) / rect.width * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
     ray.setFromCamera(ndc, S.camera);
     const hits = ray.intersectObjects(S.pickables, false);
-    const pt = hits.find(h => h.object.userData.kind === 'pt');     // a point wins over the line running into it
-    const h = pt || hits[0];
+    const h = hits.find(h => h.object.userData.kind === 'zh') || hits.find(h => h.object.userData.kind === 'pt') || hits[0];   // handle, then point, then line
     return h ? h.object.userData : null;
   };
+  const rayAt = e => { const rect = cv.getBoundingClientRect(); ndc.set((e.clientX - rect.left) / rect.width * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1); ray.setFromCamera(ndc, S.camera); return ray.ray; };
+  const ptPos = id => { const p = S.data && S.data.points.find(q => q.id === id); return p ? W(p) : null; };
+  function dragTo(e) {
+    const d = S.drag, r = rayAt(e), at = d.a0 || ptPos(d.id); if (!at) return;
+    if (d.kind === 'zh') {                      // closest point on the vertical line through the point
+      const w0 = r.origin.clone().sub(at), dir = r.direction, b = dir.y, dd = w0.dot(dir), e2 = w0.y;
+      const den = 1 - b * b; if (den < 1e-4) return;
+      const t = (e2 - b * dd) / den;            // height offset along +y
+      const z = d.z0 + (t - d.t0);
+      S.level = { y: z };
+      if (WF3D.onMove) WF3D.onMove(d.id, { z });
+    } else {                                     // slide on the point's own level
+      if (Math.abs(r.direction.y) < 0.03) return;
+      const k = (at.y - r.origin.y) / r.direction.y; if (k <= 0) return;
+      const hit = r.origin.clone().addScaledVector(r.direction, k);
+      if (WF3D.onMove) WF3D.onMove(d.id, { x: hit.x - d.off.x, y: -(hit.z - d.off.z) });
+    }
+  }
   cv.addEventListener('contextmenu', e => e.preventDefault());
   cv.addEventListener('pointerdown', e => {
     try { cv.setPointerCapture(e.pointerId); } catch (_) {}
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); moved = 0;
     mode = (e.button === 2 || e.shiftKey || pointers.size === 2) ? 'pan' : 'orbit';
-    if (pointers.size === 2) { const [a, b] = [...pointers.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); }
+    S.drag = null;
+    if (pointers.size === 1 && mode === 'orbit') {
+      const h = pick(e);
+      if (h && (h.kind === 'pt' || h.kind === 'zh')) {
+        const at = ptPos(h.id), r = rayAt(e);
+        if (h.kind === 'zh') {
+          const w0 = r.origin.clone().sub(at), dir = r.direction, b = dir.y, dd = w0.dot(dir), den = 1 - b * b;
+          S.drag = { kind: 'zh', id: h.id, a0: at.clone(), z0: at.y, t0: den > 1e-4 ? (w0.y - b * dd) / den : 0 };
+        } else if (Math.abs(r.direction.y) > 0.03) {
+          const k = (at.y - r.origin.y) / r.direction.y, hit = r.origin.clone().addScaledVector(r.direction, k);
+          S.drag = { kind: 'pt', id: h.id, off: hit.sub(at) };
+        }
+      }
+    }
+    if (pointers.size === 2) { S.drag = null; const [a, b] = [...pointers.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); }
   });
   cv.addEventListener('pointermove', e => {
     if (!pointers.has(e.pointerId)) { if (e.pointerType === 'mouse') cv.style.cursor = pick(e) ? 'pointer' : 'grab'; return; }
@@ -326,6 +382,7 @@ function bindControls(cv) {
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     moved += Math.abs(dx) + Math.abs(dy);
     if (moved < 6) return;
+    if (S.drag) { S.drag.moved = true; cv.style.cursor = 'grabbing'; dragTo(e); return; }
     S.touched = true;
     if (pointers.size === 2) {
       const [a, b] = [...pointers.values()], dist = Math.hypot(a.x - b.x, a.y - b.y);
@@ -341,6 +398,8 @@ function bindControls(cv) {
   const end = e => {
     const was = pointers.has(e.pointerId); pointers.delete(e.pointerId);
     if (pointers.size < 2) pinch0 = 0;
+    if (S.drag && S.drag.moved) { S.drag = null; S.level = null; cv.style.cursor = 'grab'; if (WF3D.onMoveEnd) WF3D.onMoveEnd(); return; }
+    S.drag = null;
     if (was && moved < 6 && e.type === 'pointerup' && pointers.size === 0) {
       const now = performance.now();
       if (now - lastTap < 320) { lastTap = 0; view('fit'); return; }

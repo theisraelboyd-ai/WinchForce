@@ -31,7 +31,10 @@ friction used the angle between the two legs rather than the turn angle.
 The cube button on the right shows the line in 3D: deck, fittings at their
 heights, legs coloured by load, and an arrow on each point showing the
 direction and size of the pull on it. Tap a point or a line to see its values
-in the top bar; drag to turn, pinch to zoom, double-tap to reset.
+in the top bar. Drag a point to slide it on its level; tap it and drag the
+↕ handle to raise or lower it (below the deck is fine — the line is marked
+where it passes through). Drag empty space to turn, pinch to zoom,
+double-tap to reset.
 
 The 3D code lives in `src/view3d.js` and is bundled (with three.js) into
 `index.html` so the app stays a single offline file. After changing it:

@@ -58,7 +58,7 @@ svg.i{width:22px;height:22px;flex:none}
 .stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 
 /* answer chip (top) */
-.hud{position:absolute;left:10px;right:10px;top:10px;display:flex;align-items:flex-start;gap:8px;z-index:6;pointer-events:none}
+.hud{position:absolute;left:10px;right:78px;top:10px;display:flex;align-items:flex-start;gap:8px;z-index:6;pointer-events:none}
 .hud>*{pointer-events:auto}
 .ans{display:none;align-items:center;gap:10px;padding:8px 14px 8px 10px;border-radius:999px;background:var(--glass);border:1.5px solid var(--line2);box-shadow:0 6px 20px rgba(0,0,0,.28);backdrop-filter:blur(8px);cursor:pointer;max-width:calc(100% - 52px)}
 .ans.show{display:inline-flex;animation:pop .35s cubic-bezier(.2,1.4,.4,1)}
@@ -71,22 +71,15 @@ svg.i{width:22px;height:22px;flex:none}
 .ans.bad{border-color:var(--bad);animation:pop .35s cubic-bezier(.2,1.4,.4,1),badglow 1.6s ease-in-out infinite} .ans.bad .pc{background:var(--bad-soft);color:var(--bad)}
 .code{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:22px;padding:0 5px;border-radius:6px;font-weight:750;font-size:12px;border:1.5px solid var(--line2);background:var(--well)}
 .code.winch{border-color:var(--known);color:var(--known)}.code.end{border-color:var(--cursor);color:var(--cursor)}
-.viewbtn{margin-left:auto;width:42px;height:42px;border-radius:50%;border:1px solid var(--line2);background:var(--glass);display:inline-flex;align-items:center;justify-content:center;color:var(--ink2);box-shadow:0 4px 14px rgba(0,0,0,.22)}
-.viewbtn[aria-pressed="true"]{color:var(--known);border-color:var(--known)}
 
 /* short hint pill */
-.hint{position:absolute;left:50%;top:62px;transform:translateX(-50%);z-index:5;display:none;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:var(--glass);border:1px solid var(--known);color:var(--ink);font-weight:650;font-size:14px;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.25);pointer-events:none}
+.hint{position:absolute;left:calc((100% - 70px)/2);top:62px;transform:translateX(-50%);z-index:5;display:none;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:var(--glass);border:1px solid var(--known);color:var(--ink);font-weight:650;font-size:14px;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.25);pointer-events:none}
 .hint.show{display:inline-flex;animation:fadein .4s ease}
 .hint svg{color:var(--known);animation:nudge 1.6s ease-in-out infinite}
 
 /* floating add buttons once the line is laid out */
-.addcol{position:absolute;right:10px;top:64px;display:none;flex-direction:column;gap:8px;z-index:6}
-.addcol.show{display:flex}
-.fab{width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);background:var(--glass);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.22);position:relative}
-.fab b{position:absolute;right:-2px;top:-2px;width:17px;height:17px;border-radius:50%;background:var(--cursor);color:#1b1205;font-size:13px;line-height:17px;font-weight:800}
 
 /* bottom dock */
-.dock{position:absolute;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:8;margin:0 auto;max-width:620px;background:var(--glass);border:1px solid var(--line2);border-radius:22px;box-shadow:0 10px 30px rgba(0,0,0,.35);backdrop-filter:blur(10px);padding:8px;display:flex;flex-direction:column;gap:8px;animation:up .3s ease}
 .row{display:flex;align-items:center;gap:8px}
 .tool{flex:1;min-width:0;height:56px;border-radius:14px;border:1px solid var(--line2);background:var(--panel2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:650;color:var(--ink2)}
 .tool svg{color:var(--ink)}
@@ -104,8 +97,6 @@ svg.i{width:22px;height:22px;flex:none}
 .kin span{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--ink3);font-weight:650}
 .tap{flex:1;height:56px;border-radius:14px;border:1.5px dashed var(--known);display:flex;align-items:center;justify-content:center;gap:8px;color:var(--known);font-weight:700}
 .tap svg{animation:tapme 1.2s ease-in-out infinite}
-.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px}
-.chips::-webkit-scrollbar{display:none}
 .chip{flex:none;height:52px;min-width:64px;padding:0 12px;border-radius:14px;border:1px solid var(--line2);background:var(--panel2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:11.5px;font-weight:650;color:var(--ink2);position:relative}
 .chip svg{width:20px;height:20px;color:var(--ink)}
 .chip .val{font-size:12.5px;color:var(--ink);font-weight:700}
@@ -113,8 +104,33 @@ svg.i{width:22px;height:22px;flex:none}
 .chip .dot{position:absolute;right:6px;top:6px;width:8px;height:8px;border-radius:50%;background:var(--cursor);animation:dot 1.4s ease-in-out infinite}
 .chip.ok{border-color:color-mix(in srgb,var(--ok) 60%,transparent)}.chip.warn{border-color:var(--warn)}.chip.bad{border-color:var(--bad);animation:badglow 1.6s ease-in-out infinite}
 
+/* the rail: every tool, one column, right edge */
+.rail{position:absolute;right:8px;top:8px;bottom:calc(8px + env(safe-area-inset-bottom));width:60px;display:flex;flex-direction:column;align-items:center;gap:7px;z-index:8;overflow-y:auto;scrollbar-width:none;padding:2px 0}
+.rail::-webkit-scrollbar{display:none}
+.rail .sep{width:28px;height:1px;background:var(--line2);flex:none;margin:2px 0}
+.rail .grow{flex:1;min-height:6px}
+.rb{position:relative;flex:none;width:54px;height:54px;border-radius:16px;border:1px solid var(--line2);background:var(--glass);backdrop-filter:blur(8px);box-shadow:0 4px 14px rgba(0,0,0,.24);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.rb svg{width:22px;height:22px}
+.rb .rv{font-size:10.5px;font-weight:750;line-height:1;color:var(--ink2);white-space:nowrap}
+.rb:active{transform:scale(.94)}
+.rb:disabled{opacity:.35}
+.rb[aria-pressed="true"]{border-color:var(--known);background:var(--known-soft);color:var(--known)}
+.rb.go{border-radius:50%;background:var(--cursor);border-color:var(--cursor);color:#1b1205}
+.rb.go.glow{animation:glow 1.5s ease-in-out infinite}
+.rb.known{border-color:color-mix(in srgb,var(--known) 55%,transparent)} .rb.known svg{color:var(--known)}
+.rb.ok .rv{color:var(--ok)} .rb.ok{border-color:color-mix(in srgb,var(--ok) 55%,transparent)}
+.rb.warn .rv{color:var(--warn)} .rb.warn{border-color:var(--warn)}
+.rb.bad .rv{color:var(--bad)} .rb.bad{border-color:var(--bad);animation:badglow 1.6s ease-in-out infinite}
+.rb .dot{position:absolute;right:6px;top:6px;width:8px;height:8px;border-radius:50%;background:var(--cursor);animation:dot 1.4s ease-in-out infinite}
+.fly{position:absolute;right:76px;display:none;gap:6px;z-index:9;animation:up .2s ease}
+.fly.show{display:flex}
+.fly button{width:68px;height:54px;border-radius:14px;border:1px solid var(--line2);background:var(--panel);box-shadow:0 6px 18px rgba(0,0,0,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11.5px;font-weight:650;color:var(--ink2)}
+.fly button svg{color:var(--ink)}
+.toast{position:absolute;left:calc((100% - 70px)/2);bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:12;display:none;align-items:center;gap:12px;padding:10px 12px 10px 16px;border-radius:999px;background:var(--panel);border:1px solid var(--line2);box-shadow:0 8px 24px rgba(0,0,0,.35);font-weight:650;white-space:nowrap}
+.toast.show{display:inline-flex;animation:up .25s ease}
+.toast button{border:0;background:var(--cursor);color:#1b1205;font-weight:750;padding:6px 14px;border-radius:999px}
 /* bottom sheet (point card, small forms) */
-.sheet{position:absolute;left:10px;right:10px;z-index:9;margin:0 auto;max-width:620px;background:var(--panel);border:1px solid var(--line2);border-radius:20px;box-shadow:0 14px 40px rgba(0,0,0,.45);padding:12px;display:none;max-height:calc(100% - 120px);overflow-y:auto;touch-action:auto}
+.sheet{position:absolute;left:10px;right:76px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:9;margin:0 auto;max-width:560px;background:var(--panel);border:1px solid var(--line2);border-radius:20px;box-shadow:0 14px 40px rgba(0,0,0,.45);padding:12px;display:none;max-height:calc(100% - 120px);overflow-y:auto;touch-action:auto}
 .sheet.show{display:block;animation:up .25s ease}
 .sh-h{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .sh-h .x{margin-left:auto}
@@ -198,7 +214,7 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
 .imp .map{font-size:12.5px;color:var(--ink2);margin:8px 0}.imp .map span{display:inline-block;margin:2px 10px 2px 0}.imp .map b{color:var(--ink)}
 
 @media (max-width:520px){ .brand b{display:none} }
-@media (min-width:821px){ .sheet{left:auto;right:68px;width:380px;margin:0;top:64px;bottom:auto!important;max-height:calc(100% - 180px)} }
+@media (min-width:821px){ .sheet{left:auto;right:80px;width:380px;margin:0;top:64px;bottom:auto;max-height:calc(100% - 90px)} }
 .print-note{display:none}
 @media print{ body>*:not(.print-note){display:none!important} .print-note{display:block!important;padding:40px;font:16px system-ui;color:#000} }
 </style>
@@ -223,6 +239,9 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
   <symbol id="i-side" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9"><path d="M2 17h20"/><path d="M5 17V8l5-3v12M14 17v-6h6v6"/></g></symbol>
   <symbol id="i-plan" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 15l5-6 5 4"/></g></symbol>
   <symbol id="i-hand" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V5a1.5 1.5 0 0 1 3 0v5M12 10V4a1.5 1.5 0 0 1 3 0v6M15 10V6a1.5 1.5 0 0 1 3 0v7c0 4-2.5 7-6.5 7-3 0-4.5-1.5-6-4l-2-3.3a1.5 1.5 0 0 1 2.4-1.7L9 13"/></g></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-rotate" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="9" width="10" height="12" rx="2"/><path d="M4 12A8 8 0 0 1 16.5 4.5"/><path d="M16.8 1.8l.2 3-3 .3"/></g></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></g></symbol>
   <symbol id="i-tap" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" opacity=".5"/></g></symbol>
 </svg>
 
@@ -250,16 +269,14 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
 
 <main class="stage" id="stage">
   <canvas id="cv" aria-label="Deck grid with the line"></canvas>
-  <div class="hud"><div class="ans" id="ans" role="button" tabindex="0" aria-label="Change what you know"></div>
-    <button class="viewbtn" id="viewBtn" aria-label="Side view" title="Side view"><svg class="i"><use href="#i-side"/></svg></button></div>
+  <div class="hud"><div class="ans" id="ans" role="button" tabindex="0" aria-label="Change the reading"></div></div>
   <div class="hint" id="hint"></div>
-  <div class="addcol" id="addcol">
-    <button class="fab" data-add="bollard" aria-label="Add bollard" title="Add bollard"><svg class="i"><use href="#i-bollard"/></svg><b>+</b></button>
-    <button class="fab" data-add="block" aria-label="Add block" title="Add block"><svg class="i"><use href="#i-block"/></svg><b>+</b></button>
-    <button class="fab" data-add="fairlead" aria-label="Add fairlead" title="Add fairlead"><svg class="i"><use href="#i-fairlead"/></svg><b>+</b></button>
+  <nav class="rail" id="rail" aria-label="Tools"></nav>
+  <div class="fly" id="fly">
+    <button data-add="bollard" aria-label="Add bollard"><svg class="i"><use href="#i-bollard"/></svg><span>Bollard</span></button><button data-add="block" aria-label="Add block"><svg class="i"><use href="#i-block"/></svg><span>Block</span></button><button data-add="fairlead" aria-label="Add fairlead"><svg class="i"><use href="#i-fairlead"/></svg><span>Fairlead</span></button>
   </div>
+  <div class="toast" id="toast" role="status"></div>
   <div class="sheet" id="sheet"></div>
-  <div class="dock" id="dock"></div>
 </main>
 
 <!-- all figures -->
@@ -511,8 +528,8 @@ function solve(){
 
 
 /* =====================================================================
-   UI — mobile first. The drawing shows what to do; text is a last resort.
-   phase: 'lay' (place the line) → 'know' (one reading) → 'check' (extras)
+   UI — mobile first. The grid is the page; one rail of icons on the right.
+   phase: 'place' (blank page: tap W then E) → 'lay' → 'know' (one reading) → 'check'
 ===================================================================== */
 const PAL = {
   night:{bg:'#0e1720', deck:'#132029', grid:'rgba(150,185,205,.07)', grid2:'rgba(150,185,205,.17)', ink:'#e2eaef', ink2:'#9db0be', ink3:'#647887',
@@ -521,151 +538,153 @@ const PAL = {
          edge:'rgba(20,45,60,.30)', ok:'#14895a', warn:'#a87400', bad:'#d23c3c', none:'#2c3e4c', sel:'#d07a00', known:'#1f6fd1', res:'#7a4fd6', panel:'#ffffff', line:'#2c3e4c'},
 };
 const RM = matchMedia('(prefers-reduced-motion: reduce)');
-let RES=null, VIEW=null, hoverId=null, sheet=null, hunt=false, popT=0, wasPending=true, override=null;
+let RES=null, VIEW=null, hoverId=null, sheet=null, hunt=false, popT=0, wasPending=true, override=null, fly=false, undoBuf=null;
 const stage=$('stage');
 const roleOf = p => PT[p.type].role;
 const icon = (id, cls='i') => `<svg class="${cls}"><use href="#i-${id}"/></svg>`;
-function phase(){ if(!S.laidOut || override==='lay') return 'lay'; if(RES.pending || RES.err || override==='know') return 'know'; return 'check'; }
+const isMobile = () => matchMedia('(max-width:820px)').matches;
+const coarse = () => matchMedia('(pointer:coarse)').matches;
+if(S.rot==null) S.rot = isMobile();          // phones start upright: deck length runs up the screen
+function phase(){
+  if(S.points.length<2) return 'place';
+  if(!S.laidOut || override==='lay') return 'lay';
+  if(RES.pending || RES.err || override==='know') return 'know';
+  return 'check';
+}
 const pickMode = () => phase()==='know' && (S.known.kind==='point'||S.known.kind==='leg');
 
+function stepPop(){ if(wasPending && !RES.pending && !RES.err) popT=performance.now(); wasPending = RES.pending || !!RES.err; }
 function render(){
-  RES=solve();
-  if(wasPending && !RES.pending && !RES.err) popT=performance.now();
-  wasPending = RES.pending || !!RES.err;
-  renderAns(); renderDock(); renderSheet(); renderHint(); syncChrome(); draw(); kick(); save();
+  RES=solve(); stepPop();
+  const ph=phase();
+  if(ph==='know' && (!sheet || sheet==='point' && !S.sel)) sheet='known';
+  if(ph!=='know' && sheet==='known') sheet=null;
+  renderAns(); renderRail(); renderSheet(); renderHint(); draw(); kick(); save();
 }
-function soft(){       // while typing: refresh numbers, never rebuild the focused input
-  RES=solve();
-  if(wasPending && !RES.pending && !RES.err) popT=performance.now();
-  wasPending = RES.pending || !!RES.err;
-  renderAns(); liveDock(); liveSheet(); draw(); kick(); save();
-}
-function syncChrome(){
-  document.querySelectorAll('#unitSeg button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.u===S.unit)));
-  const side=S.view==='side', vb=$('viewBtn');
-  vb.innerHTML=icon(side?'plan':'side'); vb.setAttribute('aria-pressed',String(side)); vb.setAttribute('aria-label', side?'View from above':'View from the side'); vb.title=vb.getAttribute('aria-label');
-  $('addcol').classList.toggle('show', phase()!=='lay');
-}
+function soft(){ RES=solve(); stepPop(); renderAns(); liveRail(); liveSheet(); draw(); kick(); save(); }
+const C = () => RES.codes||codes();
 
-/* ---------------------------------------------------------------- top: answer + hint */
+/* ---------------------------------------------------------------- answer chip + hint */
 function renderAns(){
   const a=$('ans');
-  if(RES.err || RES.pending){ a.classList.remove('show','ok','warn','bad'); a.innerHTML=''; return; }
+  if(RES.err || RES.pending || phase()==='place'){ a.classList.remove('show','ok','warn','bad'); a.innerHTML=''; return; }
   const P=S.points, K=S.known, end=P[P.length-1];
   const w=RES.worst, c=w?cls(w.use):'';
   const big = K.kind==='end' ? {code:'W',cls:'winch',v:RES.winch} : {code:C()[end.id],cls:'end',v:RES.end};
   const small = K.kind==='end' ? {code:C()[end.id],cls:'end',v:RES.end} : {code:'W',cls:'winch',v:RES.winch};
   const was=a.classList.contains('show');
-  a.className='ans show '+c; if(was) a.style.animation='none'; else a.style.animation='';
-  if(c==='bad') a.style.animation='badglow 1.6s ease-in-out infinite';
+  a.className='ans show '+c; a.style.animation = was ? (c==='bad'?'badglow 1.6s ease-in-out infinite':'none') : '';
   a.innerHTML = `<span class="code ${big.cls}">${big.code}</span><span class="v">${fT(big.v,false)}<small>${uLab()}</small></span>
     <span class="w"><span class="code ${small.cls}" style="min-width:22px;height:18px;font-size:10.5px">${small.code}</span>${fT(small.v)}</span>${w?`<span class="pc">${pct(w.use)}</span>`:''}`;
 }
-const C = () => RES.codes||codes();
 function renderHint(){
   const h=$('hint'), ph=phase(); let t='', ic='';
-  if(sheet && matchMedia('(max-width:820px)').matches){ h.classList.remove('show'); return; }
-  if(ph==='lay' && !S.dragged){ ic='hand'; t='Drag to place'; }
+  if(ph==='place'){ ic = S.points.length ? 'end' : 'winch'; t = S.points.length ? 'Tap where the end is' : 'Tap where the winch is'; }
+  else if(ph==='lay' && !S.dragged){ ic='hand'; t='Drag to place'; }
   else if(pickMode() && !S.known.ref){ ic='tap'; t='Tap the load cell'; }
-  else if(hunt){ ic='tap'; t='Tap each ? to add its limit'; }
-  else if(S.view==='side' && sheet==='heights'){ ic='height'; t='Drag up or down'; }
-  if(!t){ h.classList.remove('show'); return; }
+  else if(hunt){ ic='tap'; t='Tap each ?'; }
+  else if(sheet==='heights'){ ic='height'; t='Drag up or down'; }
+  if(!t || (sheet && sheet!=='heights' && sheet!=='known' && isMobile())){ h.classList.remove('show'); return; }
   h.innerHTML=`${icon(ic)}<span>${t}</span>`; h.classList.add('show');
-  h.style.top = $('ans').classList.contains('show') ? '64px' : '12px';
+  h.style.top = $('ans').classList.contains('show') ? '66px' : '12px';
 }
-
-/* ---------------------------------------------------------------- dock */
-function renderDock(){
-  const d=$('dock'), ph=phase(), u=uLab(), K=S.known;
-  if(ph==='lay'){
-    d.innerHTML=`<div class="row">
-      <button class="tool" data-add="bollard">${icon('bollard')}Bollard</button>
-      <button class="tool" data-add="block">${icon('block')}Block</button>
-      <button class="tool" data-add="fairlead">${icon('fairlead')}Fairlead</button>
-      <button class="go ${S.dragged?'glow':''}" data-act="laid" aria-label="Line is set">${icon('check')}</button></div>`;
-  } else if(ph==='know'){
-    const kk = (K.kind==='point'||K.kind==='leg') ? 'cell' : K.kind;
-    const val = K.value!=null ? +UNITS[S.unit].to(K.value).toFixed(UNITS[S.unit].dp+1) : '';
-    const needTap = kk==='cell' && !K.ref;
-    d.innerHTML=`<div class="row">
-      <button class="tool" data-kind="winch" aria-pressed="${kk==='winch'}">${icon('winch')}Winch</button>
-      <button class="tool" data-kind="end" aria-pressed="${kk==='end'}">${icon('end')}End</button>
-      <button class="tool" data-kind="cell" aria-pressed="${kk==='cell'}">${icon('cell')}Load cell</button></div>
-      <div class="row">${needTap ? `<div class="tap">${icon('tap')}Tap the grid</div>`
-        : `<div class="kin"><input id="kVal" type="number" inputmode="decimal" step="any" placeholder="?" value="${val}" aria-label="Reading in ${u}"><span>${u}</span></div>`}
-      <button class="go ${RES.pending?'':'glow'}" data-act="next" aria-label="Done" ${RES.pending?'disabled':''}>${icon('check')}</button></div>`;
-    if(RES.err && !RES.pending) d.insertAdjacentHTML('beforeend', `<div class="note u-bad" style="padding:0 6px">${esc(RES.err)}</div>`);
-  } else {
-    d.innerHTML=`<div class="chips">${chips().map(c=>`<button class="chip ${c.cls||''}" data-chip="${c.id}" aria-pressed="${sheet===c.id||(c.id==='limits'&&hunt)}" aria-label="${c.label}">${icon(c.icon)}<span class="${c.val?'val':''}">${c.val||c.label}</span>${c.dot?'<span class="dot"></span>':''}</button>`).join('')}</div>`;
-  }
-  requestAnimationFrame(()=>{ draw(); placeSheet(); });
-}
-function liveDock(){
-  const ph=phase(), go=$('dock').querySelector('[data-act="next"]');
-  if(ph==='know' && go){ go.disabled=RES.pending; go.classList.toggle('glow',!RES.pending); }
-  if(ph==='check'){ const map=Object.fromEntries(chips().map(c=>[c.id,c]));
-    document.querySelectorAll('#dock [data-chip]').forEach(b=>{ const c=map[b.dataset.chip]; if(!c) return;
-      b.className='chip '+(c.cls||''); b.querySelector('span').textContent=c.val||c.label; b.querySelector('span').className=c.val?'val':'';
-      const dot=b.querySelector('.dot'); if(c.dot&&!dot) b.insertAdjacentHTML('beforeend','<span class="dot"></span>'); if(!c.dot&&dot) dot.remove(); }); }
-}
-function chips(){
-  const show=!RES.err&&!RES.pending, P=S.points;
-  const wll=ropeWll(), maxLeg = show ? Math.max(...RES.legs.map(l=>l.use).filter(Number.isFinite), -1) : -1;
-  const wl=limitOf(P[0]), wr=show?RES.pts[0]:null;
-  const missing = P.slice(1).filter(p=>!Number.isFinite(limitOf(p).swl)).length;
-  const ptUses = show ? RES.pts.slice(1).map(r=>r.use).filter(Number.isFinite) : [];
-  const maxPt = ptUses.length ? Math.max(...ptUses) : -1;
-  return [
-    {id:'line',  icon:'edit',   label:'Line'},
-    {id:'known', icon: S.known.kind==='end'?'end':S.known.kind==='winch'?'winch':'cell', label:'Reading', val: fT(S.known.value)},
-    {id:'wire',  icon:'wire',   label:'Wire',   val: Number.isFinite(wll)&&maxLeg>=0?pct(maxLeg):null, dot:!Number.isFinite(wll), cls:Number.isFinite(wll)&&maxLeg>=0?cls(maxLeg):''},
-    {id:'winch', icon:'winch',  label:'Winch max', val: Number.isFinite(wl.swl)&&wr?pct(wr.use):null, dot:!Number.isFinite(wl.swl), cls:Number.isFinite(wl.swl)&&wr?cls(wr.use):''},
-    {id:'limits',icon:'limit',  label:'SWLs',  val: missing===0&&maxPt>=0?pct(maxPt):(missing?`${missing} ?`:null), dot:missing>0, cls:maxPt>=0?cls(maxPt):''},
-    {id:'op',    icon:S.op==='heave'?'heave':'payout', label:S.op==='heave'?'Heave':'Pay out'},
-    {id:'heights',icon:'height',label:'Heights'},
-    {id:'deck',  icon:'deck',   label:`${S.deck.X}×${S.deck.Y}`},
-  ];
-}
-$('dock').addEventListener('click', e=>{
-  const add=e.target.closest('[data-add]'); if(add){ addPoint(add.dataset.add); return; }
-  const act=e.target.closest('[data-act]');
-  if(act){ const a=act.dataset.act;
-    if(a==='laid'){ S.laidOut=true; override='know'; sheet=null; render(); if(!matchMedia('(pointer:coarse)').matches) setTimeout(()=>$('kVal')&&$('kVal').focus(),40); }
-    if(a==='next' && !RES.pending){ override=null; sheet=null; render(); }
-    return; }
-  const kb=e.target.closest('[data-kind]');
-  if(kb){ const k=kb.dataset.kind;
-    if(k==='cell'){ if(!(S.known.kind==='point'||S.known.kind==='leg')){ S.known.kind='point'; S.known.ref=null; } }
-    else { S.known.kind=k; S.known.ref=null; }
-    sheet=null; render(); if(k!=='cell' && !matchMedia('(pointer:coarse)').matches) setTimeout(()=>$('kVal')&&$('kVal').focus(),40); return; }
-  const ch=e.target.closest('[data-chip]');
-  if(ch){ const id=ch.dataset.chip;
-    if(id==='line'){ override='lay'; sheet=null; hunt=false; render(); return; }
-    if(id==='known'){ override='know'; sheet=null; hunt=false; render(); return; }
-    if(id==='op'){ S.op = S.op==='heave'?'payout':'heave'; render(); flash(S.op==='heave'?'Heaving in':'Paying out'); return; }
-    if(id==='limits'){ hunt=!hunt; sheet=null; S.sel=null; render(); return; }
-    if(id==='heights'){ const on = sheet!=='heights'; sheet = on?'heights':null; S.view = on?'side':'plan'; hunt=false; render(); return; }
-    if(id==='winch'){ S.sel=S.points[0].id; sheet='point'; hunt=false; render(); focusSoon('pe_swl'); return; }
-    sheet = sheet===id ? null : id; hunt=false; S.sel=null; render(); return; }
-});
-$('dock').addEventListener('input', e=>{ if(e.target.id==='kVal'){ const v=parseFloat(e.target.value); S.known.value = Number.isFinite(v)&&v>=0 ? UNITS[S.unit].from(v) : null; soft(); } });
-$('dock').addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target.id==='kVal' && !RES.pending){ e.target.blur(); override=null; render(); } });
-$('ans').addEventListener('click', ()=>{ override='know'; sheet=null; hunt=false; render(); });
-function focusSoon(id){ if(matchMedia('(pointer:coarse)').matches) return; setTimeout(()=>{ const f=$(id); if(f) f.focus(); },40); }
 let flashT=null;
-function flash(t){ const h=$('hint'); h.innerHTML=`<span>${esc(t)}</span>`; h.classList.add('show'); h.style.top=$('ans').classList.contains('show')?'64px':'12px'; clearTimeout(flashT); flashT=setTimeout(renderHint,1300); }
+function flash(t){ const h=$('hint'); h.innerHTML=`<span>${esc(t)}</span>`; h.classList.add('show'); h.style.top=$('ans').classList.contains('show')?'66px':'12px'; clearTimeout(flashT); flashT=setTimeout(renderHint,1300); }
+function toast(html, ms=5000){ const t=$('toast'); t.innerHTML=html; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'), ms); }
+
+/* ---------------------------------------------------------------- the rail */
+function railItems(){
+  const ph=phase(), show=!RES.err&&!RES.pending, P=S.points, out=[];
+  out.push({id:'add', icon:'plus', label:'Add a point', dis:ph==='place', on:fly});
+  out.push({id:'rot', icon:'rotate', label:'Rotate the grid', dis:S.view==='side'});
+  out.push({id:'view', icon:S.view==='side'?'plan':'side', label:S.view==='side'?'View from above':'View from the side', on:S.view==='side'});
+  if(ph==='check'){
+    const wll=ropeWll(), maxLeg = show ? Math.max(...RES.legs.map(l=>l.use).filter(Number.isFinite), -1) : -1;
+    const wl=limitOf(P[0]), wr=show?RES.pts[0]:null;
+    const missing = P.slice(1).filter(p=>!Number.isFinite(limitOf(p).swl)).length;
+    const ptUses = show ? RES.pts.slice(1).map(r=>r.use).filter(Number.isFinite) : [], maxPt = ptUses.length ? Math.max(...ptUses) : -1;
+    out.push({sep:1});
+    out.push({id:'known', icon:S.known.kind==='end'?'end':S.known.kind==='winch'?'winch':'cell', label:`Reading: ${knownLabel()} ${fT(S.known.value)}`, val:fT(S.known.value,false), cls:'known'});
+    out.push({id:'wire', icon:'wire', label:'Wire', val:Number.isFinite(wll)&&maxLeg>=0?pct(maxLeg):'', dot:!Number.isFinite(wll), cls:Number.isFinite(wll)&&maxLeg>=0?cls(maxLeg):''});
+    out.push({id:'winch', icon:'winch', label:'Winch maximum pull', val:Number.isFinite(wl.swl)&&wr?pct(wr.use):'', dot:!Number.isFinite(wl.swl), cls:Number.isFinite(wl.swl)&&wr?cls(wr.use):''});
+    out.push({id:'limits', icon:'limit', label:'Safe working loads', val:missing?`${missing}?`:(maxPt>=0?pct(maxPt):''), dot:missing>0, cls:maxPt>=0?cls(maxPt):'', on:hunt});
+    out.push({id:'op', icon:S.op==='heave'?'heave':'payout', label:S.op==='heave'?'Heaving in (tap for paying out)':'Paying out (tap for heaving in)'});
+    out.push({id:'heights', icon:'height', label:'Heights', on:sheet==='heights'});
+    out.push({id:'deck', icon:'deck', label:`Deck ${S.deck.X} × ${S.deck.Y} m`, on:sheet==='deck'});
+  }
+  out.push({sep:1, grow:1});
+  if(ph==='lay') out.push({id:'laid', icon:'check', label:'Line is set', go:1, glow:S.dragged});
+  out.push({id:'clear', icon:'trash', label:'Clear all', dis:!P.length});
+  return out;
+}
+function renderRail(){
+  $('rail').innerHTML = railItems().map(o=> o.sep ? `<span class="${o.grow?'grow':'sep'}"></span>`
+    : `<button class="rb ${o.go?'go':''} ${o.glow?'glow':''} ${o.cls||''}" data-r="${o.id}" aria-label="${esc(o.label)}" title="${esc(o.label)}" ${o.dis?'disabled':''} aria-pressed="${!!o.on}">${icon(o.icon)}${o.val?`<span class="rv">${esc(o.val)}</span>`:''}${o.dot?'<span class="dot"></span>':''}</button>`).join('');
+  const f=$('fly'); f.classList.toggle('show', fly);
+  if(fly){ const b=$('rail').querySelector('[data-r="add"]'); if(b){ const r=b.getBoundingClientRect(), s=stage.getBoundingClientRect(); f.style.top=(r.top-s.top)+'px'; } }
+}
+function liveRail(){
+  const map=Object.fromEntries(railItems().filter(o=>o.id).map(o=>[o.id,o]));
+  document.querySelectorAll('#rail [data-r]').forEach(b=>{ const o=map[b.dataset.r]; if(!o) return;
+    b.className=`rb ${o.go?'go':''} ${o.glow?'glow':''} ${o.cls||''}`;
+    let v=b.querySelector('.rv'); if(o.val){ if(!v){ b.insertAdjacentHTML('beforeend','<span class="rv"></span>'); v=b.querySelector('.rv'); } v.textContent=o.val; } else if(v) v.remove();
+    const d=b.querySelector('.dot'); if(o.dot&&!d) b.insertAdjacentHTML('beforeend','<span class="dot"></span>'); if(!o.dot&&d) d.remove(); });
+}
+$('rail').addEventListener('pointerdown', e=>e.stopPropagation());
+$('rail').addEventListener('click', e=>{
+  const b=e.target.closest('[data-r]'); if(!b||b.disabled) return; const id=b.dataset.r;
+  if(id!=='add') fly=false;
+  if(id==='add'){ fly=!fly; renderRail(); return; }
+  if(id==='rot'){ S.rot=!S.rot; render(); flash(S.rot?'Length up the screen':'Length across'); return; }
+  if(id==='view'){ S.view=S.view==='side'?'plan':'side'; if(S.view==='plan'&&sheet==='heights') sheet=null; render(); return; }
+  if(id==='laid'){ S.laidOut=true; override='know'; sheet='known'; render(); if(!coarse()) setTimeout(()=>$('kVal')&&$('kVal').focus(),40); return; }
+  if(id==='clear'){ clearAll(); return; }
+  if(id==='known'){ override='know'; sheet='known'; hunt=false; S.sel=null; render(); return; }
+  if(id==='op'){ S.op=S.op==='heave'?'payout':'heave'; render(); flash(S.op==='heave'?'Heaving in':'Paying out'); return; }
+  if(id==='limits'){ hunt=!hunt; sheet=null; S.sel=null; render(); return; }
+  if(id==='heights'){ const on=sheet!=='heights'; sheet=on?'heights':null; S.view=on?'side':'plan'; hunt=false; S.sel=null; render(); return; }
+  if(id==='winch'){ S.sel=S.points[0].id; sheet='point'; hunt=false; render(); focusSoon('pe_swl'); return; }
+  sheet = sheet===id ? null : id; hunt=false; S.sel=null; render();
+});
+$('fly').addEventListener('pointerdown', e=>e.stopPropagation());
+$('fly').addEventListener('click', e=>{ const b=e.target.closest('[data-add]'); if(!b) return; fly=false; addPoint(b.dataset.add); });
+function clearAll(){
+  undoBuf=JSON.stringify(S);
+  const keep={unit:S.unit,theme:S.theme,deck:S.deck,rope:S.rope,rot:S.rot};
+  S=freshPlan(); Object.assign(S,keep); S.points=[]; S.laidOut=false; S.dragged=true;
+  override=null; sheet=null; hunt=false; fly=false; popT=0; wasPending=true; S.sel=null;
+  render(); toast(`Cleared <button data-undo>Undo</button>`, 4000);
+}
+$('toast').addEventListener('click', e=>{ if(e.target.closest('[data-undo]') && undoBuf){ S=JSON.parse(undoBuf); undoBuf=null; $('toast').classList.remove('show'); render(); } });
+$('ans').addEventListener('click', ()=>{ override='know'; sheet='known'; hunt=false; S.sel=null; render(); });
+function focusSoon(id){ if(coarse()) return; setTimeout(()=>{ const f=$(id); if(f) f.focus(); },40); }
 
 /* ---------------------------------------------------------------- sheets */
 function renderSheet(){
   const sh=$('sheet');
   if(sheet==='point' || (S.sel && sheet!=='wire' && sheet!=='deck' && sheet!=='heights')){ if(S.sel){ sheet='point'; sh.innerHTML=pointSheet(); sh.classList.add('show'); placeSheet(); return; } }
+  if(sheet==='known'){ sh.innerHTML=knownSheet(); sh.classList.add('show'); placeSheet(); return; }
   if(sheet==='wire'){ sh.innerHTML=wireSheet(); sh.classList.add('show'); placeSheet(); return; }
   if(sheet==='deck'){ sh.innerHTML=deckSheet(); sh.classList.add('show'); placeSheet(); return; }
   if(sheet==='heights'){ sh.innerHTML=heightsSheet(); sh.classList.add('show'); placeSheet(); return; }
   sh.classList.remove('show'); sh.innerHTML='';
 }
-function placeSheet(){ const sh=$('sheet'); if(!sh.classList.contains('show')) return; sh.style.bottom = ($('dock').offsetHeight + 18) + 'px'; }
+function placeSheet(){ requestAnimationFrame(()=>draw()); }
+function knownSheet(){
+  const K=S.known, u=uLab(), kk=(K.kind==='point'||K.kind==='leg')?'cell':K.kind;
+  const val = K.value!=null ? +UNITS[S.unit].to(K.value).toFixed(UNITS[S.unit].dp+1) : '';
+  const needTap = kk==='cell' && !K.ref;
+  return `<div class="row">
+      <button class="tool" data-kind="winch" aria-pressed="${kk==='winch'}">${icon('winch')}Winch</button>
+      <button class="tool" data-kind="end" aria-pressed="${kk==='end'}">${icon('end')}End</button>
+      <button class="tool" data-kind="cell" aria-pressed="${kk==='cell'}">${icon('cell')}Load cell</button></div>
+    <div class="row" style="margin-top:8px">${needTap ? `<div class="tap">${icon('tap')}Tap the grid</div>`
+      : `<div class="kin"><input id="kVal" type="number" inputmode="decimal" step="any" placeholder="?" value="${val}" aria-label="Reading in ${u}"><span>${u}</span></div>`}
+    <button class="go ${RES.pending?'':'glow'}" data-act="next" aria-label="Done" ${RES.pending?'disabled':''}>${icon('check')}</button></div>
+    ${RES.err && !RES.pending && S.points.length>=2 ? `<div class="note u-bad" style="padding:6px 4px 0">${esc(RES.err)}</div>`:''}`;
+}
 function liveSheet(){
+  if(sheet==='known'){ const go=$('sheet').querySelector('[data-act="next"]'); if(go){ go.disabled=RES.pending; go.classList.toggle('glow',!RES.pending); } }
   if(sheet==='point'){ const k=S.points.findIndex(p=>p.id===S.sel), el=$('shStats'); if(el&&k>=0) el.innerHTML=stats(S.points[k],k); }
   if(sheet==='wire'){ const el=$('wWll'), w=ropeWll(); if(el) el.textContent = Number.isFinite(w)?`WLL ${fT(w)}`:''; }
 }
@@ -730,6 +749,12 @@ function heightsSheet(){
 const sh=$('sheet');
 sh.addEventListener('pointerdown', e=>e.stopPropagation());
 sh.addEventListener('click', e=>{
+  const kb=e.target.closest('[data-kind]');
+  if(kb){ const k=kb.dataset.kind;
+    if(k==='cell'){ if(!(S.known.kind==='point'||S.known.kind==='leg')){ S.known.kind='point'; S.known.ref=null; } }
+    else { S.known.kind=k; S.known.ref=null; }
+    render(); if(k!=='cell') focusSoon('kVal'); return; }
+  if(e.target.closest('[data-act="next"]') && !RES.pending){ override=null; sheet=null; render(); return; }
   if(e.target.closest('[data-close]')){ if(sheet==='heights') S.view='plan'; sheet=null; S.sel=null; render(); return; }
   const p=S.points.find(q=>q.id===S.sel);
   const tb=e.target.closest('[data-type]');
@@ -738,6 +763,7 @@ sh.addEventListener('click', e=>{
 });
 sh.addEventListener('input', e=>{
   const el=e.target, v=parseFloat(el.value);
+  if(el.id==='kVal'){ S.known.value = Number.isFinite(v)&&v>=0 ? UNITS[S.unit].from(v) : null; soft(); return; }
   if(el.dataset.w){ if(el.dataset.w==='mbl') S.rope.mbl=Number.isFinite(v)?UNITS[S.unit].from(v):null; if(el.dataset.w==='sf'&&v>0) S.rope.sf=v; el.classList.remove('want'); soft(); return; }
   if(el.dataset.d){ if(!Number.isFinite(v)||v<0) return; const k=el.dataset.d; if(k!=='snap'&&v<1) return; S.deck[k]=v; S.points.forEach(p=>{ p.x=Math.min(p.x,S.deck.X); p.y=Math.min(p.y,S.deck.Y); }); soft(); return; }
   if(el.dataset.h){ const p=S.points.find(q=>q.id===el.dataset.h); if(p&&Number.isFinite(v)){ p.z=v; soft(); } return; }
@@ -749,6 +775,7 @@ sh.addEventListener('input', e=>{
   else if(k==='turns') p.turns=Math.max(0,Math.round(v)); else if(k==='parts') p.parts=Math.max(1,Math.round(v)); else p[k]=v;
   soft();
 });
+sh.addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target.id==='kVal' && !RES.pending){ e.target.blur(); override=null; sheet=null; render(); } });
 sh.addEventListener('change', e=>{
   const el=e.target, p=S.points.find(q=>q.id===S.sel);
   if(el.dataset.w==='id'){ S.rope.id=el.value; render(); return; }
@@ -785,12 +812,13 @@ const easeBack = x => { const c1=1.70158,c3=c1+1; return 1+c3*Math.pow(x-1,3)+c1
 function draw(t){ const {ctx,w,h}=prep($('cv')); paint(ctx,w,h,PAL[S.theme]||PAL.night,true,t??performance.now()); }
 function paint(ctx,w,h,pal,live,t=0){
   const D=S.deck, font=FONT(), side=S.view==='side', anim=live && !RM.matches;
-  const top = live ? (($('ans').classList.contains('show')||$('hint').classList.contains('show')) ? 70 : 20) : 18;
-  const bot = live ? ($('dock').offsetHeight + 26 + ($('sheet').classList.contains('show') && !matchMedia('(min-width:821px)').matches ? 0 : 0)) : 34;
-  const pad={l:40,r:live&&phase()!=='lay'?62:14,t:top,b:bot};
+  const shv = live && $('sheet').classList.contains('show') && isMobile() && (sheet==='known'||sheet==='heights'||sheet==='deck'||sheet==='wire');
+  const top = live ? (($('ans').classList.contains('show')||$('hint').classList.contains('show')) ? 74 : 22) : 18;
+  const bot = live ? (shv ? $('sheet').offsetHeight + 30 : 30) : 34;
+  const pad={l:38,r:live?78:14,t:top,b:bot};
   const zs=S.points.map(p=>p.z);
   const aw=w-pad.l-pad.r, ah=h-pad.t-pad.b;
-  const rot = live && !side && ah/aw > 1.15 && D.X > D.Y;      // portrait phone: deck length runs up the screen
+  const rot = live && !side && !!S.rot;                          // user's choice: deck length up the screen or across
   const HW = rot ? D.Y : D.X;                                   // horizontal span (m)
   const B0 = side ? Math.floor(Math.min(0,...zs)-1) : 0, B1 = side ? Math.ceil(Math.max(D.Z||0,...zs)+1) : (rot ? D.X : D.Y);
   const k=Math.max(1,Math.min(aw/HW, ah/(B1-B0)));
@@ -830,6 +858,7 @@ function paint(ctx,w,h,pal,live,t=0){
       ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke(); ctx.restore(); }
     if(show) pill(ctx, fT(L.t), (ax+bx)/2, (ay+by)/2, isKnown?pal.known:c, pal, 12.5, pop);
   }
+  if(live && ph==='place' && anim){ ctx.save(); ctx.strokeStyle=pal.known; ctx.lineWidth=3; ctx.globalAlpha=.35+.35*Math.sin(t/300); ctx.strokeRect(sx(0)-2,sy(B1)-2,HW*k+4,(B1-B0)*k+4); ctx.restore(); }
   // ghost drag hint on first visit
   if(live && ph==='lay' && !S.dragged && anim && P.length){
     const e=P[P.length-1], ex=sx(hu(e)), ey=sy(vy(e)), cyc=(t%2600)/2600, m = cyc<0.5 ? easeInOut(cyc*2) : 1-easeInOut((cyc-0.5)*2);
@@ -874,8 +903,11 @@ function paint(ctx,w,h,pal,live,t=0){
         if(nb.length){ let bx=-nb.reduce((a,v)=>a+v[0],0), by=-nb.reduce((a,v)=>a+v[1],0), L=Math.hypot(bx,by);
           if(L<0.3){ bx=-nb[0][1]; by=nb[0][0]; L=1; if(by>0){ bx=-bx; by=-by; } }   // straight through: go to one side
           ux=bx/L; uy=by/L; }
-        let lx=x+ux*40, ly=y+uy*34;
-        lx=Math.max(sx(0)+30,Math.min(sx(HW)-30,lx)); ly=Math.max(sy(B1)+12,Math.min(sy(B0)-12,ly));
+        const cand=[[ux,uy],[-ux,-uy],[-uy,ux],[uy,-ux]];
+        let lx=x, ly=y-36;
+        for(const [cx_,cy_] of cand){ let qx=x+cx_*42, qy=y+cy_*34;
+          qx=Math.max(sx(0)+30,Math.min(sx(HW)-30,qx)); qy=Math.max(sy(B1)+12,Math.min(sy(B0)-12,qy));
+          if(Math.hypot(qx-x,qy-y)>=30){ lx=qx; ly=qy; break; } }
         pill(ctx,tx,lx,ly,c,pal,12,sc); }
     }
   });
@@ -885,6 +917,7 @@ let raf=0;
 function needsAnim(){
   if(RM.matches || document.hidden) return false;
   const ph=phase();
+  if(ph==='place') return true;
   if(ph==='lay') return !S.dragged;
   if(ph==='know') return true;
   return !RES.err && !RES.pending;   // line travel and any red pulses
@@ -912,10 +945,19 @@ function hitLeg(x,y,lim=16){
 }
 const snapV = v => { const s=S.deck.snap>0?S.deck.snap:0; return s ? Math.round(v/s)*s : +v.toFixed(2); };
 let drag=null;
-const onUI = e => e.target.closest('.sheet,.dock,.hud,.addcol');
+const onUI = e => e.target.closest('.sheet,.rail,.fly,.hud,.toast');
 stage.addEventListener('pointerdown', e=>{
   if(onUI(e)) return;
   const h=hit(e); if(!h) return;
+  if(fly){ fly=false; renderRail(); }
+  if(phase()==='place'){
+    const tmp={x:0,y:0,z:1}; VIEW.put(tmp,h.x,h.y);
+    if(tmp.x<0||tmp.y<0||tmp.x>S.deck.X||tmp.y>S.deck.Y) return;
+    const type = S.points.length ? 'end' : 'winch';
+    S.points.push(mkPoint(type,{x:snapV(tmp.x), y:snapV(tmp.y), z:1})); $('toast').classList.remove('show');
+    if(S.points.length===2){ S.laidOut=false; S.dragged=true; }
+    render(); return;
+  }
   if(pickMode()){
     if(h.p && roleOf(h.p)!=='start'){ S.known.kind='point'; S.known.ref=h.p.id; }
     else { const lg=hitLeg(h.x,h.y,30); if(!lg) return; S.known.kind='leg'; S.known.ref=S.points[lg.i].id; }
@@ -943,8 +985,6 @@ const endDrag=()=>{ if(!drag) return; const d=drag; drag=null;
   render(); if(!d.moved && S.sel && hunt) focusSoon('pe_swl'); };
 stage.addEventListener('pointerup', endDrag); stage.addEventListener('pointercancel', ()=>{ drag=null; });
 stage.addEventListener('dblclick', e=>{ if(onUI(e)) return; const h=hit(e); if(!h||h.p) return; const lg=hitLeg(h.x,h.y); if(lg) addPoint(S.lastType||'block', lg); });
-$('addcol').addEventListener('click', e=>{ const b=e.target.closest('[data-add]'); if(b) addPoint(b.dataset.add); });
-$('viewBtn').addEventListener('click', ()=>{ S.view = S.view==='side'?'plan':'side'; if(S.view==='plan'&&sheet==='heights') sheet=null; render(); });
 
 function addPoint(type, at){
   const P=S.points, n=P.length;
@@ -973,7 +1013,7 @@ function menuAct(a){
   else if(a==='save') savePlanFile();
   else if(a==='open') $('planFile').click();
   else if(a==='theme'){ S.theme=S.theme==='night'?'day':'night'; applyTheme(); render(); }
-  else if(a==='new'){ if(!confirm('Clear this line and start again?')) return; const keep={unit:S.unit,theme:S.theme}; S=freshPlan(); Object.assign(S,keep); override=null; sheet=null; hunt=false; popT=0; wasPending=true; render(); }
+  else if(a==='new') clearAll();
 }
 $('figClose').addEventListener('click', ()=>$('figDlg').close());
 $('figPrint').addEventListener('click', ()=>printPlan());
@@ -1024,7 +1064,7 @@ function renderTables(){
   });
   $('engTxt').textContent=lines.join('\n');
 }
-new ResizeObserver(()=>{ draw(); placeSheet(); }).observe(stage);
+new ResizeObserver(()=>{ draw(); if(fly) renderRail(); }).observe(stage);
 
 /* =====================================================================
    CATALOGUE

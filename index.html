@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>WinchForce</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-visual">
 <meta name="description" content="Drag out a deck line, enter one reading, see the tension in every leg and the load on every bollard and block.">
 <meta name="theme-color" content="#0e1720">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -65,34 +65,36 @@ svg.i{width:22px;height:22px;flex:none}
 /* answer chip (top) */
 .hud{position:absolute;left:10px;right:78px;top:10px;display:flex;align-items:flex-start;gap:8px;z-index:6;pointer-events:none}
 .hud>*{pointer-events:auto}
-.ans{display:none;flex-direction:column;gap:6px;padding:8px;border-radius:18px;width:100%;max-width:520px;cursor:default;background:var(--glass);border:1.5px solid var(--line2);box-shadow:0 6px 20px rgba(0,0,0,.28);backdrop-filter:blur(8px)}
+.ans{display:none;flex-direction:column;gap:5px;padding:6px;border-radius:16px;width:100%;max-width:480px;cursor:default;background:var(--glass);border:1.5px solid var(--line2);box-shadow:0 6px 20px rgba(0,0,0,.28);backdrop-filter:blur(8px)}
 .ans.show{display:flex;animation:up .25s ease}
-.tiles{display:flex;gap:6px}
-.tile{flex:1;min-width:0;position:relative;display:flex;flex-direction:column;padding:6px 10px 6px;border-radius:12px;background:var(--well);border:1.5px solid var(--line2)}
-.tile .tl{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--ink2);white-space:nowrap;overflow:hidden}
-.tile .tl svg{width:16px;height:16px;color:var(--known)}
-.tile .tl .pen{width:13px;height:13px;color:var(--ink3);margin-left:auto}
-.tile input,.tile b{width:100%;height:38px;border:0;border-bottom:2px dashed var(--line2);background:transparent;font-size:24px;font-weight:750;color:var(--ink);padding:0 30px 0 0;-moz-appearance:textfield;line-height:38px}
+.tiles{display:flex;gap:5px}
+.tile{flex:1;min-width:0;position:relative;display:flex;flex-direction:column;padding:5px 9px 4px;border-radius:11px;background:var(--well);border:1.5px solid var(--line2)}
+.tile .tl{display:flex;align-items:center;gap:5px;height:20px;font-size:12px;font-weight:700;color:var(--ink2);white-space:nowrap;overflow:hidden}
+.tile .tl svg{width:15px;height:15px;color:var(--known);flex:none}
+.tile .tl .pen{width:12px;height:12px;color:var(--ink3)}
+.tile .tl span{overflow:hidden;text-overflow:ellipsis}
+.tile .tl .tag{margin-left:auto;flex:none;font-size:11px;font-weight:650;color:var(--ink3)}
+.tile input,.tile b{width:100%;height:32px;border:0;border-bottom:2px dashed var(--line2);background:transparent;font-size:22px;font-weight:750;color:var(--ink);padding:0 24px 0 0;-moz-appearance:textfield;line-height:32px;white-space:nowrap;overflow:hidden}
 .tile input::-webkit-inner-spin-button,.tile input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .tile b{border-bottom-color:transparent}
 .tile input:focus{outline:none;border-bottom-color:var(--cursor)}
-.tile .tu{position:absolute;right:10px;top:30px;font-size:13px;font-weight:650;color:var(--ink3)}
-.tile .tag{font-size:11px;font-weight:650;color:var(--ink3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile input:disabled{opacity:.55}
+.tile .tu{position:absolute;right:9px;bottom:9px;font-size:13px;font-weight:650;color:var(--ink3)}
 .tile.ed{cursor:text}
-.tiles:has(.tile:nth-child(3)) .tile{padding:6px 7px}
+.tiles:has(.tile:nth-child(3)) .tile{padding:5px 7px 4px}
 .tiles:has(.tile:nth-child(3)) .tile input,.tiles:has(.tile:nth-child(3)) .tile b{font-size:19px;padding-right:14px}
 .tiles:has(.tile:nth-child(3)) .tile .tu{right:7px}
 .tiles:has(.tile:nth-child(3)) .tile .tl .pen,.tiles:has(.tile:nth-child(3)) .tile .tl .lt{display:none}
-.tile .tl span{overflow:hidden;text-overflow:ellipsis}
-@media (max-height:480px){.tile .tag{display:none}.tile input,.tile b{height:30px;line-height:30px;font-size:20px}.tile .tu{top:26px}.ans{max-width:400px;gap:4px;padding:6px}.chipb{height:28px}}
 .tile.set{border-color:var(--known)} .tile.set input{color:var(--known)} .tile.set .tag{color:var(--known)}
 .tile.want{border-color:var(--cursor);animation:glowa 1.5s ease-in-out infinite}
 .tile.ro{background:none;border-style:dashed}
-.vfoot{display:flex;align-items:center;gap:6px;padding:0 2px}
+.vfoot{display:flex;align-items:center;gap:6px;padding:0 1px}
 .vfoot .fill{flex:1;min-width:0;font-size:12.5px;font-weight:650;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vfoot .pcs{font-size:13px;font-weight:800}
-.chipb{height:32px;display:inline-flex;align-items:center;gap:5px;padding:0 10px;border-radius:999px;border:1px solid var(--line2);background:var(--panel2);font-size:12.5px;font-weight:700;color:var(--ink);white-space:nowrap}
-.chipb svg{width:16px;height:16px}
+.chipb{height:30px;display:inline-flex;align-items:center;gap:5px;padding:0 10px;border-radius:999px;border:1px solid var(--line2);background:var(--panel2);font-size:12.5px;font-weight:700;color:var(--ink);white-space:nowrap}
+.chipb svg{width:15px;height:15px}
+.ans.grid{max-width:250px}
+@media (max-height:480px){.ans{max-width:420px}}
 .chipb.on{border-color:var(--known);color:var(--known);background:var(--known-soft)}
 .chipb.done{background:var(--cursor);border-color:var(--cursor);color:#1b1205}
 .ans .al{font-size:15px;line-height:1.3;font-weight:600}
@@ -315,7 +317,7 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
   <div class="menu" id="menu" role="menu">
     <div class="munits"><span>Units</span><button data-u="te">tonnes</button><button data-u="kg">kg</button><button data-u="kN">kN</button></div>
     <hr>
-    <button data-m="deck">Deck size</button>
+    <button data-m="deck">Grid size</button>
     <button data-m="figures">All figures</button>
     <button data-m="print">Print rigging plan</button>
     <hr>
@@ -384,7 +386,8 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
     <ul>
       <li><strong>Lay out the line.</strong> Drag the winch (W) and the end (E) to where they are. Add bollards, blocks or fairleads with the buttons on the grid and drag them into place.</li>
       <li><strong>Say what you know.</strong> The winch pull, the load at the end, or a load cell reading. Tap the grid to show where the load cell is.</li>
-      <li><strong>Check it's safe.</strong> Add the limits you know: winch max pull, the wire, the SWL of each point. Anything over its limit turns red.</li>
+      <li><strong>Check it's safe.</strong> Add the limits you know: winch max pull, the wire, the SWL of each point. Anything over its limit turns red. Tap a point or a line to see its load.</li>
+      <li><strong>Grid size.</strong> Double-tap an empty part of the grid, then drag the corner. Double-tap again to finish.</li>
     </ul>
     <h3>Friction at a bollard or fairlead</h3>
     <p>The capstan equation on the angle the line turns through, plus any extra full turns. A line running straight past turns 0° and loses nothing.</p>
@@ -601,6 +604,7 @@ const PAL = {
 };
 const RM = matchMedia('(prefers-reduced-motion: reduce)');
 const CAM = {z:1, tx:0, ty:0, auto:0};   // user pan/zoom on top of the fixed fit, plus a temporary lift when a card covers the point
+let selLeg=null, gridEd=false, gdrag=null, lastTap=null;
 let RES=null, VIEW=null, hoverId=null, sheet=null, hunt=false, popT=0, wasPending=true, override=null, fly=false, undoBuf=null;
 const stage=$('stage');
 const roleOf = p => PT[p.type].role;
@@ -644,54 +648,90 @@ const C = () => RES.codes||codes();
 /* ---------------------------------------------------------------- the value bar (top): every number you set is edited here */
 const barFocused = () => $('ans').contains(document.activeElement) && document.activeElement.tagName==='INPUT';
 const vfmt = t => t==null||!Number.isFinite(t) ? '' : +UNITS[S.unit].to(t).toFixed(UNITS[S.unit].dp+1);
+function barMode(){
+  if(gridEd) return 'grid';
+  const ph=phase();
+  if(ph==='place' || ph==='lay' || (RES.err && S.points.length<2)) return null;
+  if(S.points.some(p=>p.id===S.sel)) return 'point';
+  if(selLeg!=null && selLeg<S.points.length-1 && !RES.err) return 'leg';
+  return 'known';
+}
+const pen = `<svg class="pen"><use href="#i-edit"/></svg>`;
+const useTxt = u => Number.isFinite(u) ? `<span class="u-${cls(u)}">${pct(u)}</span>` : '';
+const nice = v => v<20 ? Math.round(v) : v<100 ? Math.round(v/5)*5 : v<500 ? Math.round(v/10)*10 : Math.round(v/50)*50;
+function legInfo(i){
+  const a=S.points[i], b=S.points[i+1], L=RES.legs[i], hz=Math.hypot(b.x-a.x,b.y-a.y), dz=b.z-a.z;
+  const ang = Math.abs(dz)>0.05 ? ` · ${fmt(Math.abs(Math.atan2(dz,hz))*DEG,0)}° ${dz>0?'up':'down'}` : '';
+  return `${fmt(L.len,1)} m${ang}`;
+}
+function legFoot(i){ const wll=ropeWll(); return `${legInfo(i)}${Number.isFinite(wll)?` · WLL ${fT(wll)}`:''}`; }
 function renderAns(){
-  const a=$('ans'), ph=phase();
-  if(ph==='place' || ph==='lay' || (RES.err && S.points.length<2)){ a.classList.remove('show','ok','warn','bad'); a.innerHTML=''; return; }
+  const a=$('ans'), mode=barMode();
+  if(!mode){ a.classList.remove('show','ok','warn','bad'); a.innerHTML=''; return; }
   if(barFocused()){ liveAns(); return; }          // never rebuild a box you're typing in
-  const u=uLab(), P=S.points, show=!RES.err&&!RES.pending;
-  const k=P.findIndex(p=>p.id===S.sel);
-  const pen = `<svg class="pen"><use href="#i-edit"/></svg>`;
-  if(k>=0){                                        // a point is tapped: its load and its SWL
-    const p=P[k], role=roleOf(p), r=show?RES.pts[k]:null, lim=limitOf(p);
+  const u=uLab(), P=S.points, show=!RES.err&&!RES.pending, C_=RES.codes||codes();
+  const foot=(mid='')=>`<div class="vfoot"><button class="chipb" data-bar="more">More</button><span class="fill" id="bInfo">${mid}</span><button class="chipb done" data-bar="done">Done</button></div>`;
+  if(mode==='grid'){
+    a.className='ans show grid';
+    const g=(id,lab,v)=>`<label class="tile ed" for="${id}"><span class="tl"><span class="lt">${lab}</span>${pen}</span><input id="${id}" type="number" inputmode="decimal" step="any" value="${v}" aria-label="Grid ${lab} in metres"><span class="tu">m</span></label>`;
+    a.innerHTML = `<div class="tiles">${g('gX','Length',S.deck.X)}${g('gY','Width',S.deck.Y)}</div>
+      <div class="vfoot"><button class="chipb" data-bar="snap">${icon('deck')}Snap ${S.deck.snap>0?fmt(S.deck.snap,S.deck.snap<1?1:0)+' m':'off'}</button><span class="fill"></span><button class="chipb done" data-bar="done">Done</button></div>`;
+    enterKeysIn(a); return;
+  }
+  if(mode==='point'){                              // a point is tapped: its load and its SWL
+    const k=P.findIndex(p=>p.id===S.sel), p=P[k], role=roleOf(p), r=show?RES.pts[k]:null, lim=limitOf(p);
     const first=p.stack.length?cat(p.stack[0]):null, catSwl=first&&+first.swl>0?+first.swl:null;
     const swlVal = catSwl!=null ? '' : vfmt(p.swl);
-    const loadLab = role==='start' ? 'Line pull' : 'Load on it';
     a.className='ans show pt '+(r&&Number.isFinite(r.use)?cls(r.use):'');
     a.innerHTML = `<div class="tiles">
-        <div class="tile ro"><span class="tl"><span class="code ${role==='start'?'winch':role==='end'?'end':''}">${C()[p.id]}</span>${loadLab}</span><b id="bLoad">${r?fT(r.load,false):'–'}</b><span class="tu">${u}</span><span class="tag">${esc(p.name||PT[p.type].name)}</span></div>
-        <label class="tile ed ${lim.swl>0?'':'want'}" for="bSwl"><span class="tl">${role==='start'?'Max pull':'SWL'}${pen}</span><input id="bSwl" type="number" inputmode="decimal" step="any" placeholder="${catSwl!=null?vfmt(catSwl):'?'}" value="${swlVal}" aria-label="${role==='start'?'Winch maximum pull':'Safe working load'}"><span class="tu">${u}</span><span class="tag" id="bUse">${r&&Number.isFinite(r.use)?`<span class="u-${cls(r.use)}">${pct(r.use)} used</span>`:'type the limit'}</span></label>
-      </div>
-      <div class="vfoot"><button class="chipb" data-bar="more">More</button><span class="fill"></span><button class="chipb done" data-bar="done">Done</button></div>`;
+        <div class="tile ro"><span class="tl"><span class="code ${role==='start'?'winch':role==='end'?'end':''}">${C_[p.id]}</span><span class="lt">${role==='start'?'Line pull':'Load on it'}</span></span><b id="bLoad">${r?fT(r.load,false):'–'}</b><span class="tu">${u}</span></div>
+        <label class="tile ed ${lim.swl>0?'':'want'}" for="bSwl"><span class="tl"><span class="lt">${role==='start'?'Max pull':'SWL'}</span>${pen}<span class="tag" id="bUse">${r?useTxt(r.use):''}</span></span><input id="bSwl" type="number" inputmode="decimal" step="any" placeholder="${catSwl!=null?vfmt(catSwl):'?'}" value="${swlVal}" aria-label="${role==='start'?'Winch maximum pull':'Safe working load'}"><span class="tu">${u}</span></label>
+      </div>${foot(esc(p.name||PT[p.type].name))}`;
+    enterKeysIn(a); return;
+  }
+  if(mode==='leg'){                                // a line is tapped: its tension and the wire it is
+    const i=selLeg, L=RES.legs[i], rope=S.rope.id?cat(S.rope.id):null, catM=rope&&+rope.mbl>0;
+    const wll=ropeWll();
+    a.className='ans show pt '+(show&&Number.isFinite(L.use)?cls(L.use):'');
+    a.innerHTML = `<div class="tiles">
+        <div class="tile ro"><span class="tl"><span class="code">${C_[P[i].id]}→${C_[P[i+1].id]}</span><span class="lt">Tension</span></span><b id="bLoad">${show?fT(L.t,false):'–'}</b><span class="tu">${u}</span></div>
+        <label class="tile ed ${Number.isFinite(wll)?'':'want'}" for="bMbl"><span class="tl"><span class="lt">Wire MBL</span>${pen}<span class="tag" id="bUse">${show?useTxt(L.use):''}</span></span><input id="bMbl" type="number" inputmode="decimal" step="any" placeholder="?" value="${catM?vfmt(+rope.mbl):vfmt(S.rope.mbl)}" ${catM?'disabled':''} aria-label="Wire minimum breaking load"><span class="tu">${u}</span></label>
+      </div>${foot(legFoot(i))}`;
     enterKeysIn(a); return;
   }
   const K=S.known, end=P[P.length-1], kk=(K.kind==='point'||K.kind==='leg')?'cell':K.kind;
   const eLab = end.type==='purchase' ? 'Hook' : end.type==='padeye' ? 'Anchor' : 'Load';
   const w=RES.worst, c=w&&show?cls(w.use):'';
   const tile=(id,kind,code,codeCls,lab,val)=>`<label class="tile ed ${kk===kind?'set':''} ${RES.pending&&kind==='winch'&&kk!=='end'&&kk!=='cell'?'want':''}" for="${id}">
-      <span class="tl"><span class="code ${codeCls}">${code}</span><span class="lt">${lab}</span>${pen}</span>
-      <input id="${id}" type="number" inputmode="decimal" step="any" placeholder="?" value="${val}" aria-label="${lab} in ${u}"><span class="tu">${u}</span>
-      <span class="tag" id="${id}tag">${kk===kind?'set':show?'auto':''}</span></label>`;
+      <span class="tl"><span class="code ${codeCls}">${code}</span><span class="lt">${lab}</span>${pen}<span class="tag" id="${id}tag">${kk===kind?'set':show?'auto':''}</span></span>
+      <input id="${id}" type="number" inputmode="decimal" step="any" placeholder="?" value="${val}" aria-label="${lab} in ${u}"><span class="tu">${u}</span></label>`;
   const n = end.type==='purchase' ? Math.max(1,Math.round(end.parts||1)) : 1, heave=S.op==='heave';
   const fr = show ? (heave ? RES.winch*n-RES.end : RES.end-RES.winch*n) : 0;
   a.className='ans show '+c;
   a.innerHTML = `<div class="tiles">
       ${tile('kW','winch','W','winch','Winch', kk==='winch'?vfmt(K.value):show?vfmt(RES.winch):'')}
-      ${tile('kE','end',C()[end.id]||'E','end',eLab, kk==='end'?vfmt(K.value):show?vfmt(RES.end):'')}
-      ${kk==='cell'?`<label class="tile ed set" for="kC"><span class="tl">${icon('cell')}${K.ref?esc(knownLabel().replace('Load cell ','')):'Tap grid'}${pen}</span><input id="kC" type="number" inputmode="decimal" step="any" placeholder="?" value="${vfmt(K.value)}" ${K.ref?'':'disabled'} aria-label="Load cell reading"><span class="tu">${u}</span><span class="tag">set</span></label>`:''}
+      ${tile('kE','end',C_[end.id]||'E','end',eLab, kk==='end'?vfmt(K.value):show?vfmt(RES.end):'')}
+      ${kk==='cell'?`<label class="tile ed set" for="kC"><span class="tl">${icon('cell')}<span class="lt">${K.ref?esc(knownLabel().replace('Load cell ','')):'Tap grid'}</span><span class="tag">set</span></span><input id="kC" type="number" inputmode="decimal" step="any" placeholder="?" value="${vfmt(K.value)}" ${K.ref?'':'disabled'} aria-label="Load cell reading"><span class="tu">${u}</span></label>`:''}
     </div>
     <div class="vfoot">
       <button class="chipb" data-bar="op">${icon(heave?'heave':'payout')}${heave?'Heaving':'Paying out'}</button>
-      <span class="fill" id="bFr" title="Tension lost to friction on the way round">${show&&Math.abs(fr)>0.0005?`${heave?'−':'+'}${fT(Math.abs(fr))} lost${n>1?` · ×${(RES.end/RES.winch).toFixed(2)}`:''}`:''}</span>
+      <span class="fill" id="bFr" title="Tension lost to friction on the way round">${frTxt(show,fr,heave,n)}</span>
       ${show&&w?`<span class="pcs u-${c}" id="bPc">${pct(w.use)}</span>`:'<span id="bPc"></span>'}
       <button class="chipb ${kk==='cell'?'on':''}" data-bar="cell">${icon('cell')}${kk==='cell'?'Cell':'Load cell'}</button>
     </div>`;
   enterKeysIn(a);
 }
+const frTxt = (show,fr,heave,n) => show&&Math.abs(fr)>0.0005?`${heave?'−':'+'}${fT(Math.abs(fr))} lost${n>1?` · ×${(RES.end/RES.winch).toFixed(2)}`:''}`:'';
 function liveAns(){
-  const a=$('ans'), show=!RES.err&&!RES.pending, P=S.points, k=P.findIndex(p=>p.id===S.sel);
-  if(k>=0){ const r=show?RES.pts[k]:null; const L=$('bLoad'); if(L) L.textContent=r?fT(r.load,false):'–';
-    const U=$('bUse'); if(U) U.innerHTML = r&&Number.isFinite(r.use)?`<span class="u-${cls(r.use)}">${pct(r.use)} used</span>`:'type the limit';
+  const a=$('ans'), show=!RES.err&&!RES.pending, P=S.points, mode=barMode();
+  if(mode==='grid'){ ['gX','gY'].forEach(id=>{ const el=$(id); if(el && document.activeElement!==el) el.value=S.deck[id==='gX'?'X':'Y']; }); return; }
+  if(mode==='point'){ const k=P.findIndex(p=>p.id===S.sel), r=show?RES.pts[k]:null; const L=$('bLoad'); if(L) L.textContent=r?fT(r.load,false):'–';
+    const U=$('bUse'); if(U) U.innerHTML = r?useTxt(r.use):'';
     a.className='ans show pt '+(r&&Number.isFinite(r.use)?cls(r.use):''); return; }
+  if(mode==='leg'){ const Lg=RES.legs[selLeg]; const L=$('bLoad'); if(L) L.textContent=show?fT(Lg.t,false):'–';
+    const U=$('bUse'); if(U) U.innerHTML = show?useTxt(Lg.use):''; const I=$('bInfo'); if(I) I.textContent=legFoot(selLeg);
+    a.className='ans show pt '+(show&&Number.isFinite(Lg.use)?cls(Lg.use):''); return; }
+  if(mode!=='known') return;
   const kk=(S.known.kind==='point'||S.known.kind==='leg')?'cell':S.known.kind;
   [['kW','winch',RES.winch],['kE','end',RES.end]].forEach(([id,kind,val])=>{ const el=$(id); if(!el) return;
     el.closest('.tile').classList.toggle('set',kk===kind); el.closest('.tile').classList.remove('want');
@@ -699,17 +739,23 @@ function liveAns(){
     const t=$(id+'tag'); if(t) t.textContent = kk===kind?'set':show?'auto':''; });
   const end=P[P.length-1], n=end.type==='purchase'?Math.max(1,Math.round(end.parts||1)):1, heave=S.op==='heave';
   const fr = show ? (heave ? RES.winch*n-RES.end : RES.end-RES.winch*n) : 0, w=RES.worst;
-  const F=$('bFr'); if(F) F.textContent = show&&Math.abs(fr)>0.0005?`${heave?'−':'+'}${fT(Math.abs(fr))} lost${n>1?` · ×${(RES.end/RES.winch).toFixed(2)}`:''}`:'';
+  const F=$('bFr'); if(F) F.textContent = frTxt(show,fr,heave,n);
   const pc=$('bPc'); if(pc){ pc.className = show&&w ? 'pcs u-'+cls(w.use) : ''; pc.textContent = show&&w ? pct(w.use) : ''; }
   a.classList.remove('ok','warn','bad'); if(show&&w) a.classList.add(cls(w.use));
 }
 function enterKeysIn(root){ root.querySelectorAll('input').forEach(i=>{ i.enterKeyHint='done'; const sel=()=>{ try{ i.select(); }catch(e){} }; i.addEventListener('focus',()=>{ sel(); setTimeout(sel,0); }); }); }
+function setDeck(k,v){                            // grid size: never smaller than the points on it
+  const need = Math.max(1, ...S.points.map(p=>Math.ceil(k==='X'?p.x:p.y)));
+  S.deck[k] = Math.min(5000, Math.max(need, v));
+}
 const bar=$('ans');
 bar.addEventListener('pointerdown', e=>e.stopPropagation());
 bar.addEventListener('input', e=>{
   const el=e.target, v=parseFloat(el.value), val = Number.isFinite(v)&&v>=0 ? UNITS[S.unit].from(v) : null;
   if(el.id==='kW'||el.id==='kE'){ S.known.kind = el.id==='kW'?'winch':'end'; S.known.ref=null; S.known.value=val; soft(); return; }
   if(el.id==='kC'){ S.known.value=val; soft(); return; }
+  if(el.id==='gX'||el.id==='gY'){ if(Number.isFinite(v) && v>=1){ setDeck(el.id==='gX'?'X':'Y', v); soft(); } return; }
+  if(el.id==='bMbl'){ S.rope.mbl=val; el.closest('.tile').classList.toggle('want', val==null); soft(); return; }
   if(el.id==='bSwl'){ const p=S.points.find(q=>q.id===S.sel); if(!p) return; p.swl=val; if(val!=null && p.stack.length) p.stack=p.stack.slice(1); el.closest('.tile').classList.toggle('want', val==null); soft(); }
 });
 bar.addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target.tagName==='INPUT'){ e.preventDefault(); e.target.blur(); } });
@@ -717,6 +763,7 @@ bar.addEventListener('focusout', e=>{          // leaving the bar: settle the st
   if(e.relatedTarget && bar.contains(e.relatedTarget)) return;
   setTimeout(()=>{ if(barFocused()) return; if(!RES.pending && override==='know') override=null; render(); }, 0);
 });
+const SNAPS=[0.5,1,0.1,0];
 bar.addEventListener('click', e=>{
   const b=e.target.closest('[data-bar]'); if(!b) return; const a=b.dataset.bar;
   if(a==='op'){ S.op = S.op==='heave'?'payout':'heave'; render(); }
@@ -724,18 +771,20 @@ bar.addEventListener('click', e=>{
     if(isCell){ S.known.kind='winch'; S.known.ref=null; S.known.value = Number.isFinite(RES.winch)?RES.winch:null; }
     else { S.known.kind='point'; S.known.ref=null; S.known.value=null; override='know'; }
     render(); }
-  else if(a==='more'){ sheet='point'; render(); }
-  else if(a==='done'){ S.sel=null; sheet=null; hunt=false; render(); }
+  else if(a==='snap'){ const i=SNAPS.indexOf(S.deck.snap); S.deck.snap=SNAPS[(i+1)%SNAPS.length]; render(); }
+  else if(a==='more'){ sheet = barMode()==='leg' ? 'wire' : 'point'; render(); }
+  else if(a==='done'){ S.sel=null; selLeg=null; gridEd=false; sheet=null; hunt=false; render(); }
 });
 function renderHint(){
   const h=$('hint'), ph=phase(), K=S.known; let t='';
-  if(ph==='place') t = S.points.length ? '<b>2</b> Now tap where the <b>end</b> of the line is (what you are pulling).' : '<b>1</b> Tap where the <b>winch</b> is.';
+  if(gridEd) t='Drag the <b>corner</b> to resize.';
+  else if(ph==='place') t = S.points.length ? '<b>2</b> Now tap where the <b>end</b> of the line is (what you are pulling).' : '<b>1</b> Tap where the <b>winch</b> is.';
   else if(ph==='lay') t = 'Drag <b>W</b> and <b>E</b> to where they are. Use <b>+</b> for each bollard or block the line goes round. Tap <b>✓</b> when it looks right.';
   else if(ph==='know') t = (K.kind==='point'||K.kind==='leg') && !K.ref ? 'Tap the <b>block</b> the load cell hangs from, or the <b>line</b> it is clamped on.' : '';
   else if(hunt) t='Tap each <b>?</b> and type its SWL at the top.';
   else if(sheet==='heights') t='Drag points up or down, or type the heights.';
-  else if(!S.seenCheck && !S.sel) t='Tap any point to see its load and set its SWL.';
-  if(!t || S.sel || (sheet==='point' && isMobile())){ h.classList.remove('show'); return; }
+  else if(!S.seenCheck && !S.sel) t='Tap a point or a line to see its load.';
+  if(!t || S.sel || (selLeg!=null && !gridEd) || (sheet==='point' && isMobile())){ h.classList.remove('show'); return; }
   h.innerHTML=`<span>${t}</span>`; h.classList.add('show');
   h.style.top = $('ans').classList.contains('show') ? ($('ans').offsetTop+$('ans').offsetHeight+8)+'px' : '10px';
 }
@@ -804,7 +853,7 @@ function clearAll(){
   undoBuf=JSON.stringify(S);
   const keep={unit:S.unit,theme:S.theme,deck:S.deck,rope:S.rope,flip:S.flip};
   S=freshPlan(); Object.assign(S,keep); S.points=[]; S.laidOut=false; S.dragged=true;
-  override=null; sheet=null; hunt=false; fly=false; popT=0; wasPending=true; S.sel=null;
+  override=null; sheet=null; hunt=false; fly=false; popT=0; wasPending=true; S.sel=null; selLeg=null; gridEd=false;
   render(); toast(`Cleared <button data-undo>Undo</button>`, 4000);
 }
 $('toast').addEventListener('click', e=>{ if(e.target.closest('[data-undo]') && undoBuf){ S=JSON.parse(undoBuf); undoBuf=null; $('toast').classList.remove('show'); render(); } });
@@ -913,7 +962,7 @@ function wireSheet(){
 }
 function deckSheet(){
   const n=(k,l)=>`<div><small>${l}</small><div class="inp"><input data-d="${k}" type="number" step="any" inputmode="decimal" value="${S.deck[k]}"><span class="u">m</span></div></div>`;
-  return `<div class="sh-h">${icon('deck')}<b>Deck</b>${close}</div><div class="grid3">${n('X','Length')}${n('Y','Width')}${n('Z','Height')}</div><div class="grid3">${n('snap','Snap')}</div>`;
+  return `<div class="sh-h">${icon('deck')}<b>Deck</b>${close}</div><div class="grid3">${n('X','Length')}${n('Y','Width')}${n('snap','Snap')}</div>`;
 }
 function heightsSheet(){
   return `<div class="sh-h">${icon('height')}<b>Heights</b>${close}</div>
@@ -990,28 +1039,33 @@ function ring(ctx,x,y,r,col,t,period=1400,spread=16){
   ctx.globalAlpha=1;
 }
 const easeBack = x => { const c1=1.70158,c3=c1+1; return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2); };
-function draw(t){ const {ctx,w,h}=prep($('cv')); paint(ctx,w,h,PAL[S.theme]||PAL.night,true,t??performance.now()); }
-function paint(ctx,w,h,pal,live,t=0){
+let LAY={w:0,h:0};
+const typing = () => { const a=document.activeElement; return !!a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName); };
+function draw(t){ const {ctx,w,h}=prep($('cv'));
+  // a phone keyboard shrinks the screen height: keep the grid laid out for the full screen while typing
+  if(!(typing() && coarse() && Math.abs(w-LAY.w)<2 && h<LAY.h)) LAY={w,h};
+  paint(ctx,w,h,PAL[S.theme]||PAL.night,true,t??performance.now(),LAY.h); }
+function paint(ctx,w,h,pal,live,t=0,fitH=h){
   const D=S.deck, font=FONT(), side=S.view==='side', anim=live && !RM.matches;
   // fixed margins: nothing that opens or closes on top of the grid changes its size
-  const pad = live ? {l:38, r:78, t:innerHeight<=480?100:(isMobile()?138:130), b:26} : {l:38,r:14,t:18,b:34};
+  const pad = live ? {l:38, r:78, t:(fitH<=420?96:(isMobile()?122:116))+(gridEd?52:0), b:26} : {l:38,r:14,t:18,b:34};
   const zs=S.points.map(p=>p.z);
-  const aw=w-pad.l-pad.r, ah=h-pad.t-pad.b;
-  const rot = live && !side && ((ah > aw) !== !!S.flip) && D.X >= D.Y;   // long side of the deck follows the long side of the screen; Rotate flips it
+  const aw=w-pad.l-pad.r, ah=fitH-pad.t-pad.b;
+  const rot = live && CAM.lock!=null ? CAM.lock : live && !side && ((ah > aw) !== !!S.flip) && D.X >= D.Y;   // long side of the deck follows the long side of the screen; Rotate flips it
   const HW = rot ? D.Y : D.X;                                   // horizontal span (m)
-  const B0 = side ? Math.floor(Math.min(0,...zs)-1) : 0, B1 = side ? Math.ceil(Math.max(D.Z||0,...zs)+1) : (rot ? D.X : D.Y);
-  const k0=Math.max(1,Math.min(aw/HW, ah/(B1-B0)));
+  const B0 = side ? Math.floor(Math.min(0,...zs)-1) : 0, B1 = side ? Math.ceil(Math.max(3,...zs)+1.5) : (rot ? D.X : D.Y);
+  const k0=Math.max(0.005,Math.min(aw/HW, ah/(B1-B0)));
   const ox0=pad.l+(aw-HW*k0)/2, oy0=pad.t+Math.max(0,(ah-(B1-B0)*k0)/2);
   const z = live ? CAM.z : 1, k=k0*z, ox = live ? ox0*z+CAM.tx : ox0, oy = live ? oy0*z+CAM.ty+CAM.auto : oy0;
   const sx=x=>ox+x*k, sy=y=>oy+(B1-y)*k;
   const hu = p => rot ? p.y : p.x, vy = p => side ? p.z : rot ? p.x : p.y;   // point -> (across, up) in metres
   if(live && CAM.rot!==rot){ CAM.rot=rot; CAM.z=1; CAM.tx=0; CAM.ty=0; }   // a new orientation starts fitted
-  if(live) VIEW={k,ox,oy,sx,sy,hu,vy,side,rot,ix:px=>(px-ox)/k,iy:py=>B1-(py-oy)/k,
+  if(live) VIEW={k,ox,oy,sx,sy,hu,vy,side,rot,HW,VH:B1,ix:px=>(px-ox)/k,iy:py=>B1-(py-oy)/k,
     put(p,px,py){ const a=(px-ox)/k, b=B1-(py-oy)/k;
       if(side){ p.x=a; p.z=b; } else if(rot){ p.y=a; p.x=b; } else { p.x=a; p.y=b; } }};
   ctx.fillStyle=pal.bg; ctx.fillRect(0,0,w,h);
   ctx.fillStyle=pal.deck; ctx.fillRect(sx(0),sy(B1),HW*k,(B1-B0)*k);
-  const minor = k>=16?1:k>=7?2:5, major=minor*5;
+  const minor = [0.5,1,2,5,10,20,50,100,200,500,1000].find(m=>m*k>=8)||1000, major=minor*5;
   ctx.lineWidth=1;
   for(let x=0;x<=HW+1e-6;x+=minor){ ctx.strokeStyle=(Math.round(x/minor)%5===0)?pal.grid2:pal.grid; ctx.beginPath(); ctx.moveTo(Math.round(sx(x))+.5,sy(B1)); ctx.lineTo(Math.round(sx(x))+.5,sy(B0)); ctx.stroke(); }
   for(let y=Math.ceil(B0/minor)*minor;y<=B1+1e-6;y+=minor){ ctx.strokeStyle=(Math.round(y/minor)%5===0)?pal.grid2:pal.grid; ctx.beginPath(); ctx.moveTo(sx(0),Math.round(sy(y))+.5); ctx.lineTo(sx(HW),Math.round(sy(y))+.5); ctx.stroke(); }
@@ -1032,6 +1086,7 @@ function paint(ctx,w,h,pal,live,t=0){
     const L=ok?R.legs[i]:null, c=L?col(L.use):pal.line, isKnown = K.kind==='leg' && K.ref===a.id && ph!=='lay';
     if(picking && !K.ref){ ctx.strokeStyle=pal.known; ctx.globalAlpha=.22; ctx.lineWidth=18; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke(); ctx.globalAlpha=1; }
     if(show && L && L.use>1 && anim){ ctx.strokeStyle=pal.bad; ctx.globalAlpha=.25+.2*Math.sin(t/200); ctx.lineWidth=12; ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke(); ctx.globalAlpha=1; }
+    if(live && i===selLeg && !gridEd){ ctx.strokeStyle=pal.sel; ctx.globalAlpha=.28; ctx.lineWidth=16; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke(); ctx.globalAlpha=1; }
     ctx.strokeStyle=isKnown?pal.known:c; ctx.lineWidth=3.4; ctx.lineCap='round';
     ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
     // line travel: dashes run toward the winch when heaving, away when paying out
@@ -1093,6 +1148,24 @@ function paint(ctx,w,h,pal,live,t=0){
         pill(ctx,tx,lx,ly,c,pal,12,sc); }
     }
   });
+  if(live && gridEd && !side){                    // grid size handles: far corner, right edge, top edge
+    const x1=sx(HW), y1=sy(B1), x0=sx(0), y0=sy(B0);
+    ctx.save(); ctx.strokeStyle=pal.sel; ctx.lineWidth=2; ctx.setLineDash([7,5]); ctx.strokeRect(x0,y1,x1-x0,y0-y1); ctx.setLineDash([]);
+    const knob=(x,y,r,kind)=>{ const on=gdrag&&gdrag.kind===kind; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fillStyle=on?pal.sel:pal.panel; ctx.fill(); ctx.lineWidth=2.5; ctx.strokeStyle=pal.sel; ctx.stroke();
+      ctx.strokeStyle=on?pal.panel:pal.sel; ctx.lineWidth=2; ctx.beginPath();
+      const a=r*0.45, ar=(px,py,dx,dy)=>{ ctx.moveTo(px,py); ctx.lineTo(px-dx*4-dy*3,py-dy*4+dx*3); ctx.moveTo(px,py); ctx.lineTo(px-dx*4+dy*3,py-dy*4-dx*3); };
+      if(kind==='c'){ ctx.moveTo(x-a,y+a); ctx.lineTo(x+a,y-a); ar(x+a,y-a,.7,-.7); ar(x-a,y+a,-.7,.7); }
+      else if(kind==='h'){ ctx.moveTo(x-a,y); ctx.lineTo(x+a,y); ar(x+a,y,1,0); ar(x-a,y,-1,0); }
+      else { ctx.moveTo(x,y-a); ctx.lineTo(x,y+a); ar(x,y-a,0,-1); ar(x,y+a,0,1); }
+      ctx.stroke(); };
+    knob(x1,(y1+y0)/2,11,'h'); knob((x0+x1)/2,y1,11,'v'); knob(x1,y1,15,'c');
+    const lab=`${fmt(D.X,D.X%1?1:0)} × ${fmt(D.Y,D.Y%1?1:0)} m`;
+    ctx.font='800 22px '+font; ctx.textAlign='center'; ctx.textBaseline='middle';
+    const mx=(x0+x1)/2, my=y0-34, tw=ctx.measureText(lab).width+28;
+    ctx.globalAlpha=.92; ctx.fillStyle=pal.panel; rr(ctx,mx-tw/2,my-20,tw,40,20); ctx.fill(); ctx.globalAlpha=1; ctx.strokeStyle=pal.sel; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.fillStyle=pal.sel; ctx.fillText(lab,mx,my+1);
+    ctx.restore();
+  }
 }
 const easeInOut = x => x<.5 ? 2*x*x : 1-Math.pow(-2*x+2,2)/2;
 let raf=0;
@@ -1127,6 +1200,7 @@ function hitLeg(x,y,lim=16){
 }
 const snapV = v => { const s=S.deck.snap>0?S.deck.snap:0; return s ? Math.round(v/s)*s : +v.toFixed(2); };
 let drag=null;
+const capt = e => { try{ stage.setPointerCapture(e.pointerId); }catch(_){} };
 const onUI = e => e.target.closest('.sheet,.rail,.fly,.hud,.toast');
 const ptrs=new Map(); let pan=null, pinch=null;
 function zoomAt(px,py,f){ const nz=Math.max(0.6,Math.min(8,CAM.z*f)); f=nz/CAM.z; CAM.tx=px-(px-CAM.tx)*f; CAM.ty=(py-CAM.auto)-((py-CAM.auto)-CAM.ty)*f; CAM.z=nz; }
@@ -1135,9 +1209,14 @@ stage.addEventListener('pointerdown', e=>{
   if(onUI(e)) return;
   ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(ptrs.size===2){ drag=null; pan=null; const [a,b]=[...ptrs.values()], r=stage.getBoundingClientRect();
-    pinch={d:Math.hypot(a.x-b.x,a.y-b.y)||1, mx:(a.x+b.x)/2-r.left, my:(a.y+b.y)/2-r.top}; stage.setPointerCapture(e.pointerId); return; }
+    pinch={d:Math.hypot(a.x-b.x,a.y-b.y)||1, mx:(a.x+b.x)/2-r.left, my:(a.y+b.y)/2-r.top}; capt(e); return; }
   const h=hit(e); if(!h) return;
   if(fly){ fly=false; renderRail(); }
+  if(gridEd){
+    const g=gridHandle(h.x,h.y);
+    if(g){ CAM.z=1; CAM.tx=0; CAM.ty=0; gdrag={kind:g, x0:e.clientX, y0:e.clientY, H0:VIEW.HW, V0:VIEW.VH, rot:VIEW.rot}; CAM.lock=VIEW.rot; capt(e); draw(); return; }
+    pan={x:e.clientX, y:e.clientY, moved:false, leg:null, tx:h.x, ty:h.y}; capt(e); return;
+  }
   if(phase()==='place'){
     const tmp={x:0,y:0,z:1}; VIEW.put(tmp,h.x,h.y);
     if(tmp.x<0||tmp.y<0||tmp.x>S.deck.X||tmp.y>S.deck.Y) return;
@@ -1151,14 +1230,15 @@ stage.addEventListener('pointerdown', e=>{
     else { const lg=hitLeg(h.x,h.y,30); if(!lg) return; S.known.kind='leg'; S.known.ref=S.points[lg.i].id; }
     render(); setTimeout(()=>{ const v=$('kC'); if(v) v.focus(); },40); return;
   }
-  if(h.p){ drag={id:h.p.id, x:h.x, y:h.y, moved:false}; stage.setPointerCapture(e.pointerId); }
-  else { pan={x:e.clientX, y:e.clientY, moved:false, leg: phase()==='check' && !!hitLeg(h.x,h.y,22)}; stage.setPointerCapture(e.pointerId); }
+  if(h.p){ drag={id:h.p.id, x:h.x, y:h.y, moved:false}; capt(e); }
+  else { pan={x:e.clientX, y:e.clientY, moved:false, leg: phase()==='check' ? hitLeg(h.x,h.y,24) : null, tx:h.x, ty:h.y}; capt(e); }
 });
 stage.addEventListener('pointermove', e=>{
   if(ptrs.has(e.pointerId)) ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(pinch && ptrs.size===2){ const [a,b]=[...ptrs.values()], r=stage.getBoundingClientRect();
     const d=Math.hypot(a.x-b.x,a.y-b.y)||1, mx=(a.x+b.x)/2-r.left, my=(a.y+b.y)/2-r.top;
     CAM.tx+=mx-pinch.mx; CAM.ty+=my-pinch.my; zoomAt(mx,my,d/pinch.d); pinch={d,mx,my}; draw(); return; }
+  if(gdrag){ resizeGrid(e); return; }
   if(pan){ const dx=e.clientX-pan.x, dy=e.clientY-pan.y; if(!pan.moved && Math.hypot(dx,dy)<7) return;
     pan.moved=true; CAM.tx+=dx; CAM.ty+=dy; pan.x=e.clientX; pan.y=e.clientY; stage.style.cursor='grabbing'; draw(); return; }
   if(!drag && onUI(e)) return;
@@ -1175,19 +1255,40 @@ stage.addEventListener('pointermove', e=>{
   if(id!==hoverId){ hoverId=id; if(!raf) draw(); }
 });
 const endDrag=()=>{ if(!drag) return; const d=drag; drag=null;
-  if(!d.moved){ if(phase()==='check') S.seenCheck=true; if(S.sel===d.id){ S.sel=null; sheet=null; } else { S.sel=d.id; if(sheet==='point'||sheet==='known') sheet=null; } }
+  if(!d.moved){ selLeg=null; if(phase()==='check') S.seenCheck=true; if(S.sel===d.id){ S.sel=null; sheet=null; } else { S.sel=d.id; if(sheet==='point'||sheet==='known') sheet=null; } }
   render(); if(!d.moved && S.sel && (hunt || !Number.isFinite(limitOf(S.points.find(p=>p.id===S.sel)).swl))) focusSoon('bSwl'); };
 stage.addEventListener('pointerup', e=>{
   ptrs.delete(e.pointerId);
   if(pinch){ if(ptrs.size<2) pinch=null; return; }
+  if(gdrag){ gdrag=null; CAM.lock=null; render(); return; }
   if(pan){ const p_=pan; pan=null; stage.style.cursor='default';
-    if(!p_.moved){ if(p_.leg){ S.seenCheck=true; editReading(); } else if(S.sel||sheet&&sheet!=='known'){ S.sel=null; if(sheet==='point') sheet=null; render(); } }
+    if(!p_.moved){
+      const now=performance.now(), dbl = !p_.leg && lastTap && now-lastTap.t<330 && Math.hypot(p_.tx-lastTap.x,p_.ty-lastTap.y)<40;
+      lastTap = dbl ? null : {t:now, x:p_.tx, y:p_.ty};
+      if(dbl && S.view!=='side'){ gridEd=!gridEd; S.sel=null; selLeg=null; if(sheet==='point'||sheet==='wire') sheet=null; hunt=false; render(); return; }
+      if(gridEd) return;
+      if(p_.leg){ S.seenCheck=true; S.sel=null; if(sheet==='point') sheet=null; selLeg = selLeg===p_.leg.i ? null : p_.leg.i; render(); }
+      else if(S.sel||selLeg!=null||sheet&&sheet!=='known'){ S.sel=null; selLeg=null; if(sheet==='point') sheet=null; render(); } }
     return; }
   endDrag();
 });
-stage.addEventListener('pointercancel', e=>{ ptrs.delete(e.pointerId); drag=null; pan=null; pinch=null; });
+stage.addEventListener('pointercancel', e=>{ ptrs.delete(e.pointerId); drag=null; pan=null; pinch=null; if(gdrag){ gdrag=null; CAM.lock=null; render(); } });
+function gridHandle(x,y){                         // which resize handle (if any) is under the finger
+  const V=VIEW, cx=V.sx(V.HW), cy=V.sy(V.VH), my=V.sy(V.VH/2), mx=V.sx(V.HW/2), r=coarse()?34:22;
+  if(Math.hypot(x-cx,y-cy)<r) return 'c';
+  if(Math.hypot(x-cx,y-my)<r) return 'h';
+  if(Math.hypot(x-mx,y-cy)<r) return 'v';
+  return null;
+}
+function resizeGrid(e){                           // logarithmic: every ~140 px of drag doubles (or halves) that side
+  const g=gdrag, dh=e.clientX-g.x0, dv=g.y0-e.clientY;
+  const H = g.kind!=='v' ? nice(Math.max(2, g.H0*Math.pow(2, dh/140))) : g.H0;
+  const V = g.kind!=='h' ? nice(Math.max(2, g.V0*Math.pow(2, dv/140))) : g.V0;
+  if(g.rot){ setDeck('Y',H); setDeck('X',V); } else { setDeck('X',H); setDeck('Y',V); }
+  soft();
+}
 stage.addEventListener('wheel', e=>{ if(onUI(e)) return; e.preventDefault(); const r=stage.getBoundingClientRect(); zoomAt(e.clientX-r.left, e.clientY-r.top, Math.exp(-e.deltaY*0.0015)); draw(); }, {passive:false});
-stage.addEventListener('dblclick', e=>{ if(onUI(e)) return; const h=hit(e); if(!h||h.p) return; const lg=hitLeg(h.x,h.y); if(lg) addPoint(S.lastType||'block', lg); });
+stage.addEventListener('dblclick', e=>{ if(onUI(e)||gridEd) return; const h=hit(e); if(!h||h.p) return; const lg=hitLeg(h.x,h.y); if(lg) addPoint(S.lastType||'block', lg); });
 
 function addPoint(type, at){
   const P=S.points, n=P.length;
@@ -1198,7 +1299,7 @@ function addPoint(type, at){
   const dx=b.x-a.x, dy=b.y-a.y, L=Math.hypot(dx,dy)||1, off=Math.min(3, L*0.15);
   const z = at && Number.isFinite(at.z) ? at.z : (a.z+b.z)/2;
   const p=mkPoint(type,{x:snapV(Math.max(0,Math.min(S.deck.X, x + (at?0:-dy/L*off)))), y:snapV(Math.max(0,Math.min(S.deck.Y, y + (at?0:dx/L*off)))), z:+z.toFixed(2)});
-  P.splice(idx,0,p); S.lastType=type; S.sel=null; if(sheet==='point') sheet=null; render();
+  P.splice(idx,0,p); S.lastType=type; S.sel=null; selLeg=null; if(sheet==='point') sheet=null; render();
 }
 
 /* ---------------------------------------------------------------- header + menu */
@@ -1210,7 +1311,7 @@ $('btnMenu').addEventListener('click', e=>{ e.stopPropagation(); const m=$('menu
 document.addEventListener('click', e=>{ if(!e.target.closest('#menu')) $('menu').classList.remove('open'); });
 $('menu').addEventListener('click', e=>{ const b=e.target.closest('[data-m]'); if(!b) return; $('menu').classList.remove('open'); menuAct(b.dataset.m); });
 function menuAct(a){
-  if(a==='deck'){ sheet='deck'; S.sel=null; hunt=false; render(); return; }
+  if(a==='deck'){ gridEd=true; sheet=null; S.sel=null; selLeg=null; hunt=false; S.view='plan'; fitView(); render(); return; }
   if(a==='figures'){ renderTables(); $('figDlg').showModal(); }
   else if(a==='print') printPlan();
   else if(a==='catalogue'){ renderCat(); $('catDlg').showModal(); }

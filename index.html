@@ -52,6 +52,11 @@ svg.i{width:22px;height:22px;flex:none}
 .menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:11px 12px;border-radius:8px;font-size:14.5px}
 .menu button:hover{background:var(--panel2)}
 .menu hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+.munits{display:flex;align-items:center;gap:4px;padding:4px 6px 4px 12px}
+.munits span{flex:1;color:var(--ink3);font-size:13px;font-weight:650}
+.menu .munits button{width:auto;padding:7px 10px;border:1px solid var(--line2);border-radius:8px;font-size:13px;font-weight:650}
+.menu .munits button[aria-pressed="true"]{background:var(--known);border-color:var(--known);color:#fff}
+.unitTag{font-size:12.5px;font-weight:700;color:var(--ink2);padding:5px 10px;border:1px solid var(--line2);border-radius:999px}
 
 /* ---------- stage: the grid is the app ---------- */
 .stage{position:relative;height:calc(100dvh - var(--hdr));touch-action:none;overflow:hidden}
@@ -60,8 +65,12 @@ svg.i{width:22px;height:22px;flex:none}
 /* answer chip (top) */
 .hud{position:absolute;left:10px;right:78px;top:10px;display:flex;align-items:flex-start;gap:8px;z-index:6;pointer-events:none}
 .hud>*{pointer-events:auto}
-.ans{display:none;align-items:center;gap:10px;padding:8px 14px 8px 10px;border-radius:999px;background:var(--glass);border:1.5px solid var(--line2);box-shadow:0 6px 20px rgba(0,0,0,.28);backdrop-filter:blur(8px);cursor:pointer;max-width:calc(100% - 52px)}
+.ans{display:none;align-items:center;gap:10px;padding:9px 14px 9px 12px;border-radius:18px;background:var(--glass);border:1.5px solid var(--line2);box-shadow:0 6px 20px rgba(0,0,0,.28);backdrop-filter:blur(8px);cursor:pointer;max-width:calc(100% - 52px)}
 .ans.show{display:inline-flex;animation:pop .35s cubic-bezier(.2,1.4,.4,1)}
+.ans .al{font-size:15px;line-height:1.3;font-weight:600}
+.ans .al b{font-weight:800;white-space:nowrap}.ans .al .kw{color:var(--known)}.ans .al .ke{color:var(--cursor)}
+.ans .al small{display:block;font-size:12.5px;color:var(--ink2);font-weight:600;margin-top:2px}
+.ans>svg{width:18px;height:18px;color:var(--ink3);flex:none}
 .ans .v{font-size:24px;font-weight:700;letter-spacing:-.4px;white-space:nowrap}
 .ans .v small{font-size:13px;color:var(--ink3);font-weight:600;margin-left:2px}
 .ans .w{font-size:12.5px;color:var(--ink2);white-space:nowrap;display:flex;align-items:center;gap:5px}
@@ -73,8 +82,9 @@ svg.i{width:22px;height:22px;flex:none}
 .code.winch{border-color:var(--known);color:var(--known)}.code.end{border-color:var(--cursor);color:var(--cursor)}
 
 /* short hint pill */
-.hint{position:absolute;left:calc((100% - 70px)/2);top:62px;transform:translateX(-50%);z-index:5;display:none;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:var(--glass);border:1px solid var(--known);color:var(--ink);font-weight:650;font-size:14px;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.25);pointer-events:none}
-.hint.show{display:inline-flex;animation:fadein .4s ease}
+.hint{position:absolute;left:10px;right:78px;top:62px;z-index:5;display:none;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:12px;background:var(--glass);border:1px solid var(--line2);border-left:4px solid var(--known);color:var(--ink2);font-weight:500;font-size:14px;line-height:1.35;box-shadow:0 4px 16px rgba(0,0,0,.25);pointer-events:none;max-width:520px}
+.hint b{color:var(--ink);font-weight:750}
+.hint.show{display:flex;animation:up .3s ease}
 .hint svg{color:var(--known);animation:nudge 1.6s ease-in-out infinite}
 
 /* floating add buttons once the line is laid out */
@@ -250,10 +260,12 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
     <svg width="26" height="26" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="7" fill="var(--well)" stroke="var(--line2)"/><path d="M5 21 L14 8 L23 19" stroke="var(--known)" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="14" cy="8" r="2.8" fill="var(--cursor)"/></svg>
     <b>WinchForce</b>
   </div>
-  <div class="seg" role="group" aria-label="Force units" id="unitSeg"><button data-u="te">t</button><button data-u="kg">kg</button><button data-u="kN">kN</button></div>
+  <span class="unitTag" id="unitTag" title="Units (change in the menu)"></span>
   <button class="icon-btn" id="btnHelp" title="How it works" aria-label="How it works">?</button>
   <button class="icon-btn" id="btnMenu" title="Menu" aria-label="Menu" aria-haspopup="true" aria-expanded="false"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2"/></svg></button>
   <div class="menu" id="menu" role="menu">
+    <div class="munits"><span>Units</span><button data-u="te">tonnes</button><button data-u="kg">kg</button><button data-u="kN">kN</button></div>
+    <hr>
     <button data-m="figures">All figures</button>
     <button data-m="print">Print rigging plan</button>
     <hr>
@@ -416,11 +428,11 @@ function mkPoint(type, o={}){
 }
 function freshPlan(){
   return { v:3, unit:(S&&S.unit)||'te', theme:(S&&S.theme)||'night', name:'',
-    deck:{X:30,Y:16,Z:12,snap:0.5}, rope:{id:'', mbl:null, sf:5},
+    deck:{X:40,Y:20,Z:12,snap:0.5}, rope:{id:'', mbl:null, sf:5},
     op:'heave', known:{kind:'winch', ref:null, value:null}, view:'plan', laidOut:false, dragged:false,
-    points:[mkPoint('winch',{x:4,y:8,z:1}), mkPoint('bollard',{x:16,y:12,z:1}), mkPoint('end',{x:27,y:6,z:1})], sel:null };
+    points:[mkPoint('winch',{x:5,y:10,z:1}), mkPoint('bollard',{x:21,y:15,z:1}), mkPoint('end',{x:36,y:8,z:1})], sel:null };
 }
-S = (()=>{ try{ const s=JSON.parse(localStorage.getItem(STORE)||'null'); if(s && s.v===3 && Array.isArray(s.points) && s.points.length>=2) return s; }catch(e){} return null; })() || freshPlan();
+S = (()=>{ try{ const s=JSON.parse(localStorage.getItem(STORE)||'null'); if(s && s.v===3 && Array.isArray(s.points)){ if(s.deck && s.deck.X===30 && s.deck.Y===16){ s.deck.X=40; s.deck.Y=20; } return s; } }catch(e){} return null; })() || freshPlan();
 let saveT=null;
 function save(){ clearTimeout(saveT); saveT=setTimeout(()=>{ try{ localStorage.setItem(STORE, JSON.stringify(S)); }catch(e){} }, 200); }
 const cat = id => CAT.find(c=>c.id===id);
@@ -544,7 +556,6 @@ const roleOf = p => PT[p.type].role;
 const icon = (id, cls='i') => `<svg class="${cls}"><use href="#i-${id}"/></svg>`;
 const isMobile = () => matchMedia('(max-width:820px)').matches;
 const coarse = () => matchMedia('(pointer:coarse)').matches;
-if(S.rot==null) S.rot = isMobile();          // phones start upright: deck length runs up the screen
 function phase(){
   if(S.points.length<2) return 'place';
   if(!S.laidOut || override==='lay') return 'lay';
@@ -559,7 +570,7 @@ function render(){
   const ph=phase();
   if(ph==='know' && (!sheet || sheet==='point' && !S.sel)) sheet='known';
   if(ph!=='know' && sheet==='known') sheet=null;
-  renderAns(); renderRail(); renderSheet(); renderHint(); draw(); kick(); save();
+  renderAns(); renderRail(); renderSheet(); renderHint(); enterKeys(); draw(); kick(); save();
 }
 function soft(){ RES=solve(); stepPop(); renderAns(); liveRail(); liveSheet(); draw(); kick(); save(); }
 const C = () => RES.codes||codes();
@@ -568,28 +579,36 @@ const C = () => RES.codes||codes();
 function renderAns(){
   const a=$('ans');
   if(RES.err || RES.pending || phase()==='place'){ a.classList.remove('show','ok','warn','bad'); a.innerHTML=''; return; }
-  const P=S.points, K=S.known, end=P[P.length-1];
+  const P=S.points, K=S.known, end=P[P.length-1], heave=S.op==='heave', eC=C()[end.id];
   const w=RES.worst, c=w?cls(w.use):'';
-  const big = K.kind==='end' ? {code:'W',cls:'winch',v:RES.winch} : {code:C()[end.id],cls:'end',v:RES.end};
-  const small = K.kind==='end' ? {code:C()[end.id],cls:'end',v:RES.end} : {code:'W',cls:'winch',v:RES.winch};
+  const loss=Math.abs(RES.winch-RES.end), W=`<b class="kw">W ${fT(RES.winch)}</b>`, E=`<b class="ke">${eC} ${fT(RES.end)}</b>`;
+  let line;
+  if(K.kind==='end') line = heave ? `To heave ${E} in, the winch must pull ${W}` : `To hold back ${E}, the winch only needs ${W}`;
+  else if(K.kind==='winch') line = heave ? `Winch pulls ${W}, ${E} reaches the end` : `Winch holding ${W} holds back ${E}`;
+  else line = `Load cell ${fT(K.value)}: winch ${W}, end ${E}`;
+  const sub = loss>0.0005 ? `${fT(loss)} ${heave?'lost to':'helped by'} friction${w?` · highest use ${pct(w.use)}`:''}` : (w?`highest use ${pct(w.use)}`:'');
   const was=a.classList.contains('show');
   a.className='ans show '+c; a.style.animation = was ? (c==='bad'?'badglow 1.6s ease-in-out infinite':'none') : '';
-  a.innerHTML = `<span class="code ${big.cls}">${big.code}</span><span class="v">${fT(big.v,false)}<small>${uLab()}</small></span>
-    <span class="w"><span class="code ${small.cls}" style="min-width:22px;height:18px;font-size:10.5px">${small.code}</span>${fT(small.v)}</span>${w?`<span class="pc">${pct(w.use)}</span>`:''}`;
+  a.innerHTML = `<div class="al">${line}${sub?`<small>${sub}</small>`:''}</div>${icon('edit')}`;
 }
 function renderHint(){
-  const h=$('hint'), ph=phase(); let t='', ic='';
-  if(ph==='place'){ ic = S.points.length ? 'end' : 'winch'; t = S.points.length ? 'Tap where the end is' : 'Tap where the winch is'; }
-  else if(ph==='lay' && !S.dragged){ ic='hand'; t='Drag to place'; }
-  else if(pickMode() && !S.known.ref){ ic='tap'; t='Tap the load cell'; }
-  else if(hunt){ ic='tap'; t='Tap each ?'; }
-  else if(sheet==='heights'){ ic='height'; t='Drag up or down'; }
-  if(!t || (sheet && sheet!=='heights' && sheet!=='known' && isMobile())){ h.classList.remove('show'); return; }
-  h.innerHTML=`${icon(ic)}<span>${t}</span>`; h.classList.add('show');
-  h.style.top = $('ans').classList.contains('show') ? '66px' : '12px';
+  const h=$('hint'), ph=phase(), K=S.known; let t='';
+  if(ph==='place') t = S.points.length ? '<b>2</b> Now tap where the <b>end</b> of the line is (what you are pulling).' : '<b>1</b> Tap where the <b>winch</b> is.';
+  else if(ph==='lay') t = 'Drag <b>W</b> and <b>E</b> to where they are. Use <b>+</b> for each bollard or block the line goes round. Tap <b>✓</b> when it looks right.';
+  else if(ph==='know'){
+    if(K.kind==='winch') t='Type what the <b>winch</b> is pulling, then <b>✓</b>.';
+    else if(K.kind==='end') t='Type the <b>load at the end</b>, then <b>✓</b>.';
+    else t = K.ref ? 'Type the <b>load cell</b> reading, then <b>✓</b>.' : 'Where is the load cell? Tap the <b>block</b> it hangs from, or the <b>line</b> it is clamped on.';
+  }
+  else if(hunt) t='Tap a point marked <b>?</b> and type its SWL.';
+  else if(sheet==='heights') t='Drag points up or down, or type the heights.';
+  else if(!S.seenCheck) t='Tap any point to see its load. Add limits with the buttons on the right.';
+  if(!t || (sheet==='point' && isMobile())){ h.classList.remove('show'); return; }
+  h.innerHTML=`<span>${t}</span>`; h.classList.add('show');
+  h.style.top = $('ans').classList.contains('show') ? ($('ans').offsetHeight+18)+'px' : '10px';
 }
 let flashT=null;
-function flash(t){ const h=$('hint'); h.innerHTML=`<span>${esc(t)}</span>`; h.classList.add('show'); h.style.top=$('ans').classList.contains('show')?'66px':'12px'; clearTimeout(flashT); flashT=setTimeout(renderHint,1300); }
+function flash(t){ toast(esc(t),1400); }
 function toast(html, ms=5000){ const t=$('toast'); t.innerHTML=html; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'), ms); }
 
 /* ---------------------------------------------------------------- the rail */
@@ -617,7 +636,9 @@ function railItems(){
   out.push({id:'clear', icon:'trash', label:'Clear all', dis:!P.length});
   return out;
 }
+function renderUnits(){ $('unitTag').textContent = ({te:'t',kg:'kg',kN:'kN'})[S.unit]; document.querySelectorAll('#menu [data-u]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.u===S.unit))); }
 function renderRail(){
+  renderUnits();
   $('rail').innerHTML = railItems().map(o=> o.sep ? `<span class="${o.grow?'grow':'sep'}"></span>`
     : `<button class="rb ${o.go?'go':''} ${o.glow?'glow':''} ${o.cls||''}" data-r="${o.id}" aria-label="${esc(o.label)}" title="${esc(o.label)}" ${o.dis?'disabled':''} aria-pressed="${!!o.on}">${icon(o.icon)}${o.val?`<span class="rv">${esc(o.val)}</span>`:''}${o.dot?'<span class="dot"></span>':''}</button>`).join('');
   const f=$('fly'); f.classList.toggle('show', fly);
@@ -633,13 +654,14 @@ function liveRail(){
 $('rail').addEventListener('pointerdown', e=>e.stopPropagation());
 $('rail').addEventListener('click', e=>{
   const b=e.target.closest('[data-r]'); if(!b||b.disabled) return; const id=b.dataset.r;
+  if(phase()==='check') S.seenCheck=true;
   if(id!=='add') fly=false;
   if(id==='add'){ fly=!fly; renderRail(); return; }
-  if(id==='rot'){ S.rot=!S.rot; render(); flash(S.rot?'Length up the screen':'Length across'); return; }
+  if(id==='rot'){ S.flip=!S.flip; render(); return; }
   if(id==='view'){ S.view=S.view==='side'?'plan':'side'; if(S.view==='plan'&&sheet==='heights') sheet=null; render(); return; }
   if(id==='laid'){ S.laidOut=true; override='know'; sheet='known'; render(); if(!coarse()) setTimeout(()=>$('kVal')&&$('kVal').focus(),40); return; }
   if(id==='clear'){ clearAll(); return; }
-  if(id==='known'){ override='know'; sheet='known'; hunt=false; S.sel=null; render(); return; }
+  if(id==='known'){ editReading(); return; }
   if(id==='op'){ S.op=S.op==='heave'?'payout':'heave'; render(); flash(S.op==='heave'?'Heaving in':'Paying out'); return; }
   if(id==='limits'){ hunt=!hunt; sheet=null; S.sel=null; render(); return; }
   if(id==='heights'){ const on=sheet!=='heights'; sheet=on?'heights':null; S.view=on?'side':'plan'; hunt=false; S.sel=null; render(); return; }
@@ -650,13 +672,13 @@ $('fly').addEventListener('pointerdown', e=>e.stopPropagation());
 $('fly').addEventListener('click', e=>{ const b=e.target.closest('[data-add]'); if(!b) return; fly=false; addPoint(b.dataset.add); });
 function clearAll(){
   undoBuf=JSON.stringify(S);
-  const keep={unit:S.unit,theme:S.theme,deck:S.deck,rope:S.rope,rot:S.rot};
+  const keep={unit:S.unit,theme:S.theme,deck:S.deck,rope:S.rope,flip:S.flip};
   S=freshPlan(); Object.assign(S,keep); S.points=[]; S.laidOut=false; S.dragged=true;
   override=null; sheet=null; hunt=false; fly=false; popT=0; wasPending=true; S.sel=null;
   render(); toast(`Cleared <button data-undo>Undo</button>`, 4000);
 }
 $('toast').addEventListener('click', e=>{ if(e.target.closest('[data-undo]') && undoBuf){ S=JSON.parse(undoBuf); undoBuf=null; $('toast').classList.remove('show'); render(); } });
-$('ans').addEventListener('click', ()=>{ override='know'; sheet='known'; hunt=false; S.sel=null; render(); });
+$('ans').addEventListener('click', editReading);
 function focusSoon(id){ if(coarse()) return; setTimeout(()=>{ const f=$(id); if(f) f.focus(); },40); }
 
 /* ---------------------------------------------------------------- sheets */
@@ -678,6 +700,7 @@ function knownSheet(){
       <button class="tool" data-kind="winch" aria-pressed="${kk==='winch'}">${icon('winch')}Winch</button>
       <button class="tool" data-kind="end" aria-pressed="${kk==='end'}">${icon('end')}End</button>
       <button class="tool" data-kind="cell" aria-pressed="${kk==='cell'}">${icon('cell')}Load cell</button></div>
+    <div class="seg segw" role="group" aria-label="Line movement" style="margin:8px 0 0"><button data-op="heave" aria-pressed="${S.op==='heave'}">Heaving in</button><button data-op="payout" aria-pressed="${S.op==='payout'}">Paying out</button></div>
     <div class="row" style="margin-top:8px">${needTap ? `<div class="tap">${icon('tap')}Tap the grid</div>`
       : `<div class="kin"><input id="kVal" type="number" inputmode="decimal" step="any" placeholder="?" value="${val}" aria-label="Reading in ${u}"><span>${u}</span></div>`}
     <button class="go ${RES.pending?'':'glow'}" data-act="next" aria-label="Done" ${RES.pending?'disabled':''}>${icon('check')}</button></div>
@@ -751,9 +774,12 @@ sh.addEventListener('pointerdown', e=>e.stopPropagation());
 sh.addEventListener('click', e=>{
   const kb=e.target.closest('[data-kind]');
   if(kb){ const k=kb.dataset.kind;
-    if(k==='cell'){ if(!(S.known.kind==='point'||S.known.kind==='leg')){ S.known.kind='point'; S.known.ref=null; } }
+    const was=(S.known.kind==='point'||S.known.kind==='leg')?'cell':S.known.kind;
+    if(k!==was) S.known.value=null;          // a new kind of reading starts empty, so nothing solves on an old number
+    if(k==='cell'){ if(was!=='cell'){ S.known.kind='point'; S.known.ref=null; } }
     else { S.known.kind=k; S.known.ref=null; }
-    render(); if(k!=='cell') focusSoon('kVal'); return; }
+    render(); if(k!=='cell') setTimeout(()=>{ const v=$('kVal'); if(v) v.focus(); },30); return; }
+  const ob=e.target.closest('[data-op]'); if(ob){ S.op=ob.dataset.op; render(); return; }
   if(e.target.closest('[data-act="next"]') && !RES.pending){ override=null; sheet=null; render(); return; }
   if(e.target.closest('[data-close]')){ if(sheet==='heights') S.view='plan'; sheet=null; S.sel=null; render(); return; }
   const p=S.points.find(q=>q.id===S.sel);
@@ -775,7 +801,14 @@ sh.addEventListener('input', e=>{
   else if(k==='turns') p.turns=Math.max(0,Math.round(v)); else if(k==='parts') p.parts=Math.max(1,Math.round(v)); else p[k]=v;
   soft();
 });
-sh.addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target.id==='kVal' && !RES.pending){ e.target.blur(); override=null; sheet=null; render(); } });
+sh.addEventListener('keydown', e=>{
+  if(e.key!=='Enter' || e.target.tagName!=='INPUT') return;
+  e.preventDefault(); e.target.blur();
+  if(e.target.id==='kVal' && !RES.pending){ override=null; sheet=null; }
+  render();
+});
+function enterKeys(){ document.querySelectorAll('#sheet input').forEach(i=>{ i.enterKeyHint='done'; }); }
+function editReading(){ override='know'; sheet='known'; hunt=false; S.sel=null; render(); setTimeout(()=>{ const v=$('kVal'); if(v){ v.focus(); v.select(); } },30); }
 sh.addEventListener('change', e=>{
   const el=e.target, p=S.points.find(q=>q.id===S.sel);
   if(el.dataset.w==='id'){ S.rope.id=el.value; render(); return; }
@@ -813,12 +846,12 @@ function draw(t){ const {ctx,w,h}=prep($('cv')); paint(ctx,w,h,PAL[S.theme]||PAL
 function paint(ctx,w,h,pal,live,t=0){
   const D=S.deck, font=FONT(), side=S.view==='side', anim=live && !RM.matches;
   const shv = live && $('sheet').classList.contains('show') && isMobile() && (sheet==='known'||sheet==='heights'||sheet==='deck'||sheet==='wire');
-  const top = live ? (($('ans').classList.contains('show')||$('hint').classList.contains('show')) ? 74 : 22) : 18;
+  const top = live ? Math.max(22, ($('hint').classList.contains('show') ? $('hint').offsetTop+$('hint').offsetHeight+10 : 0), ($('ans').classList.contains('show') ? $('ans').offsetHeight+22 : 0)) : 18;
   const bot = live ? (shv ? $('sheet').offsetHeight + 30 : 30) : 34;
   const pad={l:38,r:live?78:14,t:top,b:bot};
   const zs=S.points.map(p=>p.z);
   const aw=w-pad.l-pad.r, ah=h-pad.t-pad.b;
-  const rot = live && !side && !!S.rot;                          // user's choice: deck length up the screen or across
+  const rot = live && !side && ((ah > aw) !== !!S.flip) && D.X >= D.Y;   // long side of the deck follows the long side of the screen; Rotate flips it
   const HW = rot ? D.Y : D.X;                                   // horizontal span (m)
   const B0 = side ? Math.floor(Math.min(0,...zs)-1) : 0, B1 = side ? Math.ceil(Math.max(D.Z||0,...zs)+1) : (rot ? D.X : D.Y);
   const k=Math.max(1,Math.min(aw/HW, ah/(B1-B0)));
@@ -849,7 +882,7 @@ function paint(ctx,w,h,pal,live,t=0){
   for(let i=0;i<P.length-1;i++){
     const a=P[i], b=P[i+1], ax=sx(hu(a)), ay=sy(vy(a)), bx=sx(hu(b)), by=sy(vy(b));
     const L=ok?R.legs[i]:null, c=L?col(L.use):pal.line, isKnown = K.kind==='leg' && K.ref===a.id && ph!=='lay';
-    if(picking){ ctx.strokeStyle=pal.known; ctx.globalAlpha= anim ? .18+.18*Math.sin(t/260) : .25; ctx.lineWidth=18; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke(); ctx.globalAlpha=1; }
+    if(picking && !K.ref){ ctx.strokeStyle=pal.known; ctx.globalAlpha=.22; ctx.lineWidth=18; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke(); ctx.globalAlpha=1; }
     if(show && L && L.use>1 && anim){ ctx.strokeStyle=pal.bad; ctx.globalAlpha=.25+.2*Math.sin(t/200); ctx.lineWidth=12; ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke(); ctx.globalAlpha=1; }
     ctx.strokeStyle=isKnown?pal.known:c; ctx.lineWidth=3.4; ctx.lineCap='round';
     ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
@@ -873,11 +906,12 @@ function paint(ctx,w,h,pal,live,t=0){
     const ring_ = r && show && Number.isFinite(r.use) ? col(r.use) : pal.ink2;
     const selected = live && p.id===S.sel, hov = live && p.id===hoverId;
     const isKnown = ph!=='lay' && ((K.kind==='point' && K.ref===p.id) || (K.kind==='winch' && role==='start') || (K.kind==='end' && role==='end'));
+    if(picking && !K.ref && role!=='start'){ ctx.beginPath(); ctx.arc(x,y,26,0,Math.PI*2); ctx.strokeStyle=pal.known; ctx.lineWidth=2; ctx.setLineDash([5,4]); ctx.stroke(); ctx.setLineDash([]); }
     const noLimit = !Number.isFinite(limitOf(p).swl);
     // attention
     if(live && anim){
       if(ph==='lay' && !S.dragged && role!=='mid') ring(ctx,x,y,20,pal.sel,t);
-      else if(ph==='know' && (picking ? (!K.ref && role!=='start') : isKnown)) ring(ctx,x,y,22,pal.known,t,1200,18);
+      else if(ph==='know' && !picking && isKnown) ring(ctx,x,y,22,pal.known,t,1600,12);
       else if(show && Number.isFinite(r.use) && r.use>1) ring(ctx,x,y,21,pal.bad,t,1000,14);
       else if(hunt && noLimit) ring(ctx,x,y,21,pal.sel,t,1300,14);
     }
@@ -964,6 +998,7 @@ stage.addEventListener('pointerdown', e=>{
     render(); if(!matchMedia('(pointer:coarse)').matches) setTimeout(()=>$('kVal')&&$('kVal').focus(),40); return;
   }
   if(h.p){ drag={id:h.p.id, x:h.x, y:h.y, moved:false}; stage.setPointerCapture(e.pointerId); }
+  else if(phase()==='check' && hitLeg(h.x,h.y,22)){ S.seenCheck=true; editReading(); }
   else if(S.sel||sheet){ S.sel=null; if(sheet==='point') sheet=null; render(); }
 });
 stage.addEventListener('pointermove', e=>{
@@ -972,7 +1007,7 @@ stage.addEventListener('pointermove', e=>{
   if(drag){
     if(!drag.moved && Math.hypot(h.x-drag.x,h.y-drag.y)<6) return;
     const p=S.points.find(q=>q.id===drag.id); if(!p) return;
-    if(!drag.moved){ drag.moved=true; if(!S.dragged){ S.dragged=true; renderHint(); renderDock(); } if(S.sel){ S.sel=null; sheet=sheet==='point'?null:sheet; renderSheet(); } }
+    if(!drag.moved){ drag.moved=true; if(!S.dragged){ S.dragged=true; renderHint(); renderRail(); } if(S.sel){ S.sel=null; sheet=sheet==='point'?null:sheet; renderSheet(); } }
     VIEW.put(p,h.x,h.y);
     p.x=Math.max(0,Math.min(S.deck.X,snapV(p.x))); p.y=Math.max(0,Math.min(S.deck.Y,snapV(p.y))); p.z=snapV(p.z);
     soft(); return;
@@ -981,7 +1016,7 @@ stage.addEventListener('pointermove', e=>{
   if(id!==hoverId){ hoverId=id; if(!raf) draw(); }
 });
 const endDrag=()=>{ if(!drag) return; const d=drag; drag=null;
-  if(!d.moved){ if(S.sel===d.id){ S.sel=null; sheet=null; } else { S.sel=d.id; sheet='point'; } }
+  if(!d.moved){ if(phase()==='check') S.seenCheck=true; if(S.sel===d.id){ S.sel=null; sheet=null; } else { S.sel=d.id; sheet='point'; } }
   render(); if(!d.moved && S.sel && hunt) focusSoon('pe_swl'); };
 stage.addEventListener('pointerup', endDrag); stage.addEventListener('pointercancel', ()=>{ drag=null; });
 stage.addEventListener('dblclick', e=>{ if(onUI(e)) return; const h=hit(e); if(!h||h.p) return; const lg=hitLeg(h.x,h.y); if(lg) addPoint(S.lastType||'block', lg); });
@@ -999,7 +1034,7 @@ function addPoint(type, at){
 }
 
 /* ---------------------------------------------------------------- header + menu */
-$('unitSeg').addEventListener('click', e=>{ const b=e.target.closest('[data-u]'); if(b){ S.unit=b.dataset.u; render(); if($('catDlg').open) renderCat(); } });
+$('menu').addEventListener('click', e=>{ const b=e.target.closest('[data-u]'); if(!b) return; e.stopPropagation(); S.unit=b.dataset.u; $('menu').classList.remove('open'); render(); if($('catDlg').open) renderCat(); flash('Units: '+({te:'tonnes',kg:'kg',kN:'kN'})[S.unit]); });
 $('btnHelp').addEventListener('click', ()=>$('helpDlg').showModal());
 $('helpClose').addEventListener('click', ()=>$('helpDlg').close());
 ['helpDlg','catDlg','figDlg'].forEach(id=>$(id).addEventListener('click',e=>{ if(e.target===$(id)) $(id).close(); }));

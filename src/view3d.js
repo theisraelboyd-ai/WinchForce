@@ -25,7 +25,7 @@ const S = {
   cam: { target: new Vector3(), radius: 60, theta: -0.75, phi: 0.95 },  // theta: azimuth, phi: polar from +y
   touched: false, drag: null, level: null, data: null, pickables: [], raf: 0, span: 40, sig: '', box: null, labelDefs: [],
 };
-const WF3D = { onPick: null, onMove: null, onMoveEnd: null, mount, update, view, resize, active: () => !!S.renderer, screenOf };
+const WF3D = { onPick: null, onMove: null, onMoveEnd: null, snapshot, mount, update, view, resize, active: () => !!S.renderer, screenOf };
 
 const W = p => new Vector3(p.x, p.z, -p.y);             // app metres -> world
 const WV = v => new Vector3(v[0], v[2], -v[1]);         // app vector -> world
@@ -57,16 +57,70 @@ function mount(el) {
   S.labels.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:hidden';
   el.appendChild(S.labels);
 
+  initScene();
+  bindControls(cv);
+  new ResizeObserver(resize).observe(el);
+  resize();
+  return true;
+}
+
+function initScene() {
+  if (S.scene) return;
   S.scene = new Scene();
   S.camera = new PerspectiveCamera(42, 1, 0.1, 50000);
   S.scene.add(new HemisphereLight(0xe6f2ff, 0x2a3138, 1.25));
   const sun = new DirectionalLight(0xffffff, 1.5); sun.position.set(-40, 90, 60); S.scene.add(sun);
   const fill = new DirectionalLight(0x9fc4ff, 0.45); fill.position.set(60, 30, -80); S.scene.add(fill);
   S.root = new Group(); S.scene.add(S.root);
-  bindControls(cv);
-  new ResizeObserver(resize).observe(el);
-  resize();
-  return true;
+}
+
+/* A still picture for the print sheet: drawn off screen at print size, labels burnt in.
+   Leaves the live view exactly as it was. Returns a PNG data URL, or null without WebGL. */
+function snapshot(data, W = 1800, H = 1100, viewName = 'quarter') {
+  initScene();
+  let r;
+  try { r = new WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); } catch (e) { return null; }
+  if (!r.getContext()) return null;
+  r.setPixelRatio(1); r.setSize(W, H, false); r.outputColorSpace = SRGBColorSpace;
+  const keep = { renderer: S.renderer, el: S.el, data: S.data, touched: S.touched, level: S.level, aspect: S.camera.aspect,
+    cam: { target: S.cam.target.clone(), radius: S.cam.radius, theta: S.cam.theta, phi: S.cam.phi } };
+  let url = null;
+  try {
+    S.renderer = r; S.el = { clientWidth: W, clientHeight: H }; S.sig = ''; S.level = null; S.snap = true; S.touched = true;
+    S.camera.aspect = W / H; S.camera.updateProjectionMatrix();
+    update(data);
+    fitCamera(viewName, false); placeCamera();
+    r.render(S.scene, S.camera);
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const g = c.getContext('2d'); g.drawImage(r.domElement, 0, 0);
+    paintLabels(g, W, H, W / 900, data.theme);
+    url = c.toDataURL('image/png');
+  } catch (e) { url = null; }
+  r.dispose(); try { r.forceContextLoss(); } catch (e) {}
+  S.renderer = keep.renderer; S.el = keep.el; S.touched = keep.touched; S.level = keep.level; S.snap = false;
+  S.camera.aspect = keep.aspect; S.camera.updateProjectionMatrix();
+  Object.assign(S.cam, keep.cam); S.cam.target = keep.cam.target;
+  S.sig = '';
+  if (keep.renderer && keep.data) update(keep.data);
+  return url;
+}
+function paintLabels(g, w, h, k, T) {
+  const boxes = [];
+  g.textBaseline = 'middle'; g.textAlign = 'center';
+  S.labelDefs.forEach(l => {
+    const v = l.p.clone().project(S.camera);
+    if (v.z > 1 || v.z < -1) return;
+    const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h;
+    g.font = `750 ${Math.round(13 * k)}px "Segoe UI", system-ui, sans-serif`;
+    const tw = g.measureText(l.text).width + 18 * k, th = 24 * k;
+    const b = { l: x - tw / 2, r: x + tw / 2, t: y - th / 2, b: y + th / 2 };
+    if (b.l < 0 || b.r > w || b.t < 0 || b.b > h) return;
+    if (boxes.some(o => b.l < o.r + 3 && b.r > o.l - 3 && b.t < o.b + 2 && b.b > o.t - 2)) return;
+    boxes.push(b);
+    g.beginPath(); g.roundRect(b.l, b.t, tw, th, th / 2);
+    g.fillStyle = T.panel || '#fff'; g.fill(); g.lineWidth = 1.8 * k; g.strokeStyle = l.color; g.stroke();
+    g.fillStyle = l.color; g.fillText(l.text, x, y + 0.5);
+  });
 }
 
 function resize() {
@@ -299,7 +353,7 @@ function fitCamera(name, animate) {
     sx = Math.max(sx, Math.abs(c.dot(right))); sy = Math.max(sy, Math.abs(c.dot(up)));
   }
   // the value bar covers the top and the button rail the right: fit the box in what's left
-  const Wd = S.el ? S.el.clientWidth : 800, Hd = S.el ? S.el.clientHeight : 600, railW = 84, barH = Math.min(Hd * 0.35, 135);
+  const Wd = S.el ? S.el.clientWidth : 800, Hd = S.el ? S.el.clientHeight : 600, railW = S.snap ? 0 : 84, barH = S.snap ? 0 : Math.min(Hd * 0.35, 135);
   const t = Math.tan((S.camera.fov * Math.PI / 180) / 2), asp = (Wd - railW) / (Hd - barH);
   const radius = Math.max(sy / t, sx / (t * asp)) * 1.18 * (Hd / (Hd - barH));
   // shift the target so the box sits in the middle of the free area

@@ -4464,9 +4464,9 @@ function solve(){
 ===================================================================== */
 const PAL = {
   night:{bg:'#0e1720', deck:'#132029', grid:'rgba(150,185,205,.07)', grid2:'rgba(150,185,205,.17)', ink:'#e2eaef', ink2:'#9db0be', ink3:'#647887',
-         edge:'rgba(150,185,205,.30)', ok:'#58d39b', warn:'#f2c94c', bad:'#ff6b6b', none:'#c9d6de', sel:'#f5a623', known:'#4aa8ff', res:'#c39bff', panel:'#142029', line:'#c9d6de'},
+         edge:'rgba(150,185,205,.30)', ok:'#58d39b', warn:'#f2c94c', bad:'#ff6b6b', none:'#c9d6de', sel:'#f5a623', known:'#4aa8ff', res:'#c39bff', panel:'#142029', line:'#c9d6de', meas:'#3ee0d0'},
   day:  {bg:'#e9eef0', deck:'#ffffff', grid:'rgba(20,45,60,.06)', grid2:'rgba(20,45,60,.15)', ink:'#122230', ink2:'#465b6a', ink3:'#7d8f9b',
-         edge:'rgba(20,45,60,.30)', ok:'#14895a', warn:'#a87400', bad:'#d23c3c', none:'#2c3e4c', sel:'#d07a00', known:'#1f6fd1', res:'#7a4fd6', panel:'#ffffff', line:'#2c3e4c'},
+         edge:'rgba(20,45,60,.30)', ok:'#14895a', warn:'#a87400', bad:'#d23c3c', none:'#2c3e4c', sel:'#d07a00', known:'#1f6fd1', res:'#7a4fd6', panel:'#ffffff', line:'#2c3e4c', meas:'#0a8f86'},
 };
 const RM = matchMedia('(prefers-reduced-motion: reduce)');
 const CAM = {z:1, tx:0, ty:0, auto:0};   // user pan/zoom on top of the fixed fit, plus a temporary lift when a card covers the point
@@ -4656,7 +4656,7 @@ function renderHint(){
   else if(sheet==='heights') t='Drag points up or down, or type the heights.';
   else if(S.view==='3d' && !S.seen3d) t='Drag a point to move it. Tap it, then drag <b>↕</b> to raise or lower it. Drag empty space to turn.';
   else if(!S.seenCheck && !S.sel) t='Tap a point or a line to see its load.';
-  if(!t || S.sel || (selLeg!=null && !gridEd) || (sheet==='point' && isMobile())){ h.classList.remove('show'); return; }
+  if(!t || S.sel || (selLeg!=null && !gridEd) || (sheet==='point' && isMobile()) || (drag && drag.moved)){ h.classList.remove('show'); return; }
   h.innerHTML=`<span>${t}</span>`; h.classList.add('show');
   h.style.top = $('ans').classList.contains('show') ? ($('ans').offsetTop+$('ans').offsetHeight+8)+'px' : '10px';
 }
@@ -4913,6 +4913,14 @@ function prep(cv){
 }
 function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 const FONT = () => getComputedStyle(document.body).fontFamily;
+function measPill(ctx,text,x,y,pal,size){        // temporary measurement label: teal, dashed edge, a touch bigger
+  ctx.save(); ctx.font=`800 ${size}px `+FONT();
+  const w=ctx.measureText(text).width+18, h=size+12, cw=ctx.canvas.width/(ctx.getTransform().a||1);
+  x=Math.max(w/2+4, Math.min(cw-80-w/2, x));                     // keep it on screen, clear of the button rail
+  ctx.globalAlpha=.95; ctx.fillStyle=pal.panel; rr(ctx,x-w/2,y-h/2,w,h,h/2); ctx.fill(); ctx.globalAlpha=1;
+  ctx.strokeStyle=pal.meas; ctx.lineWidth=1.8; ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=pal.meas; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(text,x,y+.5); ctx.restore();
+}
 function pill(ctx,text,x,y,col,pal,size=12.5,scale=1){
   if(scale<=0.01) return;
   ctx.save(); ctx.translate(x,y); ctx.scale(scale,scale);
@@ -4985,31 +4993,44 @@ function paint(ctx,w,h,pal,live,t=0,fitH=h){
       ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke(); ctx.restore(); }
     if(show) pill(ctx, fT(L.t), (ax+bx)/2, (ay+by)/2, isKnown?pal.known:c, pal, 12.5, pop);
   }
-  let dragDims=[];
-  // placing guide while dragging: faint crosshair through the point, and a right-angle dimension to each neighbour
+  let dragDims=[], dragCard=null;
+  // placing guide while dragging: faint crosshair through the point, a right-angle "tape" to each neighbour,
+  // and a readout card in the half of the screen away from the finger. Teal + dashed = temporary measurement.
   if(live && drag && drag.moved){
     const di=P.findIndex(q=>q.id===drag.id);
     if(di>=0){
-      const p=P[di], px=sx(hu(p)), py=sy(vy(p));
+      const p=P[di], px=sx(hu(p)), py=sy(vy(p)), mc=pal.meas, touch=coarse();
+      const hAx = rot ? 'across' : 'along', vAx = side ? 'height' : (rot ? 'along' : 'across');
       ctx.save();
-      ctx.strokeStyle=pal.ink2; ctx.globalAlpha=.28; ctx.lineWidth=1; ctx.setLineDash([2,5]);
+      ctx.strokeStyle=mc; ctx.globalAlpha=.32; ctx.lineWidth=1; ctx.setLineDash([2,5]);
       ctx.beginPath(); ctx.moveTo(sx(0),py); ctx.lineTo(sx(HW),py); ctx.moveTo(px,sy(B1)); ctx.lineTo(px,sy(B0)); ctx.stroke();
-      ctx.globalAlpha=1; ctx.setLineDash([5,4]); ctx.lineWidth=1.4;
-      const dims=[];
+      ctx.globalAlpha=1; ctx.setLineDash([6,4]); ctx.lineWidth=1.8;
+      const dims=[], rows=[];
+      const away = (lx,ly) => {                 // keep labels out from under the finger (a thumb covers ~70 px round the point)
+        const r=touch?78:44, dx=lx-px, dy=ly-py, d=Math.hypot(dx,dy);
+        if(d>=r) return [lx,ly];
+        const ux = d>1 ? dx/d : 0, uy = d>1 ? dy/d : -1; return [px+ux*r, py+uy*r];
+      };
       [P[di-1],P[di+1]].filter(Boolean).forEach(q=>{
         const qx=sx(hu(q)), qy=sy(vy(q)), dh=hu(p)-hu(q), dv=vy(p)-vy(q);
-        ctx.strokeStyle=pal.ink2; ctx.globalAlpha=.7;
-        ctx.beginPath(); ctx.moveTo(qx,qy); ctx.lineTo(px,qy); ctx.lineTo(px,py); ctx.stroke();   // across from the neighbour, then up/down to the point
-        // little square at the right-angle corner
-        if(Math.abs(px-qx)>14 && Math.abs(py-qy)>14){ const cx=Math.sign(qx-px)*7, cy=Math.sign(py-qy)*7; ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(px+cx,qy); ctx.lineTo(px+cx,qy+cy); ctx.lineTo(px,qy+cy); ctx.stroke(); ctx.setLineDash([5,4]); }
+        ctx.strokeStyle=mc; ctx.globalAlpha=.85;
+        ctx.beginPath(); ctx.moveTo(qx,qy); ctx.lineTo(px,qy); ctx.lineTo(px,py); ctx.stroke();
+        if(Math.abs(px-qx)>14 && Math.abs(py-qy)>14){ const cx=Math.sign(qx-px)*8, cy=Math.sign(py-qy)*8; ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(px+cx,qy); ctx.lineTo(px+cx,qy+cy); ctx.lineTo(px,qy+cy); ctx.stroke(); ctx.setLineDash([6,4]); }
         ctx.globalAlpha=1;
-        const lab = v => `${fmt(Math.abs(v), Math.abs(v)<10?1:1)} m`;
-        if(Math.abs(dh)>0.05){ let lx=(qx+px)/2; if(Math.abs(px-qx)<90) lx = px + Math.sign(px-qx||1)*44;   // short: put it past the corner, clear of the icons
-          dims.push([lab(dh), lx, qy + (py>qy?-15:15)]); }
-        if(Math.abs(dv)>0.05) dims.push([side ? `${dv>=0?'↑':'↓'} ${lab(dv)}` : lab(dv), px + (qx>px?-40:40), (qy+py)/2]);
+        const lab = v => `${fmt(Math.abs(v),1)} m`;
+        if(Math.abs(dh)>0.05){ let lx=(qx+px)/2; if(Math.abs(px-qx)<110) lx = px + Math.sign(px-qx||1)*60;
+          dims.push([`↔ ${lab(dh)}`, ...away(lx, qy + (py>qy?-20:20))]); }
+        if(Math.abs(dv)>0.05) dims.push([`${side?(dv>=0?'↑':'↓'):'↕'} ${lab(dv)}`, ...away(px + (qx>px?-58:58), (qy+py)/2)]);
+        rows.push([CC[q.id], dh, dv, Math.hypot(dh,dv)]);
       });
       ctx.restore();
       dragDims=dims;
+      // readout card: top of the grid if the finger is low, bottom if it's high
+      if(rows.length){
+        const fs=touch?15:13.5, lh=fs+12, padX=12, cw=Math.min(w-pad.l-pad.r-8, 340), ch=rows.length*lh+16+fs;
+        const cx=pad.l+4, cy = py > h*0.5 ? pad.t+6 : h-pad.b-ch-6;
+        dragCard={x:cx,y:cy,w:cw,h:ch,fs,lh,padX,rows,hAx,vAx};
+      }
     }
   }
   if(live && ph==='place' && anim){ ctx.save(); ctx.strokeStyle=pal.known; ctx.lineWidth=3; ctx.globalAlpha=.35+.35*Math.sin(t/300); ctx.strokeRect(sx(0)-2,sy(B1)-2,HW*k+4,(B1-B0)*k+4); ctx.restore(); }
@@ -5086,7 +5107,21 @@ function paint(ctx,w,h,pal,live,t=0,fitH=h){
     }
   });
   turnLabels.forEach(([t,lx,ly,c])=>pill(ctx,t,lx,ly,c,pal,11.5,1));
-  dragDims.forEach(([t,lx,ly])=>pill(ctx,t,lx,ly,pal.ink,pal,11.5,1));   // drag distances on top of everything
+  dragDims.forEach(([t,lx,ly])=>measPill(ctx,t,lx,ly,pal,coarse()?15:13));   // drag distances on top of everything
+  if(dragCard){ const d=dragCard;
+    ctx.save(); ctx.globalAlpha=.94; ctx.fillStyle=pal.panel; rr(ctx,d.x,d.y,d.w,d.h,12); ctx.fill(); ctx.globalAlpha=1;
+    ctx.strokeStyle=pal.meas; ctx.lineWidth=1.6; ctx.setLineDash([6,4]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.textBaseline='middle'; ctx.textAlign='left';
+    ctx.font=`650 ${d.fs-3}px `+font; ctx.fillStyle=pal.ink2; ctx.fillText(`Measuring from…   ↔ ${d.hAx}   ${side?'↕ height':'↕ '+d.vAx}`, d.x+d.padX, d.y+12+(d.fs-3)/2);
+    d.rows.forEach(([c,dh,dv,dd],k)=>{ const y=d.y+16+d.fs+k*d.lh+d.lh/2-4;
+      ctx.font=`800 ${d.fs}px `+font; ctx.fillStyle=pal.meas; ctx.fillText(c, d.x+d.padX, y);
+      ctx.fillStyle=pal.ink; ctx.fillText(`↔ ${fmt(Math.abs(dh),1)}   ${side?(dv>=0?'↑':'↓'):'↕'} ${fmt(Math.abs(dv),1)}`, d.x+d.padX+44, y);
+      const main=`↔ ${fmt(Math.abs(dh),1)}   ${side?(dv>=0?'↑':'↓'):'↕'} ${fmt(Math.abs(dv),1)}`; ctx.font=`800 ${d.fs}px `+font; const mw=ctx.measureText(main).width;
+      ctx.font=`650 ${d.fs-2}px `+font; ctx.fillStyle=pal.ink2; ctx.textAlign='right';
+      const room=d.w-d.padX*2-44-mw-10, full=`${fmt(dd,1)} m direct`, short=`⟋ ${fmt(dd,1)} m`;
+      const txt = ctx.measureText(full).width<=room ? full : ctx.measureText(short).width<=room ? short : '';
+      if(txt) ctx.fillText(txt, d.x+d.w-d.padX, y); ctx.textAlign='left'; });
+    ctx.restore(); }
   if(live && gridEd && !side){                    // grid size handles: far corner, right edge, top edge
     const x1=sx(HW), y1=sy(B1), x0=sx(0), y0=sy(B0);
     ctx.save(); ctx.strokeStyle=pal.sel; ctx.lineWidth=2; ctx.setLineDash([7,5]); ctx.strokeRect(x0,y1,x1-x0,y0-y1); ctx.setLineDash([]);
@@ -5232,7 +5267,7 @@ stage.addEventListener('pointermove', e=>{
   if(drag){
     if(!drag.moved && Math.hypot(h.x-drag.x,h.y-drag.y)<6) return;
     const p=S.points.find(q=>q.id===drag.id); if(!p) return;
-    if(!drag.moved){ drag.moved=true; if(!S.dragged){ S.dragged=true; renderHint(); renderRail(); } if(S.sel){ S.sel=null; sheet=sheet==='point'?null:sheet; renderSheet(); } }
+    if(!drag.moved){ drag.moved=true; $('hint').classList.remove('show'); if(!S.dragged){ S.dragged=true; renderHint(); renderRail(); } if(S.sel){ S.sel=null; sheet=sheet==='point'?null:sheet; renderSheet(); } }
     VIEW.put(p,h.x,h.y);
     p.x=Math.max(0,Math.min(S.deck.X,snapV(p.x))); p.y=Math.max(0,Math.min(S.deck.Y,snapV(p.y))); p.z=snapV(p.z);
     soft(); return;

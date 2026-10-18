@@ -295,7 +295,7 @@ function update(data) {
   P.forEach(p => {
     const lift = new Vector3(0, p.sel ? u * 4 : u * 1.9, 0);
     if (p.sel && S.level) S.labelDefs.push({ p: W(p).add(new Vector3(0, u * 2.4, 0)), text: (p.z >= 0 ? '+' : '') + p.z.toFixed(1) + ' m', color: T.sel, pri: 5, cls: 'on', side: 1 });
-    S.labelDefs.push({ p: W(p).add(lift), text: p.code + (show && p.text ? ' · ' + p.text : ''), color: p.role === 'start' ? T.known : p.role === 'end' ? T.sel : (show && p.cls ? T[p.cls] : T.ink), pri: p.sel ? 4 : 2, cls: 'pt' + (p.sel ? ' on' : '') });
+    S.labelDefs.push({ p: W(p).add(lift), text: p.code + (p.text ? ' · ' + p.text : ''), color: p.role === 'start' ? T.known : p.role === 'end' ? T.sel : (show && p.cls ? T[p.cls] : T.ink), pri: p.sel ? 4 : 2, cls: 'pt' + (p.sel ? ' on' : '') });
   });
   S.labelDefs.sort((a, b) => b.pri - a.pri);
 

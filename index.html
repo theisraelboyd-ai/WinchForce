@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="WinchForce">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="manifest.webmanifest?v=2">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e1720'/%3E%3Cpath d='M6 24 L16 9 L26 22' stroke='%234aa8ff' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='9' r='3.2' fill='%23f5a623'/%3E%3C/svg%3E">
 <style>
@@ -337,8 +337,9 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
     <hr>
     <button data-m="theme">Day / night</button>
     <button data-m="new">New line</button>
-    <hr class="inst" hidden>
+    <hr>
     <button data-m="install" class="inst" hidden>Install app</button>
+    <button data-m="refresh">Refresh app</button>
   </div>
   <input type="file" id="planFile" accept=".json,application/json" hidden>
 </header>
@@ -5254,6 +5255,7 @@ function menuAct(a){
   else if(a==='theme'){ S.theme=S.theme==='night'?'day':'night'; applyTheme(); render(); }
   else if(a==='new') clearAll();
   else if(a==='install') installApp();
+  else if(a==='refresh') refreshApp();
 }
 /* ---------------------------------------------------------------- install as an app (PWA) */
 let installEvt=null;
@@ -5262,12 +5264,19 @@ const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.
 function showInstall(on){ document.querySelectorAll('#menu .inst').forEach(el=>el.hidden=!on); }
 window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); installEvt=e; showInstall(!standalone()); });
 window.addEventListener('appinstalled', ()=>{ installEvt=null; showInstall(false); flash('WinchForce installed'); });
+// clear the app's cached files and the offline worker, then load fresh. Saved plan and catalogue are kept.
+async function refreshApp(){
+  try{ if('serviceWorker' in navigator){ const regs=await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.filter(r=>r.scope.includes('/WinchForce/')||location.protocol!=='https:').map(r=>r.unregister())); } }catch(e){}
+  try{ const keys=await caches.keys(); await Promise.all(keys.filter(k=>k.startsWith('winchforce-')).map(k=>caches.delete(k))); }catch(e){}
+  const u=new URL(location.href); u.searchParams.set('fresh', Date.now().toString(36)); location.replace(u.toString());
+}
 async function installApp(){
   if(installEvt){ installEvt.prompt(); const r=await installEvt.userChoice.catch(()=>null); installEvt=null; if(!r||r.outcome!=='accepted') showInstall(true); else showInstall(false); return; }
   if(isIOS()) toast('On iPhone / iPad: tap <b>Share</b> then <b>Add to Home Screen</b>.', 7000);
   else toast('Use the browser menu ⋮ → <b>Install app</b>. If it says it is already installed, remove the old WinchForce shortcut first.', 8000);
 }
 if(isIOS() && !standalone()) showInstall(true);
+if(new URLSearchParams(location.search).has('fresh')){ history.replaceState(null,'',location.pathname); setTimeout(()=>flash('App refreshed'),300); }
 if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')) window.addEventListener('load', ()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 $('figClose').addEventListener('click', ()=>$('figDlg').close());
 $('prClose').addEventListener('click', ()=>{ $('prDlg').close(); $('prFrame').srcdoc=''; });

@@ -124,6 +124,9 @@ svg.i{width:22px;height:22px;flex:none}
 /* short hint pill */
 .hint{position:absolute;left:10px;right:78px;top:62px;z-index:5;display:none;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:12px;background:var(--glass);border:1px solid var(--line2);border-left:4px solid var(--known);color:var(--ink2);font-weight:500;font-size:14px;line-height:1.35;box-shadow:0 4px 16px rgba(0,0,0,.25);pointer-events:none;max-width:520px}
 .hint b{color:var(--ink);font-weight:750}
+.hint.onb{font-size:16.5px;font-weight:650;color:var(--ink);line-height:1.35;padding:12px 14px;border-left-color:var(--cursor);align-items:center}
+.hint.onb b{font-weight:850;color:var(--cursor)}
+.hint .stepn{flex:none;font-style:normal;width:28px;height:28px;border-radius:50%;background:var(--cursor);color:#1b1205;font-weight:850;font-size:15px;display:inline-flex;align-items:center;justify-content:center}
 .hint.show{display:flex;animation:up .3s ease}
 .hint svg{color:var(--known);animation:nudge 1.6s ease-in-out infinite}
 
@@ -311,6 +314,7 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
   <symbol id="i-hand" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V5a1.5 1.5 0 0 1 3 0v5M12 10V4a1.5 1.5 0 0 1 3 0v6M15 10V6a1.5 1.5 0 0 1 3 0v7c0 4-2.5 7-6.5 7-3 0-4.5-1.5-6-4l-2-3.3a1.5 1.5 0 0 1 2.4-1.7L9 13"/></g></symbol>
   <symbol id="i-anchor" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 20h16"/><path d="M7 20v-5a5 5 0 0 1 10 0v5"/><circle cx="12" cy="14.5" r="2.2"/></g></symbol>
   <symbol id="i-purchase" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="6" r="3.2"/><circle cx="12" cy="17" r="3.2"/><path d="M8.8 6v11M15.2 6v11M12 1.5v1.3M12 20.2v2.3"/></g></symbol>
+  <symbol id="i-print" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></g></symbol>
   <symbol id="i-fit" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></g></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
   <symbol id="i-rotate" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="9" width="10" height="12" rx="2"/><path d="M4 12A8 8 0 0 1 16.5 4.5"/><path d="M16.8 1.8l.2 3-3 .3"/></g></symbol>
@@ -339,6 +343,7 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
     <hr>
     <button data-m="theme">Day / night</button>
     <button data-m="new">New line</button>
+    <button data-m="onb">Restart onboarding</button>
     <hr>
     <button data-m="install" class="inst" hidden>Install app</button>
     <button data-m="refresh">Refresh app</button>
@@ -406,7 +411,7 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
       <li><strong>Say what you know.</strong> The winch pull, the load at the end, or a load cell reading. Tap the grid to show where the load cell is.</li>
       <li><strong>Check it's safe.</strong> Add the limits you know: winch max pull, the wire, the SWL of each point. Anything over its limit turns red. Tap a point or a line to see its load.</li>
       <li><strong>Bollards.</strong> In More, choose a bare post or a snatch block on top, and its foot height. You get the side pull, the up/down pull and the bending at the foot (side pull × lever).</li>
-      <li><strong>Placing precisely.</strong> Tap a point: the loads clear and a crosshair shows how far it is from every other point. Tap an arrow to nudge it a step (hold to repeat), drag an arrow to slide it that way in steps, tap the step tag (0.5 m) to change the step. Tap the orange ✓ to finish. Dragging only moves the view.</li>
+      <li><strong>Placing precisely.</strong> Tap a point: the loads clear and a crosshair shows how far it is from every other point. Tap an arrow to nudge it a step (hold to repeat), drag an arrow to slide it that way in steps, tap the step tag (0.5 m) to change the step. More (bottom-left of the arrows) opens its details. Tap the orange ✓ to finish. Dragging only moves the view.</li>
       <li><strong>Grid size.</strong> Double-tap an empty part of the grid, then drag the corner. Double-tap again to finish.</li>
     </ul>
     <h3>Friction at a bollard or fairlead</h3>
@@ -4328,7 +4333,9 @@ const EXAMPLES = [
 /* =====================================================================
    STATE
 ===================================================================== */
-const STORE='winchforce.v3', CSTORE='winchforce.catalogue.v1';
+const STORE='winchforce.v3', CSTORE='winchforce.catalogue.v1', OSTORE='winchforce.onb';
+let ONB = (()=>{ try{ return localStorage.getItem(OSTORE)==='1'; }catch(e){ return true; } })();   // true once the first line has been set up
+function setOnb(v){ ONB=v; try{ localStorage.setItem(OSTORE, v?'1':'0'); }catch(e){} }
 let uid=1;
 let CAT = (()=>{ try{ const c=JSON.parse(localStorage.getItem(CSTORE)||'null'); if(Array.isArray(c)) return c; }catch(e){} return []; })();
 function saveCat(){ try{ localStorage.setItem(CSTORE, JSON.stringify(CAT)); }catch(e){} }
@@ -4343,7 +4350,7 @@ function freshPlan(){
   return { v:3, unit:(S&&S.unit)||'te', theme:(S&&S.theme)||'night', name:'',
     deck:{X:40,Y:20,Z:12,snap:0.5}, rope:{id:'', mbl:null, sf:5},
     op:'heave', known:{kind:'winch', ref:null, value:null}, view:'plan', laidOut:false, dragged:false,
-    points:[mkPoint('winch',{x:5,y:10,z:1}), mkPoint('bollard',{x:21,y:15,z:1}), mkPoint('end',{x:36,y:8,z:1})], sel:null };
+    points: ONB ? [mkPoint('winch',{x:5,y:10,z:1}), mkPoint('bollard',{x:21,y:15,z:1}), mkPoint('end',{x:36,y:8,z:1})] : [], sel:null };
 }
 S = (()=>{ try{ const s=JSON.parse(localStorage.getItem(STORE)||'null'); if(s && s.v===3 && Array.isArray(s.points)){ if(s.deck && s.deck.X===30 && s.deck.Y===16){ s.deck.X=40; s.deck.Y=20; } return s; } }catch(e){} return null; })() || freshPlan();
 let saveT=null;
@@ -4540,7 +4547,7 @@ function renderAns(){
   if(!mode){ a.classList.remove('show','ok','warn','bad'); a.innerHTML=''; return; }
   if(barFocused()){ liveAns(); return; }          // never rebuild a box you're typing in
   const u=uLab(), P=S.points, show=!RES.err&&!RES.pending, C_=RES.codes||codes();
-  const foot=(mid='')=>`<div class="vfoot"><button class="chipb" data-bar="more">More</button><span class="fill" id="bInfo">${mid}</span>${mode==='point'&&posOn()?'':'<button class="chipb done" data-bar="done">Done</button>'}</div>`;
+  const foot=(mid='')=>`<div class="vfoot">${mode==='point'&&posOn()?'':'<button class="chipb" data-bar="more">More</button>'}<span class="fill" id="bInfo">${mid}</span>${mode==='point'&&posOn()?'':'<button class="chipb done" data-bar="done">Done</button>'}</div>`;
   if(mode==='grid'){
     a.className='ans show grid';
     const g=(id,lab,v)=>`<label class="tile ed" for="${id}"><span class="tl"><span class="lt">${lab}</span>${pen}</span><input id="${id}" type="number" inputmode="decimal" step="any" value="${v}" aria-label="Grid ${lab} in metres"><span class="tu">m</span></label>`;
@@ -4648,16 +4655,16 @@ bar.addEventListener('click', e=>{
 function renderHint(){
   const h=$('hint'), ph=phase(), K=S.known; let t='';
   if(gridEd) t='Drag the <b>corner</b> to resize.';
-  else if(ph==='place' && !S.sel) t = S.points.length ? '<b>2</b> Tap <b>+</b> to add what you are pulling: a load, an anchor or a purchase.' : '<b>1</b> Tap <b>+</b> to add the winch.';
+  else if(ph==='place' && !S.sel) t = !ONB ? (S.points.length ? '<i class="stepn">2</i><span>Tap <b>+</b> to add what you are pulling: a load, an anchor or a purchase.</span>' : '<i class="stepn">1</i><span>Tap <b>+</b> to add the winch.</span>') : '';
   else if(posOn() && !S.seenPos) t = 'Move it with the arrows: tap for a step, drag for bigger moves. Tap the orange <b>✓</b> when it is in place.';
-  else if(ph==='lay' && !S.sel) t = '<b>3</b> Tap <b>+</b> for each bollard or block the line goes round. Tap a point to move it. Tap <b>✓</b> on the right when the line is set.';
+  else if(ph==='lay' && !S.sel) t = !ONB ? '<i class="stepn">3</i><span>Tap <b>+</b> for each bollard or block the line goes round. Tap a point to move it. Tap <b>✓</b> on the right when the line is set.</span>' : 'Tap <b>✓</b> on the right when the line is set.';
   else if(ph==='know') t = (K.kind==='point'||K.kind==='leg') && !K.ref ? 'Tap the <b>block</b> the load cell hangs from, or the <b>line</b> it is clamped on.' : '';
   else if(hunt) t='Tap each <b>?</b> and type its SWL at the top.';
   else if(sheet==='heights') t='Drag points up or down, or type the heights.';
   else if(S.view==='3d' && !S.seen3d) t='Drag a point to move it. Tap it, then drag <b>↕</b> to raise or lower it. Drag empty space to turn.';
   else if(!S.seenCheck && !S.sel) t='Tap a point to move it or see its load.';
   if(!t || (S.sel && !(posOn() && !S.seenPos)) || (selLeg!=null && !gridEd) || (sheet==='point' && isMobile()) || (drag && drag.moved)){ h.classList.remove('show'); return; }
-  h.innerHTML=`<span>${t}</span>`; h.classList.add('show');
+  h.innerHTML = t.startsWith('<i class="stepn"') ? t : `<span>${t}</span>`; h.classList.toggle('onb', !ONB); h.classList.add('show');
   h.style.top = $('ans').classList.contains('show') ? ($('ans').offsetTop+$('ans').offsetHeight+8)+'px' : '10px';
 }
 let flashT=null;
@@ -4682,6 +4689,7 @@ function railItems(){
     out.push({id:'wire', icon:'wire', label:'Wire', val:Number.isFinite(wll)&&maxLeg>=0?pct(maxLeg):'', dot:!Number.isFinite(wll), cls:Number.isFinite(wll)&&maxLeg>=0?cls(maxLeg):''});
     out.push({id:'limits', icon:'limit', label:'Safe working loads', val:missing?`${missing}?`:(maxPt>=0?pct(maxPt):''), dot:missing>0, cls:maxPt>=0?cls(maxPt):'', on:hunt});
     out.push({id:'heights', icon:'height', label:'Heights', on:sheet==='heights'});
+    out.push({id:'print', icon:'print', label:'Print rigging plan'});
   }
   out.push({sep:1, grow:1});
   if(ph==='lay') out.push({id:'laid', icon:'check', label:'Line is set', go:1, glow:!S.sel && (P.length>2 || S.seenAdd)});
@@ -4716,8 +4724,9 @@ $('rail').addEventListener('click', e=>{
   if(id==='fit'){ if(S.view==='3d' && window.WF3D) WF3D.view('fit'); else fitView(); return; }
   if(id==='v3d'){ S.view = S.view==='3d' ? 'plan' : '3d'; gridEd=false; if(sheet==='heights') sheet=null; render(); return; }
   if(id==='view'){ S.view=S.view==='side'?'plan':'side'; gridEd=false; if(S.view==='plan'&&sheet==='heights') sheet=null; render(); return; }
-  if(id==='laid'){ S.laidOut=true; override='know'; sheet=null; render(); setTimeout(()=>{ const v=$('kW'); if(v) v.focus(); },40); return; }
+  if(id==='laid'){ if(!ONB) setOnb(true); S.laidOut=true; override='know'; sheet=null; render(); setTimeout(()=>{ const v=$('kW'); if(v) v.focus(); },40); return; }
   if(id==='clear'){ clearAll(); return; }
+  if(id==='print'){ printPlan(); return; }
   if(id==='known'){ editReading(); return; }
   if(id==='op'){ S.op=S.op==='heave'?'payout':'heave'; render(); flash(S.op==='heave'?'Heaving in':'Paying out'); return; }
   if(id==='limits'){ hunt=!hunt; sheet=null; S.sel=null; render(); return; }
@@ -5000,7 +5009,7 @@ function paint(ctx,w,h,pal,live,t=0,fitH=h){
     ctx.beginPath(); ctx.moveTo(gx,gy-19); ctx.lineTo(gx+19,gy); ctx.lineTo(gx,gy+19); ctx.lineTo(gx-19,gy); ctx.closePath(); ctx.stroke(); ctx.globalAlpha=1;
   }
   // points
-  const turnLabels=[];
+  const turnLabels=[], selK = posMode ? P.findIndex(q=>q.id===S.sel) : -1;
   P.forEach((p,i)=>{
     const r=ok?R.pts[i]:null, x=sx(hu(p)), y=sy(vy(p)), role=roleOf(p);
     const ring_ = r && show && Number.isFinite(r.use) ? col(r.use) : pal.ink2;
@@ -5016,11 +5025,12 @@ function paint(ctx,w,h,pal,live,t=0,fitH=h){
       else if(hunt && noLimit) ring(ctx,x,y,21,pal.sel,t,1300,14);
     }
     // turn angle at a bollard / block / fairlead: dashed line straight on, arc round to where the wire leaves, and the angle
-    if(r && role==='mid' && r.defl*DEG>=1 && !(live && gridEd) && !posMode){
+    if(r && role==='mid' && r.defl*DEG>=1 && !(live && gridEd) && (!posMode || Math.abs(i-selK)<=1)){
+      const isSelPt = i===selK;
       const a=P[i-1], b=P[i+1], ax=sx(hu(a)), ay=sy(vy(a)), bx=sx(hu(b)), by=sy(vy(b));
       const ia=Math.atan2(y-ay, x-ax), oa=Math.atan2(by-y, bx-x);          // arriving direction, leaving direction (screen)
       let d=oa-ia; while(d>Math.PI) d-=2*Math.PI; while(d<-Math.PI) d+=2*Math.PI;
-      const R0=34, deg=r.defl*DEG, ac=pal.sel;
+      const R0=isSelPt?26:34, deg=r.defl*DEG, ac=pal.sel;
       ctx.save();
       ctx.strokeStyle=ac; ctx.globalAlpha=.75; ctx.lineWidth=1.6; ctx.setLineDash([4,4]);
       ctx.beginPath(); ctx.moveTo(x+Math.cos(ia)*20,y+Math.sin(ia)*20); ctx.lineTo(x+Math.cos(ia)*(R0+12),y+Math.sin(ia)*(R0+12)); ctx.stroke();
@@ -5032,7 +5042,7 @@ function paint(ctx,w,h,pal,live,t=0,fitH=h){
       ctx.restore();
       // label at the end of the dashed straight-on line, nudged away from the leaving leg (keeps clear of its tension label)
       const ma=ia-Math.sign(d)*0.32, lx=x+Math.cos(ma)*(R0+26), ly=y+Math.sin(ma)*(R0+26);
-      turnLabels.push([`${fmt(deg,0)}°`, lx, ly, ac]);
+      if(!isSelPt) turnLabels.push([`${fmt(deg,0)}°`, lx, ly, ac]);   // the picked one shows its angle in the arrow cluster
     }
     if(selected||hov){ ctx.beginPath(); ctx.arc(x,y,26,0,Math.PI*2); ctx.fillStyle=selected?'rgba(245,166,35,.22)':'rgba(150,185,205,.14)'; ctx.fill(); }
     ctx.fillStyle=pal.panel; ctx.strokeStyle=isKnown?pal.known:ring_; ctx.lineWidth=2.8;
@@ -5137,8 +5147,9 @@ function drawPos(ctx,pal,V){
   const shx = px-ext<safeL ? safeL-(px-ext) : px+ext>safeR ? safeR-(px+ext) : 0;
   const shy = py-ext<safeT ? safeT-(py-ext) : py+ext>safeB ? safeB-(py+ext) : 0;
   if((shx||shy) && !posShift){ posShift=true; CAM.tx+=shx; CAM.ty+=shy; requestAnimationFrame(()=>{ draw(); posShift=false; }); }
-  // nudge buttons, styled like the rail
+  // nudge buttons, styled like the rail (hidden while the More sheet is open)
   posUI=[];
+  if(sheet==='point'){ ctx.restore(); return; }
   const btn=(x,y,w,h)=>{ ctx.save(); ctx.shadowColor='rgba(0,0,0,.22)'; ctx.shadowBlur=8; ctx.shadowOffsetY=2; ctx.fillStyle=FILL; rr(ctx,x-w/2,y-h/2,w,h,10); ctx.fill(); ctx.restore(); ctx.strokeStyle=EDGE; ctx.lineWidth=1; rr(ctx,x-w/2,y-h/2,w,h,10); ctx.stroke(); };
   const arrow=(kind,x,y,ang)=>{ btn(x,y,B,B);
     ctx.save(); ctx.translate(x,y); ctx.rotate(ang); ctx.strokeStyle=pal.ink2; ctx.lineWidth=2.4; ctx.lineCap='round'; ctx.lineJoin='round';
@@ -5146,19 +5157,31 @@ function drawPos(ctx,pal,V){
     posUI.push({kind,x,y,w:B,h:B}); };
   arrow('U',px,py-D,-Math.PI/2); arrow('D',px,py+D,Math.PI/2); arrow('L',px-D,py,Math.PI); arrow('R',px+D,py,0);
   const fits=(cx,cy,w2,h2)=>cx+w2/2<safeR && cx-w2/2>safeL && cy+h2/2<safeB && cy-h2/2>safeT;
-  // ✓ finish: top-right of the cluster if there's room, else the next free corner
+  // corners of the cluster: ✓ top-right, step bottom-right, More bottom-left, turn angle top-left (each moves if there's no room)
+  const TR=[1,-1], TL=[-1,-1], BR=[1,1], BL=[-1,1], used=[];
+  const pick=(pref,w2,h2)=>{ const c=pref.find(d=>!used.some(u=>u[0]===d[0]&&u[1]===d[1]) && fits(px+d[0]*D,py+d[1]*D,w2,h2)) || pref.find(d=>!used.some(u=>u[0]===d[0]&&u[1]===d[1])) || pref[0]; used.push(c); return [px+c[0]*D, py+c[1]*D]; };
   const TB=touch?36:30;
-  const td=[[1,-1],[-1,-1],[1,1],[-1,1]].find(([a,b2])=>fits(px+a*D,py+b2*D,TB,TB))||[1,-1];
-  const tx_=px+td[0]*D, ty_=py+td[1]*D;
+  const [tx_,ty_]=pick([TR,TL,BR,BL],TB,TB);
   ctx.save(); ctx.shadowColor='rgba(0,0,0,.25)'; ctx.shadowBlur=8; ctx.shadowOffsetY=2; ctx.fillStyle=pal.sel; ctx.beginPath(); ctx.arc(tx_,ty_,TB/2,0,Math.PI*2); ctx.fill(); ctx.restore();
   ctx.strokeStyle='#1b1205'; ctx.lineWidth=2.6; ctx.lineCap='round'; ctx.lineJoin='round';
   ctx.beginPath(); ctx.moveTo(tx_-TB*0.2,ty_+TB*0.01); ctx.lineTo(tx_-TB*0.05,ty_+TB*0.16); ctx.lineTo(tx_+TB*0.22,ty_-TB*0.14); ctx.stroke();
   posUI.push({kind:'done',x:tx_,y:ty_,w:TB,h:TB});
-  boxes.push({l:tx_-TB/2-3,t:ty_-TB/2-3,r:tx_+TB/2+3,b:ty_+TB/2+3});
   const st=S.nudge??0.5, stx=`${fmt(st,st<1?1:0)} m`;
   ctx.font=`750 ${touch?12.5:11.5}px `+font; const sw=Math.max(B, ctx.measureText(stx).width+16), sh=touch?28:24;
-  const diag=[[1,1],[-1,1],[-1,-1],[1,-1]].find(([a,b2])=>{ const cx=px+a*D, cy=py+b2*D; return fits(cx,cy,sw,sh) && !(a===td[0]&&b2===td[1]); })||[-td[0],-td[1]];
-  const sxp=px+diag[0]*D, syp=py+diag[1]*D;
+  const [sxp,syp]=pick([BR,BL,TR,TL],sw,sh);
+  // More: the point's details (type, SWL, rigging, friction…)
+  const mw=Math.max(B, ctx.measureText('More').width+18), mh=sh;
+  const [mxp,myp]=pick([BL,BR,TL,TR],mw,mh);
+  btn(mxp,myp,mw,mh); ctx.fillStyle=pal.ink; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('More',mxp,myp+.5);
+  posUI.push({kind:'more',x:mxp,y:myp,w:mw,h:mh});
+  // turn angle of a picked bollard / block / fairlead
+  const r=RES&&!RES.err?RES.pts[k]:null;
+  if(r && roleOf(p)==='mid'){ const at=`${fmt(r.defl*DEG,0)}°`;
+    ctx.font=`850 ${touch?14:12.5}px `+font; const aw=ctx.measureText(at).width+18, ah=sh;
+    const [axp,ayp]=pick([TL,TR,BL,BR],aw,ah);
+    ctx.fillStyle=FILL; rr(ctx,axp-aw/2,ayp-ah/2,aw,ah,ah/2); ctx.fill(); ctx.strokeStyle=pal.sel; ctx.lineWidth=1.6; ctx.stroke();
+    ctx.fillStyle=pal.sel; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(at,axp,ayp+.5); }
+  ctx.font=`750 ${touch?12.5:11.5}px `+font;
   btn(sxp,syp,sw,sh); ctx.fillStyle=pal.ink2; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(stx,sxp,syp+.5);
   posUI.push({kind:'step',x:sxp,y:syp,w:sw,h:sh});
   ctx.restore();
@@ -5327,6 +5350,7 @@ stage.addEventListener('pointerup', e=>{
   if(gdrag){ gdrag=null; CAM.lock=null; render(); return; }
   if(ctl){ const c=ctl; ctl=null; stopRepeat();
     if(c.kind==='done'){ S.sel=null; sheet=sheet==='point'?null:sheet; hunt=false; render(); return; }
+    if(c.kind==='more'){ sheet='point'; render(); return; }
     if(c.drag){ render(); return; }
     if(c.kind==='step'){ const i=STEPS.indexOf(S.nudge??0.5); S.nudge=STEPS[(i+1)%STEPS.length]; draw(); save(); } else if(!c.rep) nudge(c.kind); render(); return; }
   if(pan){ const p_=pan; pan=null; stage.style.cursor='default';
@@ -5397,6 +5421,7 @@ function menuAct(a){
   else if(a==='theme'){ S.theme=S.theme==='night'?'day':'night'; applyTheme(); render(); }
   else if(a==='new') clearAll();
   else if(a==='install') installApp();
+  else if(a==='onb'){ setOnb(false); clearAll(); }
   else if(a==='refresh') refreshApp();
 }
 /* ---------------------------------------------------------------- install as an app (PWA) */

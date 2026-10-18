@@ -407,7 +407,7 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
       <li><strong>Say what you know.</strong> The winch pull, the load at the end, or a load cell reading. Tap the grid to show where the load cell is.</li>
       <li><strong>Check it's safe.</strong> Add the limits you know: winch max pull, the wire, the SWL of each point. Anything over its limit turns red. Tap a point or a line to see its load.</li>
       <li><strong>Bollards.</strong> In More, choose a bare post or a snatch block on top, and its foot height. You get the side pull, the up/down pull and the bending at the foot (side pull × lever).</li>
-      <li><strong>Placing precisely.</strong> Tap a point: the loads clear and a crosshair shows how far it is from every other point. Tap the arrows to nudge it (hold to repeat), tap the ± tag to change the step, or tap anywhere on the grid to put it there. Tap the point again or Done to finish. Dragging only moves the view.</li>
+      <li><strong>Placing precisely.</strong> Tap a point: the loads clear and a crosshair shows how far it is from every other point. Tap an arrow to nudge it a step (hold to repeat), drag an arrow to slide it that way in steps, tap the step tag (0.5 m) to change the step, or tap anywhere on the grid to put it there. Tap the orange ✓ to finish. Dragging only moves the view.</li>
       <li><strong>Grid size.</strong> Double-tap an empty part of the grid, then drag the corner. Double-tap again to finish.</li>
     </ul>
     <h3>Friction at a bollard or fairlead</h3>
@@ -4541,7 +4541,7 @@ function renderAns(){
   if(!mode){ a.classList.remove('show','ok','warn','bad'); a.innerHTML=''; return; }
   if(barFocused()){ liveAns(); return; }          // never rebuild a box you're typing in
   const u=uLab(), P=S.points, show=!RES.err&&!RES.pending, C_=RES.codes||codes();
-  const foot=(mid='')=>`<div class="vfoot"><button class="chipb" data-bar="more">More</button><span class="fill" id="bInfo">${mid}</span><button class="chipb done" data-bar="done">Done</button></div>`;
+  const foot=(mid='')=>`<div class="vfoot"><button class="chipb" data-bar="more">More</button><span class="fill" id="bInfo">${mid}</span>${mode==='point'&&posOn()?'':'<button class="chipb done" data-bar="done">Done</button>'}</div>`;
   if(mode==='grid'){
     a.className='ans show grid';
     const g=(id,lab,v)=>`<label class="tile ed" for="${id}"><span class="tl"><span class="lt">${lab}</span>${pen}</span><input id="${id}" type="number" inputmode="decimal" step="any" value="${v}" aria-label="Grid ${lab} in metres"><span class="tu">m</span></label>`;
@@ -4650,7 +4650,7 @@ function renderHint(){
   const h=$('hint'), ph=phase(), K=S.known; let t='';
   if(gridEd) t='Drag the <b>corner</b> to resize.';
   else if(ph==='place') t = S.points.length ? '<b>2</b> Now tap where the <b>end</b> of the line is (what you are pulling).' : '<b>1</b> Tap where the <b>winch</b> is.';
-  else if(posOn() && !S.seenPos) t = 'Tap where it goes, or use the arrows. <b>±</b> sets the step.';
+  else if(posOn() && !S.seenPos) t = 'Tap where it goes, or tap / drag an arrow. Tap <b>✓</b> when done.';
   else if(ph==='lay') t = 'Tap <b>W</b> or <b>E</b>, then tap where it is. Use <b>+</b> for each bollard or block. Tap <b>✓</b> when it looks right.';
   else if(ph==='know') t = (K.kind==='point'||K.kind==='leg') && !K.ref ? 'Tap the <b>block</b> the load cell hangs from, or the <b>line</b> it is clamped on.' : '';
   else if(hunt) t='Tap each <b>?</b> and type its SWL at the top.';
@@ -5095,6 +5095,7 @@ function drawPos(ctx,pal,V){
   const D=touch?56:46, B=touch?38:32, fmt1=v=>fmt(v,1);
   const boxes=[[0,-D],[0,D],[-D,0],[D,0],[0,0]].map(([ox,oy])=>({l:px+ox-B/2-3,t:py+oy-B/2-3,r:px+ox+B/2+3,b:py+oy+B/2+3}));
   P.forEach(q=>{ const qx=sx(hu(q)), qy=sy(vy(q)); boxes.push({l:qx-24,t:qy-24,r:qx+24,b:qy+24}); });   // never cover a point
+  [[1,-1],[-1,-1],[1,1],[-1,1]].forEach(([a,b2])=>boxes.push({l:px+a*D-26,t:py+b2*D-18,r:px+a*D+26,b:py+b2*D+18}));   // the corner buttons
   const free=b=>!boxes.some(o=>b.l<o.r&&b.r>o.l&&b.t<o.b&&b.b>o.t);
   ctx.save();
   // crosshairs
@@ -5109,7 +5110,7 @@ function drawPos(ctx,pal,V){
   ctx.globalAlpha=1;
   // own position, in the axis margins (where the grid numbers are)
   ctx.font=`800 ${touch?12.5:11.5}px `+font; ctx.fillStyle=pal.sel; ctx.textBaseline='middle';
-  ctx.textAlign='center'; const ex=Math.max(gx0+18,Math.min(gx1-18,px)); ctx.fillStyle=pal.bg; const tw=ctx.measureText(fmt1(hu(p))).width+22; ctx.fillRect(ex-tw/2,gy1+2,tw,18); ctx.fillStyle=pal.sel; ctx.fillText(fmt1(hu(p)), ex, gy1+11);
+  ctx.textAlign='center'; const ex=Math.max(gx0+18,Math.min(gx1-18,px)); ctx.fillStyle=pal.bg; const tw=ctx.measureText(fmt1(hu(p))).width+34; ctx.fillRect(ex-tw/2,gy1+2,tw,18); ctx.fillStyle=pal.sel; ctx.fillText(fmt1(hu(p)), ex, gy1+11);
   ctx.textAlign='right'; const ey=Math.max(gy0+8,Math.min(gy1-8,py)); const th=ctx.measureText(fmt1(vy(p))).width+8; ctx.fillStyle=pal.bg; ctx.fillRect(gx0-4-th,ey-8,th+2,16); ctx.fillStyle=pal.sel; ctx.fillText(fmt1(vy(p)), gx0-5, ey);
   // one tag beside each neighbour
   [P[k-1],P[k+1]].filter(Boolean).forEach(q=>{
@@ -5141,9 +5142,19 @@ function drawPos(ctx,pal,V){
     const a=B*0.17; ctx.beginPath(); ctx.moveTo(-a*0.6,-a*1.1); ctx.lineTo(a*0.7,0); ctx.lineTo(-a*0.6,a*1.1); ctx.stroke(); ctx.restore();
     posUI.push({kind,x,y,w:B,h:B}); };
   arrow('U',px,py-D,-Math.PI/2); arrow('D',px,py+D,Math.PI/2); arrow('L',px-D,py,Math.PI); arrow('R',px+D,py,0);
+  const fits=(cx,cy,w2,h2)=>cx+w2/2<safeR && cx-w2/2>safeL && cy+h2/2<safeB && cy-h2/2>safeT;
+  // ✓ finish: top-right of the cluster if there's room, else the next free corner
+  const TB=touch?36:30;
+  const td=[[1,-1],[-1,-1],[1,1],[-1,1]].find(([a,b2])=>fits(px+a*D,py+b2*D,TB,TB))||[1,-1];
+  const tx_=px+td[0]*D, ty_=py+td[1]*D;
+  ctx.save(); ctx.shadowColor='rgba(0,0,0,.25)'; ctx.shadowBlur=8; ctx.shadowOffsetY=2; ctx.fillStyle=pal.sel; ctx.beginPath(); ctx.arc(tx_,ty_,TB/2,0,Math.PI*2); ctx.fill(); ctx.restore();
+  ctx.strokeStyle='#1b1205'; ctx.lineWidth=2.6; ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.beginPath(); ctx.moveTo(tx_-TB*0.2,ty_+TB*0.01); ctx.lineTo(tx_-TB*0.05,ty_+TB*0.16); ctx.lineTo(tx_+TB*0.22,ty_-TB*0.14); ctx.stroke();
+  posUI.push({kind:'done',x:tx_,y:ty_,w:TB,h:TB});
+  boxes.push({l:tx_-TB/2-3,t:ty_-TB/2-3,r:tx_+TB/2+3,b:ty_+TB/2+3});
   const st=S.nudge??0.5, stx=`${fmt(st,st<1?1:0)} m`;
   ctx.font=`750 ${touch?12.5:11.5}px `+font; const sw=Math.max(B, ctx.measureText(stx).width+16), sh=touch?28:24;
-  const diag=[[1,1],[-1,1],[1,-1],[-1,-1]].find(([a,b2])=>{ const cx=px+a*D, cy=py+b2*D; return cx+sw/2<safeR && cx-sw/2>safeL && cy+sh/2<safeB && cy-sh/2>safeT && free({l:cx-sw/2,t:cy-sh/2,r:cx+sw/2,b:cy+sh/2}); })||[1,1];
+  const diag=[[1,1],[-1,1],[-1,-1],[1,-1]].find(([a,b2])=>{ const cx=px+a*D, cy=py+b2*D; return fits(cx,cy,sw,sh) && !(a===td[0]&&b2===td[1]); })||[-td[0],-td[1]];
   const sxp=px+diag[0]*D, syp=py+diag[1]*D;
   btn(sxp,syp,sw,sh); ctx.fillStyle=pal.ink2; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(stx,sxp,syp+.5);
   posUI.push({kind:'step',x:sxp,y:syp,w:sw,h:sh});
@@ -5290,7 +5301,8 @@ stage.addEventListener('pointerdown', e=>{
     else { const lg=hitLeg(h.x,h.y,30); if(!lg) return; S.known.kind='leg'; S.known.ref=S.points[lg.i].id; }
     render(); setTimeout(()=>{ const v=$('kC'); if(v) v.focus(); },40); return;
   }
-  if(posOn()){ const c=posHit(h.x,h.y); if(c){ ctl={kind:c, rep:false}; capt(e); if(c!=='step') startRepeat(c); return; } }
+  if(posOn()){ const c=posHit(h.x,h.y); if(c){ const sp=S.points.find(q=>q.id===S.sel);
+      ctl={kind:c, rep:false, drag:false, cx:e.clientX, cy:e.clientY, H0:VIEW.hu(sp), V0:VIEW.vy(sp)}; capt(e); if('UDLR'.includes(c)) startRepeat(c); return; } }
   if(h.p){ drag={id:h.p.id, x:h.x, y:h.y, moved:false, cx:e.clientX, cy:e.clientY}; capt(e); }      // a tap selects; a drag only moves the view
   else { pan={x:e.clientX, y:e.clientY, moved:false, leg: phase()==='check' && !S.sel ? hitLeg(h.x,h.y,24) : null, tx:h.x, ty:h.y}; capt(e); }
 });
@@ -5302,7 +5314,17 @@ stage.addEventListener('pointermove', e=>{
   if(gdrag){ resizeGrid(e); return; }
   if(pan){ const dx=e.clientX-pan.x, dy=e.clientY-pan.y; if(!pan.moved && Math.hypot(dx,dy)<7) return;
     pan.moved=true; CAM.tx+=dx; CAM.ty+=dy; pan.x=e.clientX; pan.y=e.clientY; stage.style.cursor='grabbing'; draw(); return; }
-  if(ctl) return;
+  if(ctl){
+    if(!'UDLR'.includes(ctl.kind)) return;
+    const dx=e.clientX-ctl.cx, dy=e.clientY-ctl.cy;
+    if(!ctl.drag && Math.hypot(dx,dy)<7) return;
+    if(!ctl.drag){ ctl.drag=true; stopRepeat(); }
+    const p=S.points.find(q=>q.id===S.sel); if(!p) return;
+    const st=S.nudge??0.5, horiz='LR'.includes(ctl.kind);
+    const d = horiz ? dx/VIEW.k : -dy/VIEW.k, q = Math.round(d/st)*st;
+    setHV(p, horiz ? ctl.H0+q : ctl.H0, horiz ? ctl.V0 : ctl.V0+q);
+    S.dragged=true; S.seenPos=true; soft(); return;
+  }
   if(drag){ if(Math.hypot(e.clientX-drag.cx,e.clientY-drag.cy)<8) return;
     pan={x:e.clientX, y:e.clientY, moved:true, leg:null}; drag=null; stage.style.cursor='grabbing'; return; }
   if(onUI(e)) return;
@@ -5317,7 +5339,10 @@ stage.addEventListener('pointerup', e=>{
   ptrs.delete(e.pointerId);
   if(pinch){ if(ptrs.size<2) pinch=null; return; }
   if(gdrag){ gdrag=null; CAM.lock=null; render(); return; }
-  if(ctl){ const c=ctl; ctl=null; stopRepeat(); if(c.kind==='step'){ const i=STEPS.indexOf(S.nudge??0.5); S.nudge=STEPS[(i+1)%STEPS.length]; draw(); save(); } else if(!c.rep) nudge(c.kind); render(); return; }
+  if(ctl){ const c=ctl; ctl=null; stopRepeat();
+    if(c.kind==='done'){ S.sel=null; sheet=sheet==='point'?null:sheet; hunt=false; render(); return; }
+    if(c.drag){ render(); return; }
+    if(c.kind==='step'){ const i=STEPS.indexOf(S.nudge??0.5); S.nudge=STEPS[(i+1)%STEPS.length]; draw(); save(); } else if(!c.rep) nudge(c.kind); render(); return; }
   if(pan){ const p_=pan; pan=null; stage.style.cursor='default';
     if(!p_.moved && posOn()){ placeAt(p_.tx,p_.ty); return; }              // a point is picked: tap where it goes
     if(!p_.moved){

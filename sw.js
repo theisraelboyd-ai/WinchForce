@@ -1,6 +1,6 @@
 // WinchForce service worker: makes the app open offline and installable.
 // Network first (so updates arrive as soon as you're online), cache as the fallback.
-const CACHE = 'winchforce-v6';
+const CACHE = 'winchforce-v7';
 const CORE = ['./', './index.html', './manifest.webmanifest?v=2', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png', './icons/icon.svg'];
 
 self.addEventListener('install', e => {

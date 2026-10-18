@@ -4555,7 +4555,7 @@ function renderAns(){
     const swlVal = catSwl!=null ? '' : vfmt(p.swl);
     a.className='ans show pt '+(r&&Number.isFinite(r.use)?cls(r.use):'');
     a.innerHTML = `<div class="tiles">
-        <div class="tile ro"><span class="tl"><span class="code ${role==='start'?'winch':role==='end'?'end':''}">${C_[p.id]}</span><span class="lt">${role==='start'?'Line pull':role==='mid'&&r?'Load':'Load on it'}</span>${role==='mid'&&r?`<span class="tag turn" id="bTurn">${fmt(r.defl*DEG,0)}° turn</span>`:''}</span><b id="bLoad">${r?fT(r.load,false):'–'}</b><span class="tu">${u}</span></div>
+        <div class="tile ro"><span class="tl"><span class="code ${role==='start'?'winch':role==='end'?'end':''}">${C_[p.id]}</span><span class="lt">${role==='start'?'Line pull':role==='mid'&&r?'':'Load on it'}</span>${role==='mid'&&r?`<span class="tag turn" id="bTurn">${fmt(r.defl*DEG,0)}° turn</span>`:''}</span><b id="bLoad">${r?fT(r.load,false):'–'}</b><span class="tu">${u}</span></div>
         <label class="tile ed ${lim.swl>0?'':'want'}" for="bSwl"><span class="tl"><span class="lt">${role==='start'?'Max pull':'SWL'}</span>${pen}<span class="tag" id="bUse">${r?useTxt(r.use):''}</span></span><input id="bSwl" type="number" inputmode="decimal" step="any" placeholder="${catSwl!=null?vfmt(catSwl):'?'}" value="${swlVal}" aria-label="${role==='start'?'Winch maximum pull':'Safe working load'}"><span class="tu">${u}</span></label>
       </div>${foot(`<span id="bComp">${compTxt(r)||esc(p.name||PT[p.type].name)}</span>`)}`;
     enterKeysIn(a); return;
@@ -5081,69 +5081,71 @@ function paint(ctx,w,h,pal,live,t=0,fitH=h){
     ctx.restore();
   }
 }
-/* Precise placing overlay: crosshair through the picked point, faint crosshairs through the others,
-   a ruler (distance to each other point where its line crosses ours), the point's own position at the
-   grid edges, four nudge arrows and the step size. Solid black tags + teal, square corners: clearly
-   a measuring tool, not a load. */
+/* Precise placing overlay, in the app's own look (rail-style buttons, neutral lines):
+   - a thin crosshair through the picked point, faint ones through the others with a small tick where they cross ours
+   - one tag beside each neighbour on the line: how far along and across it is from the picked point
+   - the picked point's position in the axis margins
+   - four nudge buttons and a step button */
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 function drawPos(ctx,pal,V){
-  const {sx,sy,hu,vy,HW,B0,B1,side,rot,font,CC}=V, P=S.points, k=P.findIndex(q=>q.id===S.sel); if(k<0){ posUI=[]; return; }
-  const p=P[k], px=sx(hu(p)), py=sy(vy(p)), T='#3ee0d0', INK='#05090c', touch=coarse();
+  const {sx,sy,hu,vy,HW,B0,B1,side,font,CC}=V, P=S.points, k=P.findIndex(q=>q.id===S.sel); if(k<0){ posUI=[]; return; }
+  const p=P[k], px=sx(hu(p)), py=sy(vy(p)), touch=coarse();
   const gx0=sx(0), gx1=sx(HW), gy0=sy(B1), gy1=sy(B0);
-  const boxes=[];
-  const tag=(text,x,y,{size=touch?14:12.5, col=T, avoid=true, align='c'}={})=>{
-    ctx.font=`800 ${size}px `+font; const w=ctx.measureText(text).width+14, h=size+10;
-    let l = align==='l' ? x : align==='r' ? x-w : x-w/2, t=y-h/2;
-    const b={l,t,r:l+w,b:t+h};
-    if(avoid && boxes.some(o=>b.l<o.r+3&&b.r>o.l-3&&b.t<o.b+3&&b.b>o.t-3)) return false;
-    boxes.push(b);
-    ctx.fillStyle=INK; ctx.fillRect(l,t,w,h); ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.strokeRect(l+.75,t+.75,w-1.5,h-1.5);
-    ctx.fillStyle=col; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(text,l+w/2,t+h/2+.5); return true;
-  };
+  const LN=pal.ink2, FILL=cssv('--glass')||pal.panel, EDGE=cssv('--line2')||pal.edge;
+  const D=touch?56:46, B=touch?38:32, fmt1=v=>fmt(v,1);
+  const boxes=[[0,-D],[0,D],[-D,0],[D,0],[0,0]].map(([ox,oy])=>({l:px+ox-B/2-3,t:py+oy-B/2-3,r:px+ox+B/2+3,b:py+oy+B/2+3}));
+  P.forEach(q=>{ const qx=sx(hu(q)), qy=sy(vy(q)); boxes.push({l:qx-24,t:qy-24,r:qx+24,b:qy+24}); });   // never cover a point
+  const free=b=>!boxes.some(o=>b.l<o.r&&b.r>o.l&&b.t<o.b&&b.b>o.t);
   ctx.save();
-  // the others' crosshairs, faint
-  ctx.strokeStyle=T; ctx.globalAlpha=.18; ctx.lineWidth=1; ctx.setLineDash([3,5]);
+  // crosshairs
+  ctx.strokeStyle=LN; ctx.lineWidth=1; ctx.globalAlpha=.16; ctx.setLineDash([3,5]);
   P.forEach((q,i)=>{ if(i===k) return; const qx=sx(hu(q)), qy=sy(vy(q)); ctx.beginPath(); ctx.moveTo(gx0,qy); ctx.lineTo(gx1,qy); ctx.moveTo(qx,gy0); ctx.lineTo(qx,gy1); ctx.stroke(); });
-  // ours, solid
-  ctx.globalAlpha=.9; ctx.setLineDash([]); ctx.lineWidth=1.6;
+  ctx.setLineDash([]); ctx.globalAlpha=.55; ctx.lineWidth=1.2;
   ctx.beginPath(); ctx.moveTo(gx0,py); ctx.lineTo(gx1,py); ctx.moveTo(px,gy0); ctx.lineTo(px,gy1); ctx.stroke();
+  ctx.globalAlpha=.8; ctx.lineWidth=1.5;
+  P.forEach((q,i)=>{ if(i===k) return; const qx=sx(hu(q)), qy=sy(vy(q));
+    if(Math.abs(qx-px)>3){ ctx.beginPath(); ctx.moveTo(qx,py-5); ctx.lineTo(qx,py+5); ctx.stroke(); }
+    if(Math.abs(qy-py)>3){ ctx.beginPath(); ctx.moveTo(px-5,qy); ctx.lineTo(px+5,qy); ctx.stroke(); } });
   ctx.globalAlpha=1;
-  // reserve the arrow area so ruler tags keep out of it
-  const D=touch?62:50, B=touch?42:34;
-  [[0,-D],[0,D],[-D,0],[D,0],[0,0]].forEach(([ox,oy])=>boxes.push({l:px+ox-B/2-2,t:py+oy-B/2-2,r:px+ox+B/2+2,b:py+oy+B/2+2}));   // the arrows and the point itself
-  boxes.push({l:px+D-40,t:py+D-18,r:px+D+40,b:py+D+18},{l:px-D-40,t:py+D-18,r:px-D+40,b:py+D+18});   // where the step tag may go
-  // own position on the grid edges
-  const hName = side ? '' : rot ? '' : '', fmt1=v=>fmt(v,1);
-  const ex=Math.max(gx0+30,Math.min(gx1-30,px)), ey=Math.max(gy0+12,Math.min(gy1-12,py)), es={size:touch?13:12};
-  [0,-26,26].some(o=>tag(`${fmt1(hu(p))} m`, ex, gy1+12+o*0, {...es, align:'c'})) ;
-  [0,-28,28,-56,56].some(o=>tag(side?`h ${fmt1(vy(p))}`:`${fmt1(vy(p))} m`, gx0+3, ey+o, {...es, align:'l'}));
-  // ruler: where each other point's line crosses ours, and how far
-  P.forEach((q,i)=>{ if(i===k) return;
-    const qx=sx(hu(q)), qy=sy(vy(q)), dh=hu(q)-hu(p), dv=vy(q)-vy(p), c=CC[q.id];
-    ctx.strokeStyle=T; ctx.lineWidth=2;
-    if(Math.abs(dh)>0.04 && qx>gx0-1 && qx<gx1+1){ ctx.beginPath(); ctx.moveTo(qx,py-7); ctx.lineTo(qx,py+7); ctx.stroke();
-      const up = qy<py, t1=`${c} ${fmt1(Math.abs(dh))}`;
-      [20,-20,48,-48,76,-76].some(o=>tag(t1, qx, py+(up?-o:o))); }
-    if(Math.abs(dv)>0.04 && qy>gy0-1 && qy<gy1+1){ ctx.beginPath(); ctx.moveTo(px-7,qy); ctx.lineTo(px+7,qy); ctx.stroke();
-      const left = qx<px, t2=`${c} ${side?(dv<0?'↓':'↑'):''}${fmt1(Math.abs(dv))}`;   // on the side away from that point, so it doesn't cover it
-      [[10,0],[-10,0],[10,-26],[10,26],[-10,-26],[-10,26]].some(([ox,oy])=>{ const o=left?ox:-ox; return tag(t2, px+o, qy+oy, {align:o>0?'l':'r'}); }); }
+  // own position, in the axis margins (where the grid numbers are)
+  ctx.font=`800 ${touch?12.5:11.5}px `+font; ctx.fillStyle=pal.sel; ctx.textBaseline='middle';
+  ctx.textAlign='center'; const ex=Math.max(gx0+18,Math.min(gx1-18,px)); ctx.fillStyle=pal.bg; const tw=ctx.measureText(fmt1(hu(p))).width+22; ctx.fillRect(ex-tw/2,gy1+2,tw,18); ctx.fillStyle=pal.sel; ctx.fillText(fmt1(hu(p)), ex, gy1+11);
+  ctx.textAlign='right'; const ey=Math.max(gy0+8,Math.min(gy1-8,py)); const th=ctx.measureText(fmt1(vy(p))).width+8; ctx.fillStyle=pal.bg; ctx.fillRect(gx0-4-th,ey-8,th+2,16); ctx.fillStyle=pal.sel; ctx.fillText(fmt1(vy(p)), gx0-5, ey);
+  // one tag beside each neighbour
+  [P[k-1],P[k+1]].filter(Boolean).forEach(q=>{
+    const qx=sx(hu(q)), qy=sy(vy(q)), dh=hu(q)-hu(p), dv=vy(q)-vy(p);
+    const txt=`↔ ${fmt1(Math.abs(dh))}   ${side?(dv>=0?'↑':'↓'):'↕'} ${fmt1(Math.abs(dv))} m`;
+    ctx.font=`750 ${touch?13:12}px `+font; const w=ctx.measureText(txt).width+16, h=(touch?13:12)+12;
+    const ux=qx>=px?1:-1, uy=qy>=py?1:-1;                     // push away from the picked point
+    const g=30, cands=[[ux*(w/2+g),0],[0,uy*(h/2+g)],[ux*(w/2+g),uy*(h/2+12)],[-ux*(w/2+g),0],[0,-uy*(h/2+g)],[-ux*(w/2+g),uy*(h/2+12)],[ux*(w/2+g),-uy*(h/2+12)]];
+    for(const [ox,oy] of cands){
+      let cx=Math.max(gx0+w/2+2,Math.min(V.w-86-w/2,qx+ox)), cy=Math.max(gy0+h/2+2,Math.min(gy1-h/2-2,qy+oy));
+      const b={l:cx-w/2,t:cy-h/2,r:cx+w/2,b:cy+h/2};
+      if(!free(b)) continue; boxes.push(b);
+      ctx.globalAlpha=.96; ctx.fillStyle=FILL; rr(ctx,b.l,b.t,w,h,7); ctx.fill(); ctx.globalAlpha=1;
+      ctx.strokeStyle=EDGE; ctx.lineWidth=1; ctx.stroke();
+      ctx.fillStyle=pal.ink; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(txt,cx,cy+.5);
+      break;
+    }
   });
-  // nudge arrows + step
-  posUI=[];
-  const arrow=(kind,x,y,ang)=>{ ctx.fillStyle=INK; ctx.fillRect(x-B/2,y-B/2,B,B); ctx.strokeStyle=T; ctx.lineWidth=2; ctx.strokeRect(x-B/2+1,y-B/2+1,B-2,B-2);
-    ctx.save(); ctx.translate(x,y); ctx.rotate(ang); ctx.fillStyle=T; ctx.beginPath(); const a=B*0.24; ctx.moveTo(a,0); ctx.lineTo(-a*0.7,-a*0.9); ctx.lineTo(-a*0.7,a*0.9); ctx.closePath(); ctx.fill(); ctx.restore();
-    posUI.push({kind,x,y,w:B,h:B}); };
-  arrow('U',px,py-D,-Math.PI/2); arrow('D',px,py+D,Math.PI/2); arrow('L',px-D,py,Math.PI); arrow('R',px+D,py,0);
-  // keep the arrows on screen: slide the view if the point is too near an edge or under the buttons
+  // keep the buttons on screen: slide the view if the point is too near an edge or under the rail
   const safeL=6, safeR=V.w-84, safeT=Math.max(8,V.pad.t-14), safeB=V.h-8, ext=D+B/2;
   const shx = px-ext<safeL ? safeL-(px-ext) : px+ext>safeR ? safeR-(px+ext) : 0;
   const shy = py-ext<safeT ? safeT-(py-ext) : py+ext>safeB ? safeB-(py+ext) : 0;
   if((shx||shy) && !posShift){ posShift=true; CAM.tx+=shx; CAM.ty+=shy; requestAnimationFrame(()=>{ draw(); posShift=false; }); }
-  const st=S.nudge??0.5;
-  const diag=[[1,1],[-1,1],[1,-1],[-1,-1]].find(([a,b2])=>px+a*D+a*34<safeR && px+a*D-34>safeL && py+b2*D+16<safeB && py+b2*D-16>safeT)||[1,1];
+  // nudge buttons, styled like the rail
+  posUI=[];
+  const btn=(x,y,w,h)=>{ ctx.save(); ctx.shadowColor='rgba(0,0,0,.22)'; ctx.shadowBlur=8; ctx.shadowOffsetY=2; ctx.fillStyle=FILL; rr(ctx,x-w/2,y-h/2,w,h,10); ctx.fill(); ctx.restore(); ctx.strokeStyle=EDGE; ctx.lineWidth=1; rr(ctx,x-w/2,y-h/2,w,h,10); ctx.stroke(); };
+  const arrow=(kind,x,y,ang)=>{ btn(x,y,B,B);
+    ctx.save(); ctx.translate(x,y); ctx.rotate(ang); ctx.strokeStyle=pal.ink2; ctx.lineWidth=2.4; ctx.lineCap='round'; ctx.lineJoin='round';
+    const a=B*0.17; ctx.beginPath(); ctx.moveTo(-a*0.6,-a*1.1); ctx.lineTo(a*0.7,0); ctx.lineTo(-a*0.6,a*1.1); ctx.stroke(); ctx.restore();
+    posUI.push({kind,x,y,w:B,h:B}); };
+  arrow('U',px,py-D,-Math.PI/2); arrow('D',px,py+D,Math.PI/2); arrow('L',px-D,py,Math.PI); arrow('R',px+D,py,0);
+  const st=S.nudge??0.5, stx=`${fmt(st,st<1?1:0)} m`;
+  ctx.font=`750 ${touch?12.5:11.5}px `+font; const sw=Math.max(B, ctx.measureText(stx).width+16), sh=touch?28:24;
+  const diag=[[1,1],[-1,1],[1,-1],[-1,-1]].find(([a,b2])=>{ const cx=px+a*D, cy=py+b2*D; return cx+sw/2<safeR && cx-sw/2>safeL && cy+sh/2<safeB && cy-sh/2>safeT && free({l:cx-sw/2,t:cy-sh/2,r:cx+sw/2,b:cy+sh/2}); })||[1,1];
   const sxp=px+diag[0]*D, syp=py+diag[1]*D;
-  ctx.font=`800 ${touch?13:12}px `+font; const sw=Math.max(B, ctx.measureText(`± ${fmt(st,st<1?1:0)} m`).width+14), sh=touch?30:26;
-  ctx.fillStyle=INK; ctx.fillRect(sxp-sw/2,syp-sh/2,sw,sh); ctx.strokeStyle='#f5a623'; ctx.lineWidth=1.5; ctx.strokeRect(sxp-sw/2+.75,syp-sh/2+.75,sw-1.5,sh-1.5);
-  ctx.fillStyle='#f5a623'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(`± ${fmt(st,st<1?1:0)} m`,sxp,syp+.5);
+  btn(sxp,syp,sw,sh); ctx.fillStyle=pal.ink2; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(stx,sxp,syp+.5);
   posUI.push({kind:'step',x:sxp,y:syp,w:sw,h:sh});
   ctx.restore();
 }

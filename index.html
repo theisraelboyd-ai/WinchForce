@@ -181,6 +181,7 @@ svg.i{width:22px;height:22px;flex:none}
 .rb[aria-pressed="true"]{border-color:var(--known);background:var(--known-soft);color:var(--known)}
 .rb.go{border-radius:50%;background:var(--cursor);border-color:var(--cursor);color:#1b1205}
 .rb.go.glow{animation:glow 1.5s ease-in-out infinite}
+.rb.glow:not(.go){border-color:var(--cursor);animation:glow 1.5s ease-in-out infinite}
 .rb.known{border-color:color-mix(in srgb,var(--known) 55%,transparent)} .rb.known svg{color:var(--known)}
 .rb.ok .rv{color:var(--ok)} .rb.ok{border-color:color-mix(in srgb,var(--ok) 55%,transparent)}
 .rb.warn .rv{color:var(--warn)} .rb.warn{border-color:var(--warn)}
@@ -351,9 +352,7 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
   <div class="hud"><div class="ans" id="ans" role="button" tabindex="0" aria-label="Change the reading"></div></div>
   <div class="hint" id="hint"></div>
   <nav class="rail" id="rail" aria-label="Tools"></nav>
-  <div class="fly" id="fly">
-    <button data-add="bollard" aria-label="Add bollard"><svg class="i"><use href="#i-bollard"/></svg><span>Bollard</span></button><button data-add="block" aria-label="Add block"><svg class="i"><use href="#i-block"/></svg><span>Block</span></button><button data-add="fairlead" aria-label="Add fairlead"><svg class="i"><use href="#i-fairlead"/></svg><span>Fairlead</span></button>
-  </div>
+  <div class="fly" id="fly"></div>
   <div class="toast" id="toast" role="status"></div>
   <div class="sheet" id="sheet"></div>
 </main>
@@ -403,11 +402,11 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
   <div class="dlg-b">
     <h3>Three steps</h3>
     <ul>
-      <li><strong>Lay out the line.</strong> Tap the winch (W) or the end (E), then tap where it is on the grid. Add bollards, blocks or fairleads with + and place them the same way.</li>
+      <li><strong>Lay out the line.</strong> Tap + to add the winch, then what you are pulling (a load, an anchor or a purchase), then each bollard, block or fairlead. Each one arrives picked: move it into place with its arrows and tap the orange ✓.</li>
       <li><strong>Say what you know.</strong> The winch pull, the load at the end, or a load cell reading. Tap the grid to show where the load cell is.</li>
       <li><strong>Check it's safe.</strong> Add the limits you know: winch max pull, the wire, the SWL of each point. Anything over its limit turns red. Tap a point or a line to see its load.</li>
       <li><strong>Bollards.</strong> In More, choose a bare post or a snatch block on top, and its foot height. You get the side pull, the up/down pull and the bending at the foot (side pull × lever).</li>
-      <li><strong>Placing precisely.</strong> Tap a point: the loads clear and a crosshair shows how far it is from every other point. Tap an arrow to nudge it a step (hold to repeat), drag an arrow to slide it that way in steps, tap the step tag (0.5 m) to change the step, or tap anywhere on the grid to put it there. Tap the orange ✓ to finish. Dragging only moves the view.</li>
+      <li><strong>Placing precisely.</strong> Tap a point: the loads clear and a crosshair shows how far it is from every other point. Tap an arrow to nudge it a step (hold to repeat), drag an arrow to slide it that way in steps, tap the step tag (0.5 m) to change the step. Tap the orange ✓ to finish. Dragging only moves the view.</li>
       <li><strong>Grid size.</strong> Double-tap an empty part of the grid, then drag the corner. Double-tap again to finish.</li>
     </ul>
     <h3>Friction at a bollard or fairlead</h3>
@@ -4649,9 +4648,9 @@ bar.addEventListener('click', e=>{
 function renderHint(){
   const h=$('hint'), ph=phase(), K=S.known; let t='';
   if(gridEd) t='Drag the <b>corner</b> to resize.';
-  else if(ph==='place') t = S.points.length ? '<b>2</b> Now tap where the <b>end</b> of the line is (what you are pulling).' : '<b>1</b> Tap where the <b>winch</b> is.';
-  else if(posOn() && !S.seenPos) t = 'Tap where it goes, or tap / drag an arrow. Tap <b>✓</b> when done.';
-  else if(ph==='lay') t = 'Tap <b>W</b> or <b>E</b>, then tap where it is. Use <b>+</b> for each bollard or block. Tap <b>✓</b> when it looks right.';
+  else if(ph==='place' && !S.sel) t = S.points.length ? '<b>2</b> Tap <b>+</b> to add what you are pulling: a load, an anchor or a purchase.' : '<b>1</b> Tap <b>+</b> to add the winch.';
+  else if(posOn() && !S.seenPos) t = 'Move it with the arrows: tap for a step, drag for bigger moves. Tap the orange <b>✓</b> when it is in place.';
+  else if(ph==='lay' && !S.sel) t = '<b>3</b> Tap <b>+</b> for each bollard or block the line goes round. Tap a point to move it. Tap <b>✓</b> on the right when the line is set.';
   else if(ph==='know') t = (K.kind==='point'||K.kind==='leg') && !K.ref ? 'Tap the <b>block</b> the load cell hangs from, or the <b>line</b> it is clamped on.' : '';
   else if(hunt) t='Tap each <b>?</b> and type its SWL at the top.';
   else if(sheet==='heights') t='Drag points up or down, or type the heights.';
@@ -4668,7 +4667,8 @@ function toast(html, ms=5000){ const t=$('toast'); t.innerHTML=html; t.classList
 /* ---------------------------------------------------------------- the rail */
 function railItems(){
   const ph=phase(), show=!RES.err&&!RES.pending, P=S.points, out=[];
-  out.push({id:'add', icon:'plus', label:'Add a point', dis:ph==='place', on:fly});
+  const hasE=P.some(p=>roleOf(p)==='end');
+  out.push({id:'add', icon:'plus', label:'Add a point', on:fly, glow:!fly && !S.sel && (!hasE || (ph==='lay' && P.length===2 && !S.seenAdd))});
   out.push({id:'rot', icon:'rotate', label:'Rotate the grid', dis:S.view!=='plan'});
   out.push({id:'fit', icon:'fit', label:'Fit the deck to the screen', dis:ph==='place'&&!S.points.length&&CAM.z===1});
   out.push({id:'view', icon:S.view==='side'?'plan':'side', label:S.view==='side'?'View from above':'View from the side', on:S.view==='side'});
@@ -4684,7 +4684,7 @@ function railItems(){
     out.push({id:'heights', icon:'height', label:'Heights', on:sheet==='heights'});
   }
   out.push({sep:1, grow:1});
-  if(ph==='lay') out.push({id:'laid', icon:'check', label:'Line is set', go:1, glow:S.dragged});
+  if(ph==='lay') out.push({id:'laid', icon:'check', label:'Line is set', go:1, glow:!S.sel && (P.length>2 || S.seenAdd)});
   out.push({id:'clear', icon:'trash', label:'Clear all', dis:!P.length});
   return out;
 }
@@ -4694,6 +4694,9 @@ function renderRail(){
   $('rail').innerHTML = railItems().map(o=> o.sep ? `<span class="${o.grow?'grow':'sep'}"></span>`
     : `<button class="rb ${o.go?'go':''} ${o.glow?'glow':''} ${o.cls||''}" data-r="${o.id}" aria-label="${esc(o.label)}" title="${esc(o.label)}" ${o.dis?'disabled':''} aria-pressed="${!!o.on}">${icon(o.icon)}${o.val?`<span class="rv">${esc(o.val)}</span>`:''}${o.dot?'<span class="dot"></span>':''}</button>`).join('');
   const f=$('fly'); f.classList.toggle('show', fly);
+  if(fly){ const P=S.points, hasW=P.some(p=>roleOf(p)==='start'), hasE=P.some(p=>roleOf(p)==='end');
+    const items = !hasW ? [['winch','winch','Winch']] : !hasE ? [['end','end','Load'],['padeye','anchor','Anchor'],['purchase','purchase','Purchase']] : [['bollard','bollard','Bollard'],['block','block','Block'],['fairlead','fairlead','Fairlead']];
+    f.innerHTML = items.map(([t,ic,l])=>`<button data-add="${t}" aria-label="Add ${l.toLowerCase()}">${icon(ic)}<span>${l}</span></button>`).join(''); }
   if(fly){ const b=$('rail').querySelector('[data-r="add"]'); if(b){ const r=b.getBoundingClientRect(), s=stage.getBoundingClientRect(); f.style.top=(r.top-s.top)+'px'; } }
 }
 function liveRail(){
@@ -4723,7 +4726,7 @@ $('rail').addEventListener('click', e=>{
   sheet = sheet===id ? null : id; hunt=false; S.sel=null; render();
 });
 $('fly').addEventListener('pointerdown', e=>e.stopPropagation());
-$('fly').addEventListener('click', e=>{ const b=e.target.closest('[data-add]'); if(!b) return; fly=false; addPoint(b.dataset.add); });
+$('fly').addEventListener('click', e=>{ const b=e.target.closest('[data-add]'); if(!b) return; fly=false; const t=b.dataset.add; if(PT[t].role==='mid'){ S.seenAdd=true; addPoint(t); } else addEndPoint(t); });
 function clearAll(){
   undoBuf=JSON.stringify(S);
   const keep={unit:S.unit,theme:S.theme,deck:S.deck,rope:S.rope,flip:S.flip};
@@ -4987,7 +4990,7 @@ function paint(ctx,w,h,pal,live,t=0,fitH=h){
       ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke(); ctx.restore(); }
     if(show && !posMode) pill(ctx, fT(L.t), (ax+bx)/2, (ay+by)/2, isKnown?pal.known:c, pal, 12.5, pop);
   }
-  if(live && ph==='place' && anim){ ctx.save(); ctx.strokeStyle=pal.known; ctx.lineWidth=3; ctx.globalAlpha=.35+.35*Math.sin(t/300); ctx.strokeRect(sx(0)-2,sy(B1)-2,HW*k+4,(B1-B0)*k+4); ctx.restore(); }
+  if(false){ ctx.save(); ctx.strokeStyle=pal.known; ctx.lineWidth=3; ctx.globalAlpha=.35+.35*Math.sin(t/300); ctx.strokeRect(sx(0)-2,sy(B1)-2,HW*k+4,(B1-B0)*k+4); ctx.restore(); }
   // ghost drag hint on first visit
   if(false){
     const e=P[P.length-1], ex=sx(hu(e)), ey=sy(vy(e)), cyc=(t%2600)/2600, m = cyc<0.5 ? easeInOut(cyc*2) : 1-easeInOut((cyc-0.5)*2);
@@ -5166,7 +5169,7 @@ function needsAnim(){
   if(S.view==='3d') return false;
   if(RM.matches || document.hidden) return false;
   const ph=phase();
-  if(ph==='place') return true;
+  if(ph==='place') return false;
   if(ph==='lay') return !S.dragged;
   if(ph==='know') return true;
   return !RES.err && !RES.pending;   // line travel and any red pulses
@@ -5196,7 +5199,7 @@ const snapV = v => { const s=S.deck.snap>0?S.deck.snap:0; return s ? Math.round(
 let drag=null, ctl=null, posUI=[], repT=0, repI=0, posShift=false;
 const STEPS=[0.5,1,5,0.1];
 // precise placing: a picked point shows a crosshair, nudge arrows and a step size
-const posOn = () => !!VIEW && !gridEd && S.view!=='3d' && !pickMode() && phase()!=='place' && S.points.some(p=>p.id===S.sel);
+const posOn = () => !!VIEW && !gridEd && S.view!=='3d' && !pickMode() && S.points.some(p=>p.id===S.sel);
 function posHit(x,y){ for(const b of posUI){ if(Math.abs(x-b.x)<=b.w/2+4 && Math.abs(y-b.y)<=b.h/2+4) return b.kind; } return null; }
 function setHV(p,H,V){                            // screen across / up (metres) -> the point, for the current view
   const r2=v=>+(+v).toFixed(2);
@@ -5211,15 +5214,6 @@ function nudge(dir){
 }
 function startRepeat(dir){ stopRepeat(); repT=setTimeout(()=>{ if(ctl) ctl.rep=true; nudge(dir); repI=setInterval(()=>nudge(dir),110); },380); }
 function stopRepeat(){ clearTimeout(repT); clearInterval(repI); repT=repI=0; }
-function placeAt(x,y){
-  const p=S.points.find(q=>q.id===S.sel); if(!p) return;
-  const tmp={x:p.x,y:p.y,z:p.z}; VIEW.put(tmp,x,y);
-  const H=VIEW.side?tmp.x:VIEW.rot?tmp.y:tmp.x, V=VIEW.side?tmp.z:VIEW.rot?tmp.x:tmp.y;
-  undoBuf=JSON.stringify(S);
-  setHV(p, snapV(H), snapV(V)); if(!VIEW.side){ p.x=Math.max(0,Math.min(S.deck.X,p.x)); p.y=Math.max(0,Math.min(S.deck.Y,p.y)); }
-  S.dragged=true; S.seenPos=true; render();
-  toast(`Moved ${esc((RES.codes||codes())[p.id])} <button data-undo>Undo</button>`, 3500);
-}
 document.addEventListener('keydown', e=>{               // keyboard: arrows nudge the picked point
   if(typing() || !posOn()) return;
   const d={ArrowUp:'U',ArrowDown:'D',ArrowLeft:'L',ArrowRight:'R'}[e.key]; if(!d) return;
@@ -5288,14 +5282,6 @@ stage.addEventListener('pointerdown', e=>{
     if(g){ CAM.z=1; CAM.tx=0; CAM.ty=0; gdrag={kind:g, x0:e.clientX, y0:e.clientY, H0:VIEW.HW, V0:VIEW.VH, rot:VIEW.rot}; CAM.lock=VIEW.rot; capt(e); draw(); return; }
     pan={x:e.clientX, y:e.clientY, moved:false, leg:null, tx:h.x, ty:h.y}; capt(e); return;
   }
-  if(phase()==='place'){
-    const tmp={x:0,y:0,z:1}; VIEW.put(tmp,h.x,h.y);
-    if(tmp.x<0||tmp.y<0||tmp.x>S.deck.X||tmp.y>S.deck.Y) return;
-    const type = S.points.length ? 'end' : 'winch';
-    S.points.push(mkPoint(type,{x:snapV(tmp.x), y:snapV(tmp.y), z:1})); $('toast').classList.remove('show');
-    if(S.points.length===2){ S.laidOut=false; S.dragged=true; }
-    render(); return;
-  }
   if(pickMode()){
     if(h.p && roleOf(h.p)!=='start'){ S.known.kind='point'; S.known.ref=h.p.id; }
     else { const lg=hitLeg(h.x,h.y,30); if(!lg) return; S.known.kind='leg'; S.known.ref=S.points[lg.i].id; }
@@ -5344,7 +5330,7 @@ stage.addEventListener('pointerup', e=>{
     if(c.drag){ render(); return; }
     if(c.kind==='step'){ const i=STEPS.indexOf(S.nudge??0.5); S.nudge=STEPS[(i+1)%STEPS.length]; draw(); save(); } else if(!c.rep) nudge(c.kind); render(); return; }
   if(pan){ const p_=pan; pan=null; stage.style.cursor='default';
-    if(!p_.moved && posOn()){ placeAt(p_.tx,p_.ty); return; }              // a point is picked: tap where it goes
+    if(!p_.moved && posOn()) return;                                         // a point is picked: only its arrows move it
     if(!p_.moved){
       const now=performance.now(), dbl = !p_.leg && lastTap && now-lastTap.t<330 && Math.hypot(p_.tx-lastTap.x,p_.ty-lastTap.y)<40;
       lastTap = dbl ? null : {t:now, x:p_.tx, y:p_.ty};
@@ -5373,6 +5359,14 @@ function resizeGrid(e){                           // logarithmic: every ~140 px 
 stage.addEventListener('wheel', e=>{ if(onUI(e)) return; e.preventDefault(); const r=stage.getBoundingClientRect(); zoomAt(e.clientX-r.left, e.clientY-r.top, Math.exp(-e.deltaY*0.0015)); draw(); }, {passive:false});
 stage.addEventListener('dblclick', e=>{ if(onUI(e)||gridEd) return; const h=hit(e); if(!h||h.p) return; const lg=hitLeg(h.x,h.y); if(lg) addPoint(S.lastType||'block', lg); });
 
+function addEndPoint(type){
+  const D=S.deck, P=S.points, role=PT[type].role;
+  const y=snapV(D.Y/2);
+  const p = role==='start' ? mkPoint(type,{x:snapV(D.X*0.15), y, z:1}) : mkPoint(type,{x:snapV(D.X*0.85), y, z:1});
+  if(role==='start') P.unshift(p); else P.push(p);
+  if(P.length===2){ S.laidOut=false; S.dragged=true; }
+  S.sel=p.id; selLeg=null; sheet=null; render();
+}
 function addPoint(type, at){
   const P=S.points, n=P.length;
   let idx=n-1, x, y;

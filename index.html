@@ -407,6 +407,7 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
       <li><strong>Say what you know.</strong> The winch pull, the load at the end, or a load cell reading. Tap the grid to show where the load cell is.</li>
       <li><strong>Check it's safe.</strong> Add the limits you know: winch max pull, the wire, the SWL of each point. Anything over its limit turns red. Tap a point or a line to see its load.</li>
       <li><strong>Bollards.</strong> In More, choose a bare post or a snatch block on top, and its foot height. You get the side pull, the up/down pull and the bending at the foot (side pull × lever).</li>
+      <li><strong>Placing.</strong> While you drag a point, dashed guides show how far it is along and across from the points either side.</li>
       <li><strong>Grid size.</strong> Double-tap an empty part of the grid, then drag the corner. Double-tap again to finish.</li>
     </ul>
     <h3>Friction at a bollard or fairlead</h3>
@@ -4984,6 +4985,33 @@ function paint(ctx,w,h,pal,live,t=0,fitH=h){
       ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke(); ctx.restore(); }
     if(show) pill(ctx, fT(L.t), (ax+bx)/2, (ay+by)/2, isKnown?pal.known:c, pal, 12.5, pop);
   }
+  let dragDims=[];
+  // placing guide while dragging: faint crosshair through the point, and a right-angle dimension to each neighbour
+  if(live && drag && drag.moved){
+    const di=P.findIndex(q=>q.id===drag.id);
+    if(di>=0){
+      const p=P[di], px=sx(hu(p)), py=sy(vy(p));
+      ctx.save();
+      ctx.strokeStyle=pal.ink2; ctx.globalAlpha=.28; ctx.lineWidth=1; ctx.setLineDash([2,5]);
+      ctx.beginPath(); ctx.moveTo(sx(0),py); ctx.lineTo(sx(HW),py); ctx.moveTo(px,sy(B1)); ctx.lineTo(px,sy(B0)); ctx.stroke();
+      ctx.globalAlpha=1; ctx.setLineDash([5,4]); ctx.lineWidth=1.4;
+      const dims=[];
+      [P[di-1],P[di+1]].filter(Boolean).forEach(q=>{
+        const qx=sx(hu(q)), qy=sy(vy(q)), dh=hu(p)-hu(q), dv=vy(p)-vy(q);
+        ctx.strokeStyle=pal.ink2; ctx.globalAlpha=.7;
+        ctx.beginPath(); ctx.moveTo(qx,qy); ctx.lineTo(px,qy); ctx.lineTo(px,py); ctx.stroke();   // across from the neighbour, then up/down to the point
+        // little square at the right-angle corner
+        if(Math.abs(px-qx)>14 && Math.abs(py-qy)>14){ const cx=Math.sign(qx-px)*7, cy=Math.sign(py-qy)*7; ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(px+cx,qy); ctx.lineTo(px+cx,qy+cy); ctx.lineTo(px,qy+cy); ctx.stroke(); ctx.setLineDash([5,4]); }
+        ctx.globalAlpha=1;
+        const lab = v => `${fmt(Math.abs(v), Math.abs(v)<10?1:1)} m`;
+        if(Math.abs(dh)>0.05){ let lx=(qx+px)/2; if(Math.abs(px-qx)<90) lx = px + Math.sign(px-qx||1)*44;   // short: put it past the corner, clear of the icons
+          dims.push([lab(dh), lx, qy + (py>qy?-15:15)]); }
+        if(Math.abs(dv)>0.05) dims.push([side ? `${dv>=0?'↑':'↓'} ${lab(dv)}` : lab(dv), px + (qx>px?-40:40), (qy+py)/2]);
+      });
+      ctx.restore();
+      dragDims=dims;
+    }
+  }
   if(live && ph==='place' && anim){ ctx.save(); ctx.strokeStyle=pal.known; ctx.lineWidth=3; ctx.globalAlpha=.35+.35*Math.sin(t/300); ctx.strokeRect(sx(0)-2,sy(B1)-2,HW*k+4,(B1-B0)*k+4); ctx.restore(); }
   // ghost drag hint on first visit
   if(live && ph==='lay' && !S.dragged && anim && P.length){
@@ -5058,6 +5086,7 @@ function paint(ctx,w,h,pal,live,t=0,fitH=h){
     }
   });
   turnLabels.forEach(([t,lx,ly,c])=>pill(ctx,t,lx,ly,c,pal,11.5,1));
+  dragDims.forEach(([t,lx,ly])=>pill(ctx,t,lx,ly,pal.ink,pal,11.5,1));   // drag distances on top of everything
   if(live && gridEd && !side){                    // grid size handles: far corner, right edge, top edge
     const x1=sx(HW), y1=sy(B1), x0=sx(0), y0=sy(B0);
     ctx.save(); ctx.strokeStyle=pal.sel; ctx.lineWidth=2; ctx.setLineDash([7,5]); ctx.strokeRect(x0,y1,x1-x0,y0-y1); ctx.setLineDash([]);

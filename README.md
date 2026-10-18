@@ -51,3 +51,11 @@ round a **bare post** (friction) or a **snatch block on top** (sheave), the foot
 height if it stands on another level, and an optional maximum bending moment.
 
 See ROADMAP.md for what's planned next.
+
+## Install as an app
+
+WinchForce is an installable web app (PWA) and works offline once opened.
+Android / Chrome / Edge: menu → **Install app** (also in WinchForce's own ☰ menu).
+iPhone / iPad: Safari → Share → **Add to Home Screen**.
+If the browser says it's already installed but you can't find it, remove any old
+WinchForce home-screen shortcut, reload the page, then install again.

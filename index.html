@@ -9,6 +9,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="WinchForce">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e1720'/%3E%3Cpath d='M6 24 L16 9 L26 22' stroke='%234aa8ff' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='9' r='3.2' fill='%23f5a623'/%3E%3C/svg%3E">
 <style>
 :root{ --sans:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Roboto,Arial,sans-serif; --r-s:8px; --r-m:14px; --hdr:48px; }
@@ -52,6 +54,7 @@ svg.i{width:22px;height:22px;flex:none}
 .menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:11px 12px;border-radius:8px;font-size:14.5px}
 .menu button:hover{background:var(--panel2)}
 .menu hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+.menu [hidden]{display:none}
 .munits{display:flex;align-items:center;gap:4px;padding:4px 6px 4px 12px}
 .munits span{flex:1;color:var(--ink3);font-size:13px;font-weight:650}
 .menu .munits button{width:auto;padding:7px 10px;border:1px solid var(--line2);border-radius:8px;font-size:13px;font-weight:650}
@@ -334,6 +337,8 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
     <hr>
     <button data-m="theme">Day / night</button>
     <button data-m="new">New line</button>
+    <hr class="inst" hidden>
+    <button data-m="install" class="inst" hidden>Install app</button>
   </div>
   <input type="file" id="planFile" accept=".json,application/json" hidden>
 </header>
@@ -5248,7 +5253,22 @@ function menuAct(a){
   else if(a==='open') $('planFile').click();
   else if(a==='theme'){ S.theme=S.theme==='night'?'day':'night'; applyTheme(); render(); }
   else if(a==='new') clearAll();
+  else if(a==='install') installApp();
 }
+/* ---------------------------------------------------------------- install as an app (PWA) */
+let installEvt=null;
+const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone===true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+function showInstall(on){ document.querySelectorAll('#menu .inst').forEach(el=>el.hidden=!on); }
+window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); installEvt=e; showInstall(!standalone()); });
+window.addEventListener('appinstalled', ()=>{ installEvt=null; showInstall(false); flash('WinchForce installed'); });
+async function installApp(){
+  if(installEvt){ installEvt.prompt(); const r=await installEvt.userChoice.catch(()=>null); installEvt=null; if(!r||r.outcome!=='accepted') showInstall(true); else showInstall(false); return; }
+  if(isIOS()) toast('On iPhone / iPad: tap <b>Share</b> then <b>Add to Home Screen</b>.', 7000);
+  else toast('Use the browser menu ⋮ → <b>Install app</b>. If it says it is already installed, remove the old WinchForce shortcut first.', 8000);
+}
+if(isIOS() && !standalone()) showInstall(true);
+if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')) window.addEventListener('load', ()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 $('figClose').addEventListener('click', ()=>$('figDlg').close());
 $('prClose').addEventListener('click', ()=>{ $('prDlg').close(); $('prFrame').srcdoc=''; });
 $('prGo').addEventListener('click', ()=>{

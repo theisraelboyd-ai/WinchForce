@@ -403,11 +403,11 @@ table.cat tr.expired input[data-k="expiry"]{color:var(--bad);font-weight:600}
   <div class="dlg-b">
     <h3>Three steps</h3>
     <ul>
-      <li><strong>Lay out the line.</strong> Drag the winch (W) and the end (E) to where they are. Add bollards, blocks or fairleads with the buttons on the grid and drag them into place.</li>
+      <li><strong>Lay out the line.</strong> Tap the winch (W) or the end (E), then tap where it is on the grid. Add bollards, blocks or fairleads with + and place them the same way.</li>
       <li><strong>Say what you know.</strong> The winch pull, the load at the end, or a load cell reading. Tap the grid to show where the load cell is.</li>
       <li><strong>Check it's safe.</strong> Add the limits you know: winch max pull, the wire, the SWL of each point. Anything over its limit turns red. Tap a point or a line to see its load.</li>
       <li><strong>Bollards.</strong> In More, choose a bare post or a snatch block on top, and its foot height. You get the side pull, the up/down pull and the bending at the foot (side pull × lever).</li>
-      <li><strong>Placing.</strong> While you drag a point, dashed guides show how far it is along and across from the points either side.</li>
+      <li><strong>Placing precisely.</strong> Tap a point: the loads clear and a crosshair shows how far it is from every other point. Tap the arrows to nudge it (hold to repeat), tap the ± tag to change the step, or tap anywhere on the grid to put it there. Tap the point again or Done to finish. Dragging only moves the view.</li>
       <li><strong>Grid size.</strong> Double-tap an empty part of the grid, then drag the corner. Double-tap again to finish.</li>
     </ul>
     <h3>Friction at a bollard or fairlead</h3>
@@ -4650,13 +4650,14 @@ function renderHint(){
   const h=$('hint'), ph=phase(), K=S.known; let t='';
   if(gridEd) t='Drag the <b>corner</b> to resize.';
   else if(ph==='place') t = S.points.length ? '<b>2</b> Now tap where the <b>end</b> of the line is (what you are pulling).' : '<b>1</b> Tap where the <b>winch</b> is.';
-  else if(ph==='lay') t = 'Drag <b>W</b> and <b>E</b> to where they are. Use <b>+</b> for each bollard or block the line goes round. Tap <b>✓</b> when it looks right.';
+  else if(posOn() && !S.seenPos) t = 'Tap where it goes, or use the arrows. <b>±</b> sets the step.';
+  else if(ph==='lay') t = 'Tap <b>W</b> or <b>E</b>, then tap where it is. Use <b>+</b> for each bollard or block. Tap <b>✓</b> when it looks right.';
   else if(ph==='know') t = (K.kind==='point'||K.kind==='leg') && !K.ref ? 'Tap the <b>block</b> the load cell hangs from, or the <b>line</b> it is clamped on.' : '';
   else if(hunt) t='Tap each <b>?</b> and type its SWL at the top.';
   else if(sheet==='heights') t='Drag points up or down, or type the heights.';
   else if(S.view==='3d' && !S.seen3d) t='Drag a point to move it. Tap it, then drag <b>↕</b> to raise or lower it. Drag empty space to turn.';
-  else if(!S.seenCheck && !S.sel) t='Tap a point or a line to see its load.';
-  if(!t || S.sel || (selLeg!=null && !gridEd) || (sheet==='point' && isMobile()) || (drag && drag.moved)){ h.classList.remove('show'); return; }
+  else if(!S.seenCheck && !S.sel) t='Tap a point to move it or see its load.';
+  if(!t || (S.sel && !(posOn() && !S.seenPos)) || (selLeg!=null && !gridEd) || (sheet==='point' && isMobile()) || (drag && drag.moved)){ h.classList.remove('show'); return; }
   h.innerHTML=`<span>${t}</span>`; h.classList.add('show');
   h.style.top = $('ans').classList.contains('show') ? ($('ans').offsetTop+$('ans').offsetHeight+8)+'px' : '10px';
 }
@@ -4913,14 +4914,6 @@ function prep(cv){
 }
 function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 const FONT = () => getComputedStyle(document.body).fontFamily;
-function measPill(ctx,text,x,y,pal,size){        // temporary measurement label: teal, dashed edge, a touch bigger
-  ctx.save(); ctx.font=`800 ${size}px `+FONT();
-  const w=ctx.measureText(text).width+18, h=size+12, cw=ctx.canvas.width/(ctx.getTransform().a||1);
-  x=Math.max(w/2+4, Math.min(cw-80-w/2, x));                     // keep it on screen, clear of the button rail
-  ctx.globalAlpha=.95; ctx.fillStyle=pal.panel; rr(ctx,x-w/2,y-h/2,w,h,h/2); ctx.fill(); ctx.globalAlpha=1;
-  ctx.strokeStyle=pal.meas; ctx.lineWidth=1.8; ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
-  ctx.fillStyle=pal.meas; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(text,x,y+.5); ctx.restore();
-}
 function pill(ctx,text,x,y,col,pal,size=12.5,scale=1){
   if(scale<=0.01) return;
   ctx.save(); ctx.translate(x,y); ctx.scale(scale,scale);
@@ -4946,6 +4939,7 @@ function draw(t){
   paint(ctx,w,h,PAL[S.theme]||PAL.night,true,t??performance.now(),LAY.h); }
 function paint(ctx,w,h,pal,live,t=0,fitH=h){
   const D=S.deck, font=FONT(), side=S.view==='side', anim=live && !RM.matches;
+  const posMode = live && posOn();
   // fixed margins: nothing that opens or closes on top of the grid changes its size
   const pad = live ? {l:38, r:78, t:(fitH<=420?96:(isMobile()?122:116))+(gridEd?52:0), b:26} : {l:38,r:14,t:18,b:34};
   const zs=S.points.map(p=>p.z);
@@ -4991,51 +4985,11 @@ function paint(ctx,w,h,pal,live,t=0,fitH=h){
     // line travel: dashes run toward the winch when heaving, away when paying out
     if(show && anim){ ctx.save(); ctx.strokeStyle=pal.bg; ctx.globalAlpha=.55; ctx.lineWidth=1.6; ctx.setLineDash([3,11]); ctx.lineDashOffset=(S.op==='heave'?1:-1)*(t/45);
       ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke(); ctx.restore(); }
-    if(show) pill(ctx, fT(L.t), (ax+bx)/2, (ay+by)/2, isKnown?pal.known:c, pal, 12.5, pop);
-  }
-  let dragDims=[], dragCard=null;
-  // placing guide while dragging: faint crosshair through the point, a right-angle "tape" to each neighbour,
-  // and a readout card in the half of the screen away from the finger. Teal + dashed = temporary measurement.
-  if(live && drag && drag.moved){
-    const di=P.findIndex(q=>q.id===drag.id);
-    if(di>=0){
-      const p=P[di], px=sx(hu(p)), py=sy(vy(p)), mc=pal.meas, touch=coarse();
-      const hAx = rot ? 'across' : 'along', vAx = side ? 'height' : (rot ? 'along' : 'across');
-      ctx.save();
-      ctx.strokeStyle=mc; ctx.globalAlpha=.32; ctx.lineWidth=1; ctx.setLineDash([2,5]);
-      ctx.beginPath(); ctx.moveTo(sx(0),py); ctx.lineTo(sx(HW),py); ctx.moveTo(px,sy(B1)); ctx.lineTo(px,sy(B0)); ctx.stroke();
-      ctx.globalAlpha=1; ctx.setLineDash([6,4]); ctx.lineWidth=1.8;
-      const dims=[], rows=[];
-      const away = (lx,ly) => {                 // keep labels out from under the finger (a thumb covers ~70 px round the point)
-        const r=touch?78:44, dx=lx-px, dy=ly-py, d=Math.hypot(dx,dy);
-        if(d>=r) return [lx,ly];
-        const ux = d>1 ? dx/d : 0, uy = d>1 ? dy/d : -1; return [px+ux*r, py+uy*r];
-      };
-      [P[di-1],P[di+1]].filter(Boolean).forEach(q=>{
-        const qx=sx(hu(q)), qy=sy(vy(q)), dh=hu(p)-hu(q), dv=vy(p)-vy(q);
-        ctx.strokeStyle=mc; ctx.globalAlpha=.85;
-        ctx.beginPath(); ctx.moveTo(qx,qy); ctx.lineTo(px,qy); ctx.lineTo(px,py); ctx.stroke();
-        if(Math.abs(px-qx)>14 && Math.abs(py-qy)>14){ const cx=Math.sign(qx-px)*8, cy=Math.sign(py-qy)*8; ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(px+cx,qy); ctx.lineTo(px+cx,qy+cy); ctx.lineTo(px,qy+cy); ctx.stroke(); ctx.setLineDash([6,4]); }
-        ctx.globalAlpha=1;
-        const lab = v => `${fmt(Math.abs(v),1)} m`;
-        if(Math.abs(dh)>0.05){ let lx=(qx+px)/2; if(Math.abs(px-qx)<110) lx = px + Math.sign(px-qx||1)*60;
-          dims.push([`↔ ${lab(dh)}`, ...away(lx, qy + (py>qy?-20:20))]); }
-        if(Math.abs(dv)>0.05) dims.push([`${side?(dv>=0?'↑':'↓'):'↕'} ${lab(dv)}`, ...away(px + (qx>px?-58:58), (qy+py)/2)]);
-        rows.push([CC[q.id], dh, dv, Math.hypot(dh,dv)]);
-      });
-      ctx.restore();
-      dragDims=dims;
-      // readout card: top of the grid if the finger is low, bottom if it's high
-      if(rows.length){
-        const fs=touch?15:13.5, lh=fs+12, padX=12, cw=Math.min(w-pad.l-pad.r-8, 340), ch=rows.length*lh+16+fs;
-        const cx=pad.l+4, cy = py > h*0.5 ? pad.t+6 : h-pad.b-ch-6;
-        dragCard={x:cx,y:cy,w:cw,h:ch,fs,lh,padX,rows,hAx,vAx};
-      }
-    }
+    if(show && !posMode) pill(ctx, fT(L.t), (ax+bx)/2, (ay+by)/2, isKnown?pal.known:c, pal, 12.5, pop);
   }
   if(live && ph==='place' && anim){ ctx.save(); ctx.strokeStyle=pal.known; ctx.lineWidth=3; ctx.globalAlpha=.35+.35*Math.sin(t/300); ctx.strokeRect(sx(0)-2,sy(B1)-2,HW*k+4,(B1-B0)*k+4); ctx.restore(); }
   // ghost drag hint on first visit
-  if(live && ph==='lay' && !S.dragged && anim && P.length){
+  if(false){
     const e=P[P.length-1], ex=sx(hu(e)), ey=sy(vy(e)), cyc=(t%2600)/2600, m = cyc<0.5 ? easeInOut(cyc*2) : 1-easeInOut((cyc-0.5)*2);
     const gx=ex-46*m, gy=ey-34*m;
     ctx.globalAlpha=.35*(1-Math.abs(.5-cyc)); ctx.setLineDash([3,4]); ctx.strokeStyle=pal.sel; ctx.lineWidth=1.5;
@@ -5059,7 +5013,7 @@ function paint(ctx,w,h,pal,live,t=0,fitH=h){
       else if(hunt && noLimit) ring(ctx,x,y,21,pal.sel,t,1300,14);
     }
     // turn angle at a bollard / block / fairlead: dashed line straight on, arc round to where the wire leaves, and the angle
-    if(r && role==='mid' && r.defl*DEG>=1 && !(live && gridEd)){
+    if(r && role==='mid' && r.defl*DEG>=1 && !(live && gridEd) && !posMode){
       const a=P[i-1], b=P[i+1], ax=sx(hu(a)), ay=sy(vy(a)), bx=sx(hu(b)), by=sy(vy(b));
       const ia=Math.atan2(y-ay, x-ax), oa=Math.atan2(by-y, bx-x);          // arriving direction, leaving direction (screen)
       let d=oa-ia; while(d>Math.PI) d-=2*Math.PI; while(d<-Math.PI) d+=2*Math.PI;
@@ -5087,7 +5041,7 @@ function paint(ctx,w,h,pal,live,t=0,fitH=h){
     ctx.fillStyle = role==='start'?pal.known:role==='end'?pal.sel:pal.ink;
     ctx.font=`750 ${CC[p.id].length>2?11:13}px `+font; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(CC[p.id],x,y+.5);
     // one short label: limit hunt "?", load on the point, or the turn angle before any reading
-    if(r && role!=='start' || (hunt && noLimit)){
+    if(!posMode && (r && role!=='start' || (hunt && noLimit))){
       let tx=null, c=pal.ink2, sc=1;
       if(hunt && noLimit && live){ tx='?'; c=pal.sel; }
       else if(show && (role==='mid' || p.type!=='end')){ tx=fT(r.load); c=Number.isFinite(r.use)?col(r.use):pal.res; sc=pop; }
@@ -5107,21 +5061,7 @@ function paint(ctx,w,h,pal,live,t=0,fitH=h){
     }
   });
   turnLabels.forEach(([t,lx,ly,c])=>pill(ctx,t,lx,ly,c,pal,11.5,1));
-  dragDims.forEach(([t,lx,ly])=>measPill(ctx,t,lx,ly,pal,coarse()?15:13));   // drag distances on top of everything
-  if(dragCard){ const d=dragCard;
-    ctx.save(); ctx.globalAlpha=.94; ctx.fillStyle=pal.panel; rr(ctx,d.x,d.y,d.w,d.h,12); ctx.fill(); ctx.globalAlpha=1;
-    ctx.strokeStyle=pal.meas; ctx.lineWidth=1.6; ctx.setLineDash([6,4]); ctx.stroke(); ctx.setLineDash([]);
-    ctx.textBaseline='middle'; ctx.textAlign='left';
-    ctx.font=`650 ${d.fs-3}px `+font; ctx.fillStyle=pal.ink2; ctx.fillText(`Measuring from…   ↔ ${d.hAx}   ${side?'↕ height':'↕ '+d.vAx}`, d.x+d.padX, d.y+12+(d.fs-3)/2);
-    d.rows.forEach(([c,dh,dv,dd],k)=>{ const y=d.y+16+d.fs+k*d.lh+d.lh/2-4;
-      ctx.font=`800 ${d.fs}px `+font; ctx.fillStyle=pal.meas; ctx.fillText(c, d.x+d.padX, y);
-      ctx.fillStyle=pal.ink; ctx.fillText(`↔ ${fmt(Math.abs(dh),1)}   ${side?(dv>=0?'↑':'↓'):'↕'} ${fmt(Math.abs(dv),1)}`, d.x+d.padX+44, y);
-      const main=`↔ ${fmt(Math.abs(dh),1)}   ${side?(dv>=0?'↑':'↓'):'↕'} ${fmt(Math.abs(dv),1)}`; ctx.font=`800 ${d.fs}px `+font; const mw=ctx.measureText(main).width;
-      ctx.font=`650 ${d.fs-2}px `+font; ctx.fillStyle=pal.ink2; ctx.textAlign='right';
-      const room=d.w-d.padX*2-44-mw-10, full=`${fmt(dd,1)} m direct`, short=`⟋ ${fmt(dd,1)} m`;
-      const txt = ctx.measureText(full).width<=room ? full : ctx.measureText(short).width<=room ? short : '';
-      if(txt) ctx.fillText(txt, d.x+d.w-d.padX, y); ctx.textAlign='left'; });
-    ctx.restore(); }
+  if(posMode) drawPos(ctx,pal,{sx,sy,hu,vy,HW,B0,B1,side,rot,font,w,h,pad,CC});
   if(live && gridEd && !side){                    // grid size handles: far corner, right edge, top edge
     const x1=sx(HW), y1=sy(B1), x0=sx(0), y0=sy(B0);
     ctx.save(); ctx.strokeStyle=pal.sel; ctx.lineWidth=2; ctx.setLineDash([7,5]); ctx.strokeRect(x0,y1,x1-x0,y0-y1); ctx.setLineDash([]);
@@ -5140,6 +5080,72 @@ function paint(ctx,w,h,pal,live,t=0,fitH=h){
     ctx.fillStyle=pal.sel; ctx.fillText(lab,mx,my+1);
     ctx.restore();
   }
+}
+/* Precise placing overlay: crosshair through the picked point, faint crosshairs through the others,
+   a ruler (distance to each other point where its line crosses ours), the point's own position at the
+   grid edges, four nudge arrows and the step size. Solid black tags + teal, square corners: clearly
+   a measuring tool, not a load. */
+function drawPos(ctx,pal,V){
+  const {sx,sy,hu,vy,HW,B0,B1,side,rot,font,CC}=V, P=S.points, k=P.findIndex(q=>q.id===S.sel); if(k<0){ posUI=[]; return; }
+  const p=P[k], px=sx(hu(p)), py=sy(vy(p)), T='#3ee0d0', INK='#05090c', touch=coarse();
+  const gx0=sx(0), gx1=sx(HW), gy0=sy(B1), gy1=sy(B0);
+  const boxes=[];
+  const tag=(text,x,y,{size=touch?14:12.5, col=T, avoid=true, align='c'}={})=>{
+    ctx.font=`800 ${size}px `+font; const w=ctx.measureText(text).width+14, h=size+10;
+    let l = align==='l' ? x : align==='r' ? x-w : x-w/2, t=y-h/2;
+    const b={l,t,r:l+w,b:t+h};
+    if(avoid && boxes.some(o=>b.l<o.r+3&&b.r>o.l-3&&b.t<o.b+3&&b.b>o.t-3)) return false;
+    boxes.push(b);
+    ctx.fillStyle=INK; ctx.fillRect(l,t,w,h); ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.strokeRect(l+.75,t+.75,w-1.5,h-1.5);
+    ctx.fillStyle=col; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(text,l+w/2,t+h/2+.5); return true;
+  };
+  ctx.save();
+  // the others' crosshairs, faint
+  ctx.strokeStyle=T; ctx.globalAlpha=.18; ctx.lineWidth=1; ctx.setLineDash([3,5]);
+  P.forEach((q,i)=>{ if(i===k) return; const qx=sx(hu(q)), qy=sy(vy(q)); ctx.beginPath(); ctx.moveTo(gx0,qy); ctx.lineTo(gx1,qy); ctx.moveTo(qx,gy0); ctx.lineTo(qx,gy1); ctx.stroke(); });
+  // ours, solid
+  ctx.globalAlpha=.9; ctx.setLineDash([]); ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(gx0,py); ctx.lineTo(gx1,py); ctx.moveTo(px,gy0); ctx.lineTo(px,gy1); ctx.stroke();
+  ctx.globalAlpha=1;
+  // reserve the arrow area so ruler tags keep out of it
+  const D=touch?62:50, B=touch?42:34;
+  [[0,-D],[0,D],[-D,0],[D,0],[0,0]].forEach(([ox,oy])=>boxes.push({l:px+ox-B/2-2,t:py+oy-B/2-2,r:px+ox+B/2+2,b:py+oy+B/2+2}));   // the arrows and the point itself
+  boxes.push({l:px+D-40,t:py+D-18,r:px+D+40,b:py+D+18},{l:px-D-40,t:py+D-18,r:px-D+40,b:py+D+18});   // where the step tag may go
+  // own position on the grid edges
+  const hName = side ? '' : rot ? '' : '', fmt1=v=>fmt(v,1);
+  const ex=Math.max(gx0+30,Math.min(gx1-30,px)), ey=Math.max(gy0+12,Math.min(gy1-12,py)), es={size:touch?13:12};
+  [0,-26,26].some(o=>tag(`${fmt1(hu(p))} m`, ex, gy1+12+o*0, {...es, align:'c'})) ;
+  [0,-28,28,-56,56].some(o=>tag(side?`h ${fmt1(vy(p))}`:`${fmt1(vy(p))} m`, gx0+3, ey+o, {...es, align:'l'}));
+  // ruler: where each other point's line crosses ours, and how far
+  P.forEach((q,i)=>{ if(i===k) return;
+    const qx=sx(hu(q)), qy=sy(vy(q)), dh=hu(q)-hu(p), dv=vy(q)-vy(p), c=CC[q.id];
+    ctx.strokeStyle=T; ctx.lineWidth=2;
+    if(Math.abs(dh)>0.04 && qx>gx0-1 && qx<gx1+1){ ctx.beginPath(); ctx.moveTo(qx,py-7); ctx.lineTo(qx,py+7); ctx.stroke();
+      const up = qy<py, t1=`${c} ${fmt1(Math.abs(dh))}`;
+      [20,-20,48,-48,76,-76].some(o=>tag(t1, qx, py+(up?-o:o))); }
+    if(Math.abs(dv)>0.04 && qy>gy0-1 && qy<gy1+1){ ctx.beginPath(); ctx.moveTo(px-7,qy); ctx.lineTo(px+7,qy); ctx.stroke();
+      const left = qx<px, t2=`${c} ${side?(dv<0?'↓':'↑'):''}${fmt1(Math.abs(dv))}`;   // on the side away from that point, so it doesn't cover it
+      [[10,0],[-10,0],[10,-26],[10,26],[-10,-26],[-10,26]].some(([ox,oy])=>{ const o=left?ox:-ox; return tag(t2, px+o, qy+oy, {align:o>0?'l':'r'}); }); }
+  });
+  // nudge arrows + step
+  posUI=[];
+  const arrow=(kind,x,y,ang)=>{ ctx.fillStyle=INK; ctx.fillRect(x-B/2,y-B/2,B,B); ctx.strokeStyle=T; ctx.lineWidth=2; ctx.strokeRect(x-B/2+1,y-B/2+1,B-2,B-2);
+    ctx.save(); ctx.translate(x,y); ctx.rotate(ang); ctx.fillStyle=T; ctx.beginPath(); const a=B*0.24; ctx.moveTo(a,0); ctx.lineTo(-a*0.7,-a*0.9); ctx.lineTo(-a*0.7,a*0.9); ctx.closePath(); ctx.fill(); ctx.restore();
+    posUI.push({kind,x,y,w:B,h:B}); };
+  arrow('U',px,py-D,-Math.PI/2); arrow('D',px,py+D,Math.PI/2); arrow('L',px-D,py,Math.PI); arrow('R',px+D,py,0);
+  // keep the arrows on screen: slide the view if the point is too near an edge or under the buttons
+  const safeL=6, safeR=V.w-84, safeT=Math.max(8,V.pad.t-14), safeB=V.h-8, ext=D+B/2;
+  const shx = px-ext<safeL ? safeL-(px-ext) : px+ext>safeR ? safeR-(px+ext) : 0;
+  const shy = py-ext<safeT ? safeT-(py-ext) : py+ext>safeB ? safeB-(py+ext) : 0;
+  if((shx||shy) && !posShift){ posShift=true; CAM.tx+=shx; CAM.ty+=shy; requestAnimationFrame(()=>{ draw(); posShift=false; }); }
+  const st=S.nudge??0.5;
+  const diag=[[1,1],[-1,1],[1,-1],[-1,-1]].find(([a,b2])=>px+a*D+a*34<safeR && px+a*D-34>safeL && py+b2*D+16<safeB && py+b2*D-16>safeT)||[1,1];
+  const sxp=px+diag[0]*D, syp=py+diag[1]*D;
+  ctx.font=`800 ${touch?13:12}px `+font; const sw=Math.max(B, ctx.measureText(`± ${fmt(st,st<1?1:0)} m`).width+14), sh=touch?30:26;
+  ctx.fillStyle=INK; ctx.fillRect(sxp-sw/2,syp-sh/2,sw,sh); ctx.strokeStyle='#f5a623'; ctx.lineWidth=1.5; ctx.strokeRect(sxp-sw/2+.75,syp-sh/2+.75,sw-1.5,sh-1.5);
+  ctx.fillStyle='#f5a623'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(`± ${fmt(st,st<1?1:0)} m`,sxp,syp+.5);
+  posUI.push({kind:'step',x:sxp,y:syp,w:sw,h:sh});
+  ctx.restore();
 }
 const easeInOut = x => x<.5 ? 2*x*x : 1-Math.pow(-2*x+2,2)/2;
 let raf=0;
@@ -5174,7 +5180,38 @@ function hitLeg(x,y,lim=16){
   return best;
 }
 const snapV = v => { const s=S.deck.snap>0?S.deck.snap:0; return s ? Math.round(v/s)*s : +v.toFixed(2); };
-let drag=null;
+let drag=null, ctl=null, posUI=[], repT=0, repI=0, posShift=false;
+const STEPS=[0.5,1,5,0.1];
+// precise placing: a picked point shows a crosshair, nudge arrows and a step size
+const posOn = () => !!VIEW && !gridEd && S.view!=='3d' && !pickMode() && phase()!=='place' && S.points.some(p=>p.id===S.sel);
+function posHit(x,y){ for(const b of posUI){ if(Math.abs(x-b.x)<=b.w/2+4 && Math.abs(y-b.y)<=b.h/2+4) return b.kind; } return null; }
+function setHV(p,H,V){                            // screen across / up (metres) -> the point, for the current view
+  const r2=v=>+(+v).toFixed(2);
+  if(VIEW.side){ p.x=r2(H); p.z=r2(V); } else if(VIEW.rot){ p.y=r2(H); p.x=r2(V); } else { p.x=r2(H); p.y=r2(V); }
+  p.x=Math.max(0,Math.min(S.deck.X,p.x)); p.y=Math.max(0,Math.min(S.deck.Y,p.y));
+}
+function nudge(dir){
+  const p=S.points.find(q=>q.id===S.sel); if(!p) return;
+  const st=S.nudge??0.5, H=VIEW.hu(p), V=VIEW.vy(p);
+  setHV(p, H+(dir==='R'?st:dir==='L'?-st:0), V+(dir==='U'?st:dir==='D'?-st:0));
+  S.dragged=true; S.seenPos=true; soft();
+}
+function startRepeat(dir){ stopRepeat(); repT=setTimeout(()=>{ if(ctl) ctl.rep=true; nudge(dir); repI=setInterval(()=>nudge(dir),110); },380); }
+function stopRepeat(){ clearTimeout(repT); clearInterval(repI); repT=repI=0; }
+function placeAt(x,y){
+  const p=S.points.find(q=>q.id===S.sel); if(!p) return;
+  const tmp={x:p.x,y:p.y,z:p.z}; VIEW.put(tmp,x,y);
+  const H=VIEW.side?tmp.x:VIEW.rot?tmp.y:tmp.x, V=VIEW.side?tmp.z:VIEW.rot?tmp.x:tmp.y;
+  undoBuf=JSON.stringify(S);
+  setHV(p, snapV(H), snapV(V)); if(!VIEW.side){ p.x=Math.max(0,Math.min(S.deck.X,p.x)); p.y=Math.max(0,Math.min(S.deck.Y,p.y)); }
+  S.dragged=true; S.seenPos=true; render();
+  toast(`Moved ${esc((RES.codes||codes())[p.id])} <button data-undo>Undo</button>`, 3500);
+}
+document.addEventListener('keydown', e=>{               // keyboard: arrows nudge the picked point
+  if(typing() || !posOn()) return;
+  const d={ArrowUp:'U',ArrowDown:'D',ArrowLeft:'L',ArrowRight:'R'}[e.key]; if(!d) return;
+  e.preventDefault(); nudge(d);
+});
 const capt = e => { try{ stage.setPointerCapture(e.pointerId); }catch(_){} };
 const onUI = e => e.target.closest('.sheet,.rail,.fly,.hud,.toast,#v3');
 const ptrs=new Map(); let pan=null, pinch=null;
@@ -5251,8 +5288,9 @@ stage.addEventListener('pointerdown', e=>{
     else { const lg=hitLeg(h.x,h.y,30); if(!lg) return; S.known.kind='leg'; S.known.ref=S.points[lg.i].id; }
     render(); setTimeout(()=>{ const v=$('kC'); if(v) v.focus(); },40); return;
   }
-  if(h.p){ drag={id:h.p.id, x:h.x, y:h.y, moved:false}; capt(e); }
-  else { pan={x:e.clientX, y:e.clientY, moved:false, leg: phase()==='check' ? hitLeg(h.x,h.y,24) : null, tx:h.x, ty:h.y}; capt(e); }
+  if(posOn()){ const c=posHit(h.x,h.y); if(c){ ctl={kind:c, rep:false}; capt(e); if(c!=='step') startRepeat(c); return; } }
+  if(h.p){ drag={id:h.p.id, x:h.x, y:h.y, moved:false, cx:e.clientX, cy:e.clientY}; capt(e); }      // a tap selects; a drag only moves the view
+  else { pan={x:e.clientX, y:e.clientY, moved:false, leg: phase()==='check' && !S.sel ? hitLeg(h.x,h.y,24) : null, tx:h.x, ty:h.y}; capt(e); }
 });
 stage.addEventListener('pointermove', e=>{
   if(ptrs.has(e.pointerId)) ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -5262,16 +5300,11 @@ stage.addEventListener('pointermove', e=>{
   if(gdrag){ resizeGrid(e); return; }
   if(pan){ const dx=e.clientX-pan.x, dy=e.clientY-pan.y; if(!pan.moved && Math.hypot(dx,dy)<7) return;
     pan.moved=true; CAM.tx+=dx; CAM.ty+=dy; pan.x=e.clientX; pan.y=e.clientY; stage.style.cursor='grabbing'; draw(); return; }
-  if(!drag && onUI(e)) return;
+  if(ctl) return;
+  if(drag){ if(Math.hypot(e.clientX-drag.cx,e.clientY-drag.cy)<8) return;
+    pan={x:e.clientX, y:e.clientY, moved:true, leg:null}; drag=null; stage.style.cursor='grabbing'; return; }
+  if(onUI(e)) return;
   const h=hit(e); if(!h) return;
-  if(drag){
-    if(!drag.moved && Math.hypot(h.x-drag.x,h.y-drag.y)<6) return;
-    const p=S.points.find(q=>q.id===drag.id); if(!p) return;
-    if(!drag.moved){ drag.moved=true; $('hint').classList.remove('show'); if(!S.dragged){ S.dragged=true; renderHint(); renderRail(); } if(S.sel){ S.sel=null; sheet=sheet==='point'?null:sheet; renderSheet(); } }
-    VIEW.put(p,h.x,h.y);
-    p.x=Math.max(0,Math.min(S.deck.X,snapV(p.x))); p.y=Math.max(0,Math.min(S.deck.Y,snapV(p.y))); p.z=snapV(p.z);
-    soft(); return;
-  }
   const id=h.p?h.p.id:null; stage.style.cursor = pickMode()?'crosshair':(id?'grab':'default');
   if(id!==hoverId){ hoverId=id; if(!raf) draw(); }
 });
@@ -5282,7 +5315,9 @@ stage.addEventListener('pointerup', e=>{
   ptrs.delete(e.pointerId);
   if(pinch){ if(ptrs.size<2) pinch=null; return; }
   if(gdrag){ gdrag=null; CAM.lock=null; render(); return; }
+  if(ctl){ const c=ctl; ctl=null; stopRepeat(); if(c.kind==='step'){ const i=STEPS.indexOf(S.nudge??0.5); S.nudge=STEPS[(i+1)%STEPS.length]; draw(); save(); } else if(!c.rep) nudge(c.kind); render(); return; }
   if(pan){ const p_=pan; pan=null; stage.style.cursor='default';
+    if(!p_.moved && posOn()){ placeAt(p_.tx,p_.ty); return; }              // a point is picked: tap where it goes
     if(!p_.moved){
       const now=performance.now(), dbl = !p_.leg && lastTap && now-lastTap.t<330 && Math.hypot(p_.tx-lastTap.x,p_.ty-lastTap.y)<40;
       lastTap = dbl ? null : {t:now, x:p_.tx, y:p_.ty};
@@ -5293,7 +5328,7 @@ stage.addEventListener('pointerup', e=>{
     return; }
   endDrag();
 });
-stage.addEventListener('pointercancel', e=>{ ptrs.delete(e.pointerId); drag=null; pan=null; pinch=null; if(gdrag){ gdrag=null; CAM.lock=null; render(); } });
+stage.addEventListener('pointercancel', e=>{ ptrs.delete(e.pointerId); drag=null; pan=null; pinch=null; if(ctl){ ctl=null; stopRepeat(); render(); } if(gdrag){ gdrag=null; CAM.lock=null; render(); } });
 function gridHandle(x,y){                         // which resize handle (if any) is under the finger
   const V=VIEW, cx=V.sx(V.HW), cy=V.sy(V.VH), my=V.sy(V.VH/2), mx=V.sx(V.HW/2), r=coarse()?34:22;
   if(Math.hypot(x-cx,y-cy)<r) return 'c';
@@ -5320,7 +5355,7 @@ function addPoint(type, at){
   const dx=b.x-a.x, dy=b.y-a.y, L=Math.hypot(dx,dy)||1, off=Math.min(3, L*0.15);
   const z = at && Number.isFinite(at.z) ? at.z : (a.z+b.z)/2;
   const p=mkPoint(type,{x:snapV(Math.max(0,Math.min(S.deck.X, x + (at?0:-dy/L*off)))), y:snapV(Math.max(0,Math.min(S.deck.Y, y + (at?0:dx/L*off)))), z:+z.toFixed(2)});
-  P.splice(idx,0,p); S.lastType=type; S.sel=null; selLeg=null; if(sheet==='point') sheet=null; render();
+  P.splice(idx,0,p); S.lastType=type; S.sel=p.id; selLeg=null; if(sheet==='point') sheet=null; render();
 }
 
 /* ---------------------------------------------------------------- header + menu */
